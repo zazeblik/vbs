@@ -1,0 +1,68 @@
+module.exports = {
+    edit: async function (req, res){
+        try {
+          await Places.update(req.param("id"), req.body)
+          return res.ok();
+        } catch (err) {
+          return res
+            .status(400)
+            .send(err);
+        }
+      },
+      create: async function (req, res){
+        try {
+          await Places.create(req.body)
+          return res.ok();
+        } catch (err) {
+          return res
+            .status(400)
+            .send(err);
+        }
+      },
+      delete: async function (req, res) {
+        try {
+          if (!req.param("id"))
+            return res
+              .status(400)
+              .send(err);
+          await Places.destroy(req.body)
+          return res.ok();
+        } catch (err) {
+          return res
+            .status(400)
+            .send(err);
+        }
+      },
+      list: async function (req, res) {
+        try {
+          const sort = req.query.sort || "updatedAt DESC";
+          const perPage = Number(req.query.perPage) || 10;
+          let currentPage = Number(req.query.page) || 1;
+          let query = {
+            where: {
+              name: { "contains": req.query.search || "" }
+            }
+          };
+          const total = await Places.count(query);
+          const skip = (currentPage - 1) * perPage;
+          query.skip = skip > total ? 0 : skip;
+          currentPage = skip > total ? 1 : currentPage;
+          let totalPages = Math.ceil(total / perPage);
+          query.limit = perPage;
+          query.sort = sort;
+          const data = await Places.find(query);
+          return res.send({
+            total: total,
+            totalPages: totalPages,
+            perPage: perPage,
+            page: currentPage,
+            data: data
+          })
+        } catch (err) {
+          return res
+            .status(400)
+            .send(err);
+        }
+    }
+};
+

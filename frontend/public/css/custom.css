@@ -1,0 +1,56 @@
+.ui.search.selection.dropdown, .ui.search.selection.dropdown i, .ui.search.selection.dropdown input{
+    height: calc(1.5em + 0.5rem + 2px);
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.875rem !important;
+    line-height: 1.5 !important;
+    border-radius: 0.2rem !important;
+}
+
+.ui.search.selection.dropdown[state="true"] {
+    border-color: #28a745 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat !important;
+    background-position: right calc(0.375em + 0.1875rem) center !important;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem) !important;
+}
+
+.ui.search.selection.dropdown[state="true"] i {
+    padding-right: calc(1.5em + 0.75rem) !important;
+}
+
+.input-group .input-group-append .ui.search.selection.dropdown{
+    position: relative;
+    -ms-flex: 1 1 0%;
+    -webkit-box-flex: 1;
+    flex: 1 1 0%;
+    min-width: 200px;
+    margin-bottom: 0;
+}
+
+.pointed {
+    cursor: pointer;
+}
+
+button.check-all {
+    border: none;
+    padding: 0;
+    float: left;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #000;
+    text-shadow: 0 1px 0 #fff;
+    opacity: .5;
+    line-height: 24px;
+    background: none;
+}
+
+.dropdown-actions{
+    float: right;
+}
+
+.dropdown-actions .btn{
+    padding: 0 0.5rem !important;
+    color: black !important;
+    border: none !important;
+    background: none !important;
+}
