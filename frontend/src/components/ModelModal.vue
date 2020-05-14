@@ -164,6 +164,8 @@ export default {
           case "number":
           case "color":
           case "model":
+          case "month":
+          case "year":
             result[c.property] = c.value;
             break;
           case "checkbox":

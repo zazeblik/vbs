@@ -88,6 +88,7 @@
           <template v-slot:button-content>
             <b-icon icon="three-dots-vertical"/><span class="sr-only">Actions</span>
           </template>
+          <b-dropdown-item v-if="!allEventsPayed(data)" @click="showAddPaymentModal(data.value)">Оплатить месяц</b-dropdown-item>
           <b-dropdown-item @click="showArchivePersonConfirm(data.value)">Перевести в архив</b-dropdown-item>
           <b-dropdown-item @click="showRemovePersonConfirm(data.value)">Удалить из группы</b-dropdown-item>
         </b-dropdown>
@@ -117,6 +118,7 @@
       </template>
     </b-table>
     <ModelModal modalId="eventModal" :baseUrl="eventUrl" :itemForm="eventForm" ref="eventModal" @formSaved="fetchSheet" />
+    <ModelModal modalId="paymentModal" :baseUrl="paymentUrl" :itemForm="paymentForm" ref="paymentModal" @formSaved="fetchSheet" />
     <ModelModal modalId="groupModal" :baseUrl="groupUrl" :itemForm="groupForm" ref="groupModal" @formSaved="fetchDetail" />
   </b-container>
 </template>
@@ -124,7 +126,7 @@
 const GroupType = require("../../../../enums").GroupType;
 import { ModelSelect } from 'vue-search-select'
 import ModelModal from "../../components/ModelModal";
-import { GroupForm, EventForm } from "../../shared/forms";
+import { GroupForm, EventForm, PaymentForm } from "../../shared/forms";
 export default {
   components: {
     ModelSelect,
@@ -140,6 +142,7 @@ export default {
       persons: [],
       eventUrl: '/events',
       groupUrl: '/groups',
+      paymentUrl: '/payments',
       selectedYear: new Date().getFullYear(),
       years: this.getYears(),
       selectedMonth: new Date().getMonth(),
@@ -150,7 +153,8 @@ export default {
       defaultPlace: null,
       defaultDuration: null,
       groupForm: GroupForm,
-      eventForm: EventForm
+      eventForm: EventForm,
+      paymentForm: PaymentForm
     };
   },
   async mounted() {
@@ -162,6 +166,14 @@ export default {
     }
   },
   methods: {
+    allEventsPayed(row){ 
+      for (const key in row.item) {
+        if (!isNaN(key) && !row.item[key].payed){
+          return false;
+        }
+      }
+      return true;
+    },
     createEvent(){
       this.eventForm[0].value = this.$route.params.id;
       this.eventForm[1].value = this.defaultInstructor;
@@ -173,6 +185,16 @@ export default {
       this.eventForm[3].value = defaultStartsAt;
       this.eventForm[4].value = this.defaultDuration;
       this.$refs.eventModal.showAdd();
+    },
+    showAddPaymentModal(person){
+      this.paymentForm[0].value = person.id;
+      this.paymentForm[1].value = this.group.id;
+      this.paymentForm[2].value = this.group.cost;
+      this.paymentForm[3].value = this.selectedMonth;
+      this.paymentForm[4].value = this.selectedYear;
+      this.paymentForm[5].value = `Оплата за ${this.months[this.selectedMonth].text} ${this.selectedYear}г.`;
+
+      this.$refs.paymentModal.showAdd();
     },
     showEditGroupModal(){
       this.$refs.groupModal.showEdit(this.group);
@@ -313,7 +335,7 @@ export default {
           payIds.push(row.item[key].payment.id);
         }
       }
-      return `${totalPayments} (${payIds.length} шт.)`;
+      return totalPayments;
     },
     async fetchData(){
       await this.fetchDetail();

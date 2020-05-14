@@ -2,6 +2,9 @@ const GroupType = require('../../enums').GroupType
 
 module.exports = {
   attributes: {
+    updater: {
+      model: 'users'
+    },
     name: {
       type: 'string',
       isNotEmptyString: true,

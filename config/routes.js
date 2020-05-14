@@ -15,6 +15,8 @@ module.exports.routes = {
   '/events/delete/:id': 'EventsController.delete',
   '/events/add-visitor/:id': 'EventsController.addVisitor',
   '/events/remove-visitor/:id': 'EventsController.removeVisitor',
+  '/payments/edit/:id': 'PaymentsController.edit',
+  '/payments/delete/:id': 'PaymentsController.delete',
   '/cp*': function(req, res) {
     return res.redirect('/?route=' + req.url.substr(1))
   }

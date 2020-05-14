@@ -1,3 +1,45 @@
+module.exports.PaymentForm = [
+  {
+    property: "person",
+    type: "model",
+    hidden: true
+  },
+  {
+    property: "group",
+    type: "model",
+    hidden: true
+  },
+  {
+    label: "Сумма",
+    property: "sum",
+    type: "number",
+    validations: {
+      min: 0,
+      required: true
+    }
+  },
+  {
+    label: "Месяц",
+    property: "month",
+    type: "month",
+    hidden: true,
+    validations: {}
+  },
+  {
+    label: "Год",
+    property: "year",
+    type: "year",
+    hidden: true,
+    validations: {}
+  },
+  {
+    label: "Описание",
+    property: "description",
+    type: "string",
+    validations: {}
+  }
+];
+
 module.exports.GroupForm = [
   {
     label: "Наименование",

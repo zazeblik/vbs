@@ -3,7 +3,7 @@
     <b-breadcrumb class="mt-1">
       <b-breadcrumb-item active>Общие группы</b-breadcrumb-item>
     </b-breadcrumb>
-    <b-input-group prepend="Проводит занятие" size="sm">
+    <b-input-group prepend="Тренер" size="sm">
       <b-form-select v-model="selectedInstructor" :options="instructors" @change="selectedInstructorChanged"></b-form-select>
       <b-input-group-append>
         <b-button variant="outline-success" @click="showAddModal">

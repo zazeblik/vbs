@@ -1,11 +1,7 @@
 const GroupType = require('../../enums').GroupType
 const moment = require('moment');
 
-function getMonthDateRange(year, month) {
-  const startDate = moment([year, month]);
-  const endDate = moment(startDate).endOf('month');
-  return { start: startDate, end: endDate };
-}
+const GetMonthDateRange =  require('../utils/DateRangeHelper').GetMonthDateRange;
 
 module.exports = {
   addPerson: async function (req, res) {
@@ -55,7 +51,7 @@ module.exports = {
       const id = Number(req.param("id"));
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));
-      const monthDateRange = getMonthDateRange(year, month);
+      const monthDateRange = GetMonthDateRange(year, month);
       const archivePersons = await ArchivePersons.find({ group: id });
       const group = await Groups.findOne(id)
         .populate("members", { 
@@ -64,10 +60,10 @@ module.exports = {
         });
       const groupMembers = group.members;
       const events = await Events
-        .find({ group: id, startsAt: { ">=": monthDateRange.start.valueOf(), "<": monthDateRange.end.valueOf() } })
+        .find({ group: id, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
         .sort("startsAt ASC")
         .populate("visitors", {select: ["id"]})
-        .populate("payment");
+        .populate("payments", {select: ["id", "person", "sum"]});
       let fields = [{
         key: "person", label: "Фамилия Имя"
       }]
@@ -78,12 +74,13 @@ module.exports = {
         };
         events.forEach(e => {
           const visits = e.visitors.map( v => v.id );
+          const eventPersonPayment = e.payments.find(p => p.person == gm.id);
           row[e.id] = {
             visited: visits.includes(gm.id),
-            payed: !!e.payment,
+            payed: !!eventPersonPayment,
             eventId: e.id,
             visitorId: gm.id,
-            payment: e.payment
+            payment: eventPersonPayment
           };
           if (row[e.id].payed){
             row._cellVariants[e.id] = 'success'
