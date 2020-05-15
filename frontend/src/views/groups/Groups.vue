@@ -29,7 +29,11 @@
             </b-dropdown>
             <h6 class="mb-0 pointed" @click="goToDetailPage(group)">{{group.name}}</h6>
           </template>
-          <b-card-text class="px-3 pt-2 pb-1 pointed" @click="goToDetailPage(group)">{{getScheduleView(group.schedule)}}</b-card-text>
+          <b-card-text class="px-3 pt-2 pb-1 pointed" @click="goToDetailPage(group)">
+            <p>Стоимость: {{group.cost}}</p>
+            <p>Участников: {{group.members.length}}</p>
+            <p>{{getScheduleView(group.schedule)}}</p>
+          </b-card-text>
         </b-card>
       </b-col>
     </b-row>

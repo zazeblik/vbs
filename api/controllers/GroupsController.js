@@ -111,7 +111,8 @@ module.exports = {
       const persons = await Persons.find({ select: ["id", "name"] });
       const groups = await Groups
         .find({ type: GroupType.General })
-        .populate("defaultInstructor");
+        .populate("defaultInstructor")
+        .populate("members");
 
       const instructors = groups.filter(g => g.defaultInstructor != null)
         .map(g => {
@@ -120,9 +121,26 @@ module.exports = {
         .filter((v, i, a) => (a.map(ai => ai.id)).indexOf(v.id) === i);
       return res.send({ places, persons, instructors });
     } catch (err) {
-      return res
-        .status(400)
-        .send(err);
+      return res.badRequest();
+    }
+  },
+  personal: async function (req, res) {
+    try {
+      const places = await Places.find({ select: ["id", "name"] });
+      const persons = await Persons.find({ select: ["id", "name"] });
+      const groups = await Groups
+        .find({ type: GroupType.Personal })
+        .populate("defaultInstructor")
+        .populate("members");
+
+      const instructors = groups.filter(g => g.defaultInstructor != null)
+        .map(g => {
+          return { id: g.defaultInstructor.id, name: g.defaultInstructor.name }
+        })
+        .filter((v, i, a) => (a.map(ai => ai.id)).indexOf(v.id) === i);
+      return res.send({ places, persons, instructors });
+    } catch (err) {
+      return res.badRequest();
     }
   },
   delete: async function (req, res) {
