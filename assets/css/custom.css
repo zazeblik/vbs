@@ -18,12 +18,12 @@
     padding-right: calc(1.5em + 0.75rem) !important;
 }
 
-.input-group .input-group-append .ui.search.selection.dropdown{
+.input-group .input-group-append .ui.search.selection.dropdown, .input-group .ui.search.selection.dropdown{
     position: relative;
     -ms-flex: 1 1 0%;
     -webkit-box-flex: 1;
     flex: 1 1 0%;
-    min-width: 200px;
+    min-width: 169px;
     margin-bottom: 0;
 }
 

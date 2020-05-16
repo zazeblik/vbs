@@ -9,6 +9,9 @@
         <b-button variant="outline-success" @click="showAddModal">
           <b-icon icon="plus-circle-fill"></b-icon>&nbsp;Добавить
         </b-button>
+        <b-button variant="outline-primary" @click="goToTrenerPersonals">
+          Расписание тренера&nbsp;<b-icon icon="arrow-right"></b-icon>
+        </b-button>
       </b-input-group-append>
     </b-input-group>
     <b-row class="mt-3">
@@ -27,12 +30,17 @@
               <b-dropdown-item @click="showEditModal(group)">Редактировать</b-dropdown-item>
               <b-dropdown-item @click="showDeleteConfirm(group)">Удалить</b-dropdown-item>
             </b-dropdown>
-            <h6 class="mb-0 pointed">{{group.name}}</h6>
+            <h6 class="mb-0 pointed" @click="showEditModal(group)">{{group.name}}</h6>
           </template>
-          <b-card-text class="px-3 pt-2 pb-1 pointed">
+          <b-card-text class="px-3 pt-2 pb-1">
             <p>Стоимость: {{group.cost}}</p>
-            <p>Участников: {{group.members.length}}</p>
-            <p>{{getScheduleView(group.schedule)}}</p>
+            {{getScheduleView(group.schedule)}}
+            <GroupPersonsManager 
+              :groupId="group.id" 
+              :members="group.members" 
+              :persons="persons"
+              :defaultInstructor="group.defaultInstructor.id"
+              @changed="fetchGroups" />
           </b-card-text>
         </b-card>
       </b-col>
@@ -44,10 +52,12 @@
 <script>
 const GroupType = require("../../../../enums").GroupType;
 import ModelModal from "../../components/ModelModal";
+import GroupPersonsManager from "../../components/GroupPersonsManager"
 import { GroupForm } from "../../shared/forms";
 export default {
   components: {
-    ModelModal
+    ModelModal,
+    GroupPersonsManager
   },
   data() {
     return {

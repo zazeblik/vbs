@@ -111,9 +111,14 @@ module.exports.GroupForm = [
 
 module.exports.EventForm = [
   {
+    label: "Группа",
     property: "group",
     type: "model",
-    hidden: true
+    models: [],
+    hidden: true,
+    validations: {
+      required: true
+    }
   },
   {
     label: "Тренер",

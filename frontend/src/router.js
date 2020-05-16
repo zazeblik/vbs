@@ -41,6 +41,10 @@ export default new Router({
                     component: () => import('./views/groups/Personals.vue')
                 },
                 {
+                    path: 'personals/:id',
+                    component: () => import('./views/groups/InstructorSchedule.vue')
+                },
+                {
                     path: 'places',
                     component: () => import('./views/places/Places.vue')
                 }

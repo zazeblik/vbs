@@ -30,6 +30,39 @@ module.exports = {
       return res.badRequest();
     }
   },
+  instructorDetail: async function (req, res){
+    if (!req.param("id")) return res.status(400).send("id не указан");
+    try {
+      const id = Number(req.param("id"));
+      const instructor = await Persons.findOne(id);
+      const persons = await Persons.find({ where: { id: { "!=": id } }, select: ["id", "name"]});
+      const places = await Places.find();
+      const groups = await Groups.find({ type: GroupType.Personal, defaultInstructor: id });
+      return res.send({ instructor, places, persons, groups });
+    } catch (error) {
+      return res.badRequest();
+    }
+  },
+  instructorScheduleEvents: async function (req, res){
+    if (!req.param("id")) return res.status(400).send("id не указан");
+    if (!req.param("year")) return res.status(400).send("year не указан");
+    if (!req.param("month")) return res.status(400).send("month не указан");
+    try {
+      const id = Number(req.param("id"));
+      const year = Number(req.param("year"));
+      const month = Number(req.param("month"));
+      const monthDateRange = GetMonthDateRange(year, month);
+      const events = await Events
+        .find({ instructor: id, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
+        .sort("startsAt ASC")
+        .populate("group")
+        .populate("visitors", {select: ["id", "name"]})
+        .populate("payments", {select: ["id", "person", "sum"]});
+      return res.send(events);
+    } catch (error) {
+      return res.badRequest();
+    }
+  },
   detail: async function (req, res){
     if (!req.param("id")) return res.status(400).send("id не указан");
     try {
