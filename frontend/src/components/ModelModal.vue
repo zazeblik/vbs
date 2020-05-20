@@ -63,6 +63,7 @@
                 show-decade-nav
                 :date-format-options="{ day: '2-digit', month: '2-digit', year: 'numeric'  }"
                 value-as-date
+                :start-weekday="1"
                 v-model="control.value"
                 :state="getValidationState(validationContext)"
               />
@@ -81,6 +82,7 @@
                   show-decade-nav
                   :date-format-options="{ day: '2-digit', month: '2-digit', year: 'numeric'  }"
                   value-as-date
+                  :start-weekday="1"
                   :ref="'date_' + control.property"
                   :value="control.date"
                   @input="date => {
@@ -166,6 +168,7 @@ export default {
           case "model":
           case "month":
           case "year":
+          case "collection":
             result[c.property] = c.value;
             break;
           case "checkbox":
@@ -198,6 +201,9 @@ export default {
             break;
           case "model":
             c.value = item[c.property].id || item[c.property];
+            break;
+          case "collection":
+            c.value = item[c.property];
             break;
           case "checkbox":
             c.value = item[c.property] || c.defaultValue || false;

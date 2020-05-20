@@ -52,12 +52,16 @@ module.exports = {
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));
       const monthDateRange = GetMonthDateRange(year, month);
-      const events = await Events
-        .find({ instructor: id, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
+      const groups = await Groups
+        .find({ type: GroupType.Personal, defaultInstructor: id })
+        .populate("members", {select: ["id", "name"]});
+      const groupIds = groups.map(g => g.id);
+      let events = await Events
+        .find({ instructor: id, group: groupIds, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
         .sort("startsAt ASC")
-        .populate("group")
         .populate("visitors", {select: ["id", "name"]})
         .populate("payments", {select: ["id", "person", "sum"]});
+      events.forEach(e => e.members = groups.find(g => g.id == e.group).members)
       return res.send(events);
     } catch (error) {
       return res.badRequest();
@@ -98,7 +102,7 @@ module.exports = {
         .populate("visitors", {select: ["id"]})
         .populate("payments", {select: ["id", "person", "sum"]});
       let fields = [{
-        key: "person", label: "Фамилия Имя"
+        key: "person", label: "Фамилия Имя", stickyColumn: true
       }]
       let rows = groupMembers.map(gm => {
         let row = {
@@ -131,7 +135,7 @@ module.exports = {
         });
         return row;
       });
-      fields.push({ key: "payments", label: "Платежи", class: "text-center" });
+      fields.push({ key: "payments", label: "Оплата", class: "text-center" });
       fields.push({ key: "visits", label: "Посещения", class: "text-center" });
       return res.send({ rows, fields });
     } catch (err) {

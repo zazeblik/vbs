@@ -17,24 +17,60 @@
       <b-form-select v-model="selectedMonth" :options="months" @change="fetchData()" />
       <b-form-select v-model="selectedYear" :options="years" @change="fetchData()" />
     </b-input-group>
-    <FullCalendar
-      ref="fullCalendar"
-      defaultView="dayGridMonth"
-      :header="{
-        left: '',
-        center: '',
-        right: ''
-      }"
-      height="auto"
-      locale="ru"
-      :firstDay="1"
-      :showNonCurrentDates="false"
-      :fixedWeekCount="false"
-      themeSystem="bootstrap"
-      :plugins="calendarPlugins"
-      :events="calendarEvents"
-      @dateClick="handleDateClick"
-    />
+    <b-table
+      :items="correctedRows"
+      :fields="scheduleFields"
+      ref="schedule"
+      class="my-2"
+      bordered
+      stacked="lg"
+      :busy="isBusy"
+      empty-text="Записей не найдено"
+      empty-filtered-text="Записей не найдено">
+      <template v-slot:cell()="row">
+        <div class="w-100">{{row.value.isShown ? row.value.date.getDate() : ""}}</div>
+        <b-card
+          v-for="event in row.value.events"
+          :key="event.id"
+          border-variant="dark"
+          header-class="p-1"
+          body-class="p-0"
+          class="mb-1" 
+          align="center"
+        >
+          <template v-slot:header>
+            <button type="button" class="check-all card-header-icon" title="Отметить всех" aria-label="checkAll" @click="checkAll(event)">
+              <span aria-hidden="true"><b-icon icon="list-check"></b-icon></span>
+            </button>
+            {{getEventStart(event)}}‒{{getEventEnd(event)}}
+            <button type="button" class="close card-header-icon" title="Удалить занятие" aria-label="Close" @click="showRemoveEventConfirm(event)">
+              <span aria-hidden="true"><b-icon icon="plus" rotate="45"></b-icon></span>
+            </button>
+          </template>
+          <b-list-group>
+            <b-list-group-item 
+              class="p-0 pl-1 text-left"
+              v-for="member in event.members"
+              :variant="getMemberPayment(member, event) ? 'success': 'danger'"
+              :key="member.id">
+              <b-checkbox 
+                v-model="member.isVisitor"
+                @change="changeVisitorState(member, event)"
+                inline>
+                {{getMemberFirstName(member)}}&nbsp;&nbsp;
+                <span class="d-none d-sm-inline-block">{{getMemberSecondName(member)}}</span>
+              </b-checkbox>
+              <b-dropdown size="sm" dropleft class="dropdown-actions" variant="link" toggle-class="text-decoration-none" no-caret>
+                  <template v-slot:button-content>
+                    <b-icon icon="three-dots-vertical"/><span class="sr-only">Actions</span>
+                  </template>
+                  <b-dropdown-item @click="showAddPaymentModal(member, event)">Оплатить занятие</b-dropdown-item>
+                </b-dropdown>
+            </b-list-group-item>
+          </b-list-group>
+        </b-card>
+      </template>
+    </b-table>
     <ModelModal
       modalId="eventModal"
       :baseUrl="eventUrl"
@@ -49,33 +85,21 @@
       ref="paymentModal"
       @formSaved="fetchData"
     />
-    <ModelModal
-      modalId="groupModal"
-      :baseUrl="groupUrl"
-      :itemForm="groupForm"
-      ref="groupModal"
-      @formSaved="fetchData"
-    />
   </b-container>
 </template>
 <script>
 const GroupType = require("../../../../enums").GroupType;
-import FullCalendar from "@fullcalendar/vue";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import timeGridPlugin from "@fullcalendar/timegrid";
-import interactionPlugin from "@fullcalendar/interaction";
 import ModelModal from "../../components/ModelModal";
 import { GroupForm, EventForm, PaymentForm } from "../../shared/forms";
 export default {
   components: {
-    ModelModal,
-    FullCalendar
+    ModelModal
   },
   data() {
     return {
+      isBusy: false,
       title: "",
       eventUrl: "/events",
-      groupUrl: "/groups",
       paymentUrl: "/payments",
       selectedYear: new Date().getFullYear(),
       years: this.getYears(),
@@ -83,7 +107,6 @@ export default {
       months: this.$moment.months().map((m, i) => {
         return { value: i, text: m };
       }),
-      groupForm: GroupForm,
       eventForm: EventForm,
       paymentForm: PaymentForm,
       instructor: null,
@@ -91,17 +114,42 @@ export default {
       persons: [],
       places: [],
       events: [],
-      defaultDuration: 60,
-      calendarPlugins: [
-        dayGridPlugin,
-        interactionPlugin
-      ],
-      calendarEvents: []
+      scheduleFields: [],
+      scheduleRows: [],
+      defaultDuration: 60
     };
   },
   async mounted() {
     await this.fetchData();
-    
+  },
+  computed: {
+    correctedRows() {
+      let result = [];
+      let appendWeek={
+        "1": { isShown: false, events: [] },
+        "2": { isShown: false, events: [] },
+        "3": { isShown: false, events: [] },
+        "4": { isShown: false, events: [] },
+        "5": { isShown: false, events: [] },
+        "6": { isShown: false, events: [] }
+      };
+      this.scheduleRows.forEach((week, index) => {
+        for (const day in week) {
+          if (day == "0"){
+            if (!result[index-1]) {
+              if (week[day].isShown) appendWeek["0"] = week[day];
+            } else {
+              result[index-1]["0"] =  week[day];
+            }
+          } else {
+            if (!result[index]) result[index] = {};
+            result[index][day] = week[day];  
+          }
+        }
+      });
+      result = appendWeek["0"] ? [appendWeek, ...result] : result;
+      return result.filter(w => this.weekContainsEvents(w));
+    }
   },
   methods: {
     async fetchData() {
@@ -109,26 +157,107 @@ export default {
       await this.fetchCalendar();
     },
     async fetchCalendar() {
-     const events = await this.$getAsync(
+      this.isBusy = true;
+      const events = await this.$getAsync(
         `/groups/instructor-schedule-events/${this.$route.params.id}`,
         { year: this.selectedYear, month: this.selectedMonth }
       );
-      this.events = events;
-      this.calendarEvents = this.toCalendarEvents(events);
-      const calendar = this.$refs.fullCalendar.getApi();
-      calendar.gotoDate(new Date(this.selectedYear, this.selectedMonth))
+      this.events = this.fillMemberVisits(events);
+      this.scheduleFields = this.getFields();
+      this.scheduleRows = this.getRows();
+      this.isBusy = false;
     },
     async fetchDetail() {
       const detail = await this.$getAsync(`/groups/instructor-detail/${this.$route.params.id}`);
       this.instructor = detail.instructor;
       this.title = this.instructor.name;
+      this.groups = detail.groups;
       this.eventForm[0].models = detail.groups;
       this.eventForm[1].models = detail.persons;
       this.eventForm[1].value = detail.instructor.id;
       this.eventForm[2].models = detail.places;
-      this.groupForm[3].models = detail.persons;
-      this.groupForm[3].value = detail.instructor.id;
-      this.groupForm[4].models = detail.places;
+    },
+    async showRemoveEventConfirm(event) {
+      try {
+        const confirm = await this.$bvModal.msgBoxConfirm(
+          `Вы уверены, что хотите удалить занятие?`,
+          {
+            cancelTitle: "Отмена",
+            cancelVariant: "outline-secondary",
+            okTitle: "Удалить",
+            okVariant: "danger"
+          }
+        );
+        if (!confirm) return;
+        await this.removeEvent(event.id);
+      } catch (error) {
+        if (error.response) {
+          this.$error(error.response.data.message || error.response.data);
+        }
+      }
+    },
+    async removeEvent(event){
+      await this.$postAsync(`/events/delete/${event}`);
+      await this.fetchCalendar();
+    },
+    async changeVisitorState(member, event){
+      const result = await this.$postAsync(
+        `/events/${member.isVisitor ? 'remove' : 'add' }-visitor/${event.id}`, 
+        { visitors: [member.id] },
+        true );
+      if (result.success)
+        return;
+      
+      member.isVisitor = !member.isVisitor;
+    },
+    async checkAll(event){
+      const allChecked = event.members.every(m => m.isVisitor);
+      const lostIds = event.members.filter(m => allChecked ? m.isVisitor : !m.isVisitor ).map(m => m.id)
+      const result = await this.$postAsync(
+        `/events/${!allChecked ? 'add' : 'remove' }-visitor/${event.id}`, 
+        { visitors: lostIds },
+        true );
+      if (result.success){
+        event.members.filter(m => lostIds.includes(m.id)).forEach(m => {
+          m.isVisitor = !allChecked;
+        });
+        return;
+      }
+    },
+    showAddPaymentModal(member, event){
+      this.paymentForm.find(f => f.property == "person").value = member.id;
+      this.paymentForm.find(f => f.property == "sum").value = this.groups.find(g => g.id == event.group).cost;
+      this.paymentForm.find(f => f.property == "description").value = 
+        `Оплата за занятие ${this.$moment(event.startsAt).format("DD.MM.YYYY HH:mm")}`;
+      this.paymentForm.find(f => f.property == "events").value = [event.id];
+      this.$refs.paymentModal.showAdd();
+    },
+    fillMemberVisits(events){
+      events.forEach(e => {
+        e.members.forEach(m => {
+          m.isVisitor = this.isEventVisitor(m, e);
+        })
+        delete e.visitors;
+      })
+      return events;
+    },
+    isEventVisitor(member, event){
+      return !!event.visitors.find(v => v.id == member.id);
+    },
+    getMemberPayment(member, event){
+      return !!event.payments.find(p => p.person == member.id);
+    },
+    getMemberFirstName(member) {
+      return member.name.split(" ")[0];
+    },
+    getMemberSecondName(member) {
+      return member.name.split(" ")[1];
+    },
+    weekContainsEvents(week){
+      for (const day in week) {
+        if (week[day].events.length) return true;
+      }
+      return false;
     },
     createEvent() {
       this.eventForm[0].hidden = false;
@@ -142,6 +271,12 @@ export default {
       this.eventForm[4].value = this.defaultDuration;
       this.$refs.eventModal.showAdd();
     },
+    getEventStart(event) {
+      return this.$moment(event.startsAt).format("HH:mm");
+    },
+    getEventEnd(event) {
+       return this.$moment(event.startsAt).add('minutes', event.duration).format("HH:mm");
+    },
     getYears() {
       const currentYear = new Date().getFullYear();
       var years = [];
@@ -150,30 +285,71 @@ export default {
       }
       return years;
     },
-    handleDateClick(arg) {
-      if (confirm("Would you like to add an event to " + arg.dateStr + " ?")) {
-        this.calendarEvents.push({
-          // add new event data
-          title: "New Event",
-          start: arg.date,
-          allDay: arg.allDay
+    getFields(){
+      let weekdays = this.$moment.weekdays();
+      let fields = [];
+      weekdays.forEach((wd, index) => {
+        fields.push({
+          label: wd,
+          key: index.toString(),
+          thClass: 'text-center p-1',
+          tdClass:'p-1',
+          class: this.events.every(e => new Date(e.startsAt).getDay() != index ) ? 'd-none' : ''
         });
-      }
+      });
+      fields.push(fields.shift());
+      return fields;
     },
-    toCalendarEvents(events){
-      return events.map(e => {
-        return {
-          title: e.group.name,
-          start: new Date(e.startsAt)
-        }
-      })
+    getRows(){
+      let month = [];
+      const weekNumbers = [...new Set(this.events.map(e => this.getWeekNumber(e.startsAt)))];
+      for (let i = 0; i < weekNumbers.length; i++) {
+        let week = {}; 
+        this.scheduleFields.map(sf => {
+          const day = sf.key; 
+          const date = this.getWeekDayDate(weekNumbers[i], day); 
+          const isShown = date.getFullYear() == this.selectedYear && date.getMonth() == this.selectedMonth;  
+          week[day] = { date, isShown, events: this.getWeekDayEvents(date) };
+        });
+        
+        month.push(week);
+      }
+      return month
+    },
+    getWeekNumber(startsAt){
+      const date = new Date(startsAt);
+      let startOfMonthDate = new Date(startsAt);
+      startOfMonthDate.setDate(1);
+      const startOfMonthDay = startOfMonthDate.getDay() - 1;
+      const weekdayNumber = Math.floor((date.getDate() + startOfMonthDay) / 7);
+      return weekdayNumber;
+    },
+    getWeekDayEvents(date){
+      const startOfDate = this.$moment([date.getFullYear(), date.getMonth(), date.getDate()]);
+      const endOfDate = this.$moment(startOfDate).endOf('day');
+      return this.events.filter(e => e.startsAt >= startOfDate.valueOf() && e.startsAt <= endOfDate.valueOf());
+    },
+    getWeekDayDate(week, day){
+      let date = new Date(this.selectedYear, this.selectedMonth);
+      const dayOffset = day - date.getDay();
+      date.setDate(date.getDate() + week * 7 + dayOffset);
+      return date;
     }
   }
 };
 </script>
 
-<style lang='scss'>
-@import "~@fullcalendar/core/main.css";
-@import "~@fullcalendar/daygrid/main.css";
-@import "~@fullcalendar/timegrid/main.css";
+<style scoped>
+table {
+  font-size: small;
+}
+.card-header-icon{
+  height: 20px;
+}
+.event-visit{
+  width: 20px;
+  height: 20px;
+  margin: 0px;
+  padding: 0px 5px;
+}
 </style>

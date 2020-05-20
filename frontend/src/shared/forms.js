@@ -37,6 +37,11 @@ module.exports.PaymentForm = [
     property: "description",
     type: "string",
     validations: {}
+  },
+  {
+    property: "events",
+    type: "collection",
+    hidden: true
   }
 ];
 

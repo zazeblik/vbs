@@ -55,7 +55,8 @@
       :items="rows"
       :fields="fields"
       hover
-      class="my-2"
+      responsive="sm"
+      class="my-2 sheet"
       :busy="isBusy"
       empty-text="Записей не найдено"
       empty-filtered-text="Записей не найдено"
@@ -376,7 +377,7 @@ export default {
 </script>
 
 <style scoped>
-table {
+.sheet {
   font-size: small;
 }
 

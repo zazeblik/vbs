@@ -53,6 +53,7 @@
     <b-table
       show-empty
       small
+      responsive="sm"
       :items="items"
       :fields="fields"
       :sort-by.sync="sortBy"
@@ -62,7 +63,7 @@
       @row-selected="onRowSelected"
       @row-dblclicked="showEditModal"
       @sort-changed="fetchTable"
-      class="my-2"
+      class="my-2 data-table"
       :busy="isBusy"
       empty-text="Записей не найдено"
       empty-filtered-text="Записей не найдено"
@@ -199,8 +200,8 @@ export default {
 </script>
 
 <style scoped>
-table {
-  font-size: small;
+.data-table {
+  font-size: small !important;
 }
 
 .select-all-checkbox{
