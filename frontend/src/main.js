@@ -41,6 +41,19 @@ Vue.prototype.$error = function (message) {
   })
 }
 
+Vue.prototype.$getScheduleView = function (value){
+  if (!value) 
+    return "";
+  const weekdays = moment.weekdaysMin();
+  let scheduleRecords = value.split(",");
+  let result = [];
+  scheduleRecords.forEach(sr => {
+    const dayIndex = Number(sr.substr(0, 1));
+    result.push(weekdays[dayIndex] + sr.substr(1, sr.length - 4));
+  });
+  return result.join(", ")
+}
+
 Vue.prototype.$modelsToOptions = function (models){
   return models.map(m => {
     return {
@@ -48,7 +61,7 @@ Vue.prototype.$modelsToOptions = function (models){
       text: m.name || m.label || m.id
     }
   })
-},
+}
 
 Vue.prototype.$getAsync = async function (url, query) {
   try {

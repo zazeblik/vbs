@@ -4,9 +4,7 @@ module.exports = {
           await Places.update(req.param("id"), req.body)
           return res.ok();
         } catch (err) {
-          return res
-            .status(400)
-            .send(err);
+          return res.badRequest();
         }
       },
       create: async function (req, res){
@@ -14,9 +12,7 @@ module.exports = {
           await Places.create(req.body)
           return res.ok();
         } catch (err) {
-          return res
-            .status(400)
-            .send(err);
+          return res.badRequest();
         }
       },
       delete: async function (req, res) {
@@ -28,9 +24,7 @@ module.exports = {
           await Places.destroy(req.body)
           return res.ok();
         } catch (err) {
-          return res
-            .status(400)
-            .send(err);
+          return res.badRequest();
         }
       },
       list: async function (req, res) {
@@ -59,9 +53,7 @@ module.exports = {
             data: data
           })
         } catch (err) {
-          return res
-            .status(400)
-            .send(err);
+          return res.badRequest();
         }
     }
 };

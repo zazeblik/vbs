@@ -59,7 +59,7 @@ export default {
         return;
       Vue.prototype.$user = user;
       Vue.prototype.$isAuthenticated = true;
-      this.$router.push({name: 'groups'});
+      this.$router.push({name: 'generals'});
     }
   }
 }

@@ -24,29 +24,41 @@ export default new Router({
             component: () => import('./views/ControlPanel.vue'),
             children: [
                 {
-                    path: 'persons',
-                    component: () => import('./views/persons/Persons.vue')
+                    name: 'generals',
+                    path: 'generals',
+                    component: () => import('./views/journals/Generals.vue')
                 },
                 {
-                    name: 'groups',
-                    path: 'groups',
-                    component: () => import('./views/groups/Groups.vue')
-                },
-                {
-                    path: 'groups/:id',
-                    component: () => import('./views/groups/GroupsDetail.vue'),
+                    path: 'generals/:id',
+                    component: () => import('./views/journals/GeneralsDetail.vue'),
                 },
                 {
                     path: 'personals',
-                    component: () => import('./views/groups/Personals.vue')
+                    component: () => import('./views/journals/Personals.vue')
                 },
                 {
                     path: 'personals/:id',
-                    component: () => import('./views/groups/InstructorSchedule.vue')
+                    component: () => import('./views/journals/InstructorSchedule.vue')
+                },
+                {
+                    path: 'persons',
+                    component: () => import('./views/database/Persons.vue')
+                },
+                {
+                    path: 'groups',
+                    component: () => import('./views/database/Groups.vue')
                 },
                 {
                     path: 'places',
-                    component: () => import('./views/places/Places.vue')
+                    component: () => import('./views/database/Places.vue')
+                },
+                {
+                    path: 'archive',
+                    component: () => import('./views/database/ArchivePersons.vue')
+                },
+                {
+                    path: 'payments',
+                    component: () => import('./views/payments/Payments.vue')
                 }
             ]
         }

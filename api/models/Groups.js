@@ -31,11 +31,6 @@ module.exports = {
       min: 0,
       required: true
     },
-    onceCost: {
-      type: 'number',
-      min: 0,
-      required: true
-    },
     schedule: {
       type: 'string',
       allowNull: true
@@ -49,5 +44,14 @@ module.exports = {
       defaultsTo: false
     },
   },
+  beforeDestroy: async function(value, next){
+    try {
+      await ArchivePersons.destroy({group: value.id});
+      await Events.destroy({group: value.id});  
+      next();
+    } catch (error) {
+      next();  
+    }
+  }
 };
 

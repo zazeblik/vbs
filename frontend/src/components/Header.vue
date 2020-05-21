@@ -7,12 +7,17 @@
 
       <b-collapse id="nav-collapse" is-nav>
         <b-navbar-nav v-if="isControlPanelShown">
-          <b-nav-item to="/cp/persons">Участники</b-nav-item>
+          <b-nav-item-dropdown text="База данных">
+            <b-dropdown-item to="/cp/persons">Участники</b-dropdown-item>
+            <b-dropdown-item to="/cp/groups">Группы</b-dropdown-item>
+            <b-dropdown-item to="/cp/places">Залы</b-dropdown-item>
+            <b-dropdown-item to="/cp/archive">Архив</b-dropdown-item>
+          </b-nav-item-dropdown>
           <b-nav-item-dropdown text="Журналы">
-            <b-dropdown-item to="/cp/groups">Общие</b-dropdown-item>
+            <b-dropdown-item to="/cp/generals">Общие</b-dropdown-item>
             <b-dropdown-item to="/cp/personals">Индивидуальные</b-dropdown-item>
           </b-nav-item-dropdown>
-          <b-nav-item to="/cp/places">Залы</b-nav-item>
+          <b-nav-item to="/cp/payments">Платежи</b-nav-item>
         </b-navbar-nav>
 
         <!-- Right aligned nav items -->

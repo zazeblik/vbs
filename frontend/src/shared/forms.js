@@ -1,3 +1,22 @@
+module.exports.ArchivePersonForm = [
+  {
+    label: "Участник",
+    property: "person",
+    type: "model",
+    validations: {
+      required: true
+    }
+  },
+  {
+    label: "Группа",
+    property: "group",
+    type: "model",
+    validations: {
+      required: true
+    }
+  }
+];
+
 module.exports.PaymentForm = [
   {
     property: "person",
@@ -64,15 +83,6 @@ module.exports.GroupForm = [
     }
   },
   {
-    label: "Разовое занятие",
-    property: "onceCost",
-    type: "number",
-    validations: {
-      min: 0,
-      required: true
-    }
-  },
-  {
     label: "Тренер",
     property: "defaultInstructor",
     type: "model",
@@ -101,6 +111,7 @@ module.exports.GroupForm = [
     }
   },
   {
+    label: "Тип",
     property: "type",
     type: "number",
     hidden: true,
@@ -111,7 +122,14 @@ module.exports.GroupForm = [
     property: "schedule",
     type: "schedule",
     validations: {}
-  }
+  },
+  {
+    label: "Скрыть",
+    property: "hidden",
+    type: "checkbox",
+    hidden: true,
+    validations: {}
+  },
 ];
 
 module.exports.EventForm = [

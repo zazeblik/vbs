@@ -5,9 +5,7 @@ module.exports = {
       await Persons.update(req.param("id"), req.body)
       return res.ok();
     } catch (err) {
-      return res
-        .status(400)
-        .send(err);
+      return res.badRequest();
     }
   },
   create: async function (req, res){
@@ -16,23 +14,17 @@ module.exports = {
       await Persons.create(req.body)
       return res.ok();
     } catch (err) {
-      return res
-        .status(400)
-        .send(err);
+      return res.badRequest();
     }
   },
   delete: async function (req, res) {
     try {
       if (!req.param("id"))
-        return res
-          .status(400)
-          .send(err);
+        return res.badRequest();
       await Persons.destroy(req.body)
       return res.ok();
     } catch (err) {
-      return res
-        .status(400)
-        .send(err);
+      return res.badRequest();
     }
   },
   list: async function (req, res) {
@@ -61,9 +53,7 @@ module.exports = {
         data: data
       })
     } catch (err) {
-      return res
-        .status(400)
-        .send(err);
+      return res.badRequest();
     }
   }
 };

@@ -60,5 +60,14 @@ module.exports = {
       allowNull: true
     }
   },
+  beforeDestroy: async function(value, next){
+    try {
+      await ArchivePersons.destroy({person: value.id});
+      await Payments.destroy({person: value.id});  
+      next();
+    } catch (error) {
+      next();  
+    }
+  }
 };
 

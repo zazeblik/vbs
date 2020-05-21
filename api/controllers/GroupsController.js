@@ -4,6 +4,15 @@ const moment = require('moment');
 const GetMonthDateRange =  require('../utils/DateRangeHelper').GetMonthDateRange;
 
 module.exports = {
+  settings: async function (req, res){
+    try {
+      const persons = await Persons.find();
+      const places = await Places.find();
+      return res.send({ persons, places });
+    } catch (error) {
+      return res.badRequest();
+    }
+  },
   addPerson: async function (req, res) {
     if (!req.param("id")) return res.status(400).send("id не указан");
     if (!req.param("person")) return res.status(400).send("person не указан");
@@ -37,7 +46,7 @@ module.exports = {
       const instructor = await Persons.findOne(id);
       const persons = await Persons.find({ where: { id: { "!=": id } }, select: ["id", "name"]});
       const places = await Places.find();
-      const groups = await Groups.find({ type: GroupType.Personal, defaultInstructor: id });
+      const groups = await Groups.find({ type: GroupType.Personal, defaultInstructor: id, hidden: false });
       return res.send({ instructor, places, persons, groups });
     } catch (error) {
       return res.badRequest();
@@ -52,16 +61,23 @@ module.exports = {
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));
       const monthDateRange = GetMonthDateRange(year, month);
+      
       const groups = await Groups
-        .find({ type: GroupType.Personal, defaultInstructor: id })
+        .find({ type: GroupType.Personal, defaultInstructor: id, hidden: false })
         .populate("members", {select: ["id", "name"]});
+      const archivePersons = await ArchivePersons.find({ group: groups.map(g => g.id) });
       const groupIds = groups.map(g => g.id);
       let events = await Events
         .find({ instructor: id, group: groupIds, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
         .sort("startsAt ASC")
         .populate("visitors", {select: ["id", "name"]})
         .populate("payments", {select: ["id", "person", "sum"]});
-      events.forEach(e => e.members = groups.find(g => g.id == e.group).members)
+      events.forEach(e => {
+        e.members = groups
+          .find(g => g.id == e.group)
+          .members
+          .filter(m => archivePersons.filter(ap => ap.group == e.group && ap.person == m.id).length == 0);
+      })
       return res.send(events);
     } catch (error) {
       return res.badRequest();
@@ -102,7 +118,7 @@ module.exports = {
         .populate("visitors", {select: ["id"]})
         .populate("payments", {select: ["id", "person", "sum"]});
       let fields = [{
-        key: "person", label: "Фамилия Имя", stickyColumn: true
+        key: "person", label: "Фамилия Имя"
       }]
       let rows = groupMembers.map(gm => {
         let row = {
@@ -147,7 +163,7 @@ module.exports = {
       const places = await Places.find({ select: ["id", "name"] });
       const persons = await Persons.find({ select: ["id", "name"] });
       const groups = await Groups
-        .find({ type: GroupType.General })
+        .find({ type: GroupType.General, hidden: false })
         .populate("defaultInstructor")
         .populate("members");
 
@@ -166,17 +182,45 @@ module.exports = {
       const places = await Places.find({ select: ["id", "name"] });
       const persons = await Persons.find({ select: ["id", "name"] });
       const groups = await Groups
-        .find({ type: GroupType.Personal })
-        .populate("defaultInstructor")
-        .populate("members");
-
+        .find({ type: GroupType.Personal, hidden: false })
+        .populate("defaultInstructor");
       const instructors = groups.filter(g => g.defaultInstructor != null)
         .map(g => {
           return { id: g.defaultInstructor.id, name: g.defaultInstructor.name }
         })
         .filter((v, i, a) => (a.map(ai => ai.id)).indexOf(v.id) === i);
+      
       return res.send({ places, persons, instructors });
     } catch (err) {
+      return res.badRequest();
+    }
+  },
+  instructorGroups: async function (req, res){
+    try {
+      if (!req.param("id")) return res.status(400).send("id не указан");
+      if (!req.param("type")) return res.status(400).send("type не указан");
+      const id = Number(req.param("id"));
+      const type = Number(req.param("type"));
+      let groups = await Groups
+        .find({
+          where: { 
+            type: type,
+            defaultInstructor: id,
+            hidden: false
+          },
+          sort: "updatedAt DESC"
+        })
+        .populate("defaultInstructor")
+        .populate("defaultPlace")
+        .populate("members", {
+          sort: "name ASC"
+        });
+      const archivePersons = await ArchivePersons.find({ group: groups.map(g => g.id) }); 
+      groups.forEach(g => {
+        g.members = g.members.filter(m => archivePersons.filter(ap => ap.group == g.id && ap.person == m.id).length == 0)
+      })
+      return res.send(groups);
+    } catch (error) {
       return res.badRequest();
     }
   },
@@ -206,5 +250,37 @@ module.exports = {
       return res.badRequest();
     }
   },
+  list: async function (req, res) {
+    try {
+      const sort = req.query.sort || "updatedAt DESC";
+      const perPage = Number(req.query.perPage) || 10;
+      let currentPage = Number(req.query.page) || 1;
+      let query = {
+        where: {
+          name: { "contains": req.query.search || "" }
+        }
+      };
+      const total = await Groups.count(query);
+      const skip = (currentPage - 1) * perPage;
+      query.skip = skip > total ? 0 : skip;
+      currentPage = skip > total ? 1 : currentPage;
+      let totalPages = Math.ceil(total / perPage);
+      query.limit = perPage;
+      query.sort = sort;
+      const data = await Groups.find(query)
+        .populate("defaultInstructor")
+        .populate("defaultPlace")
+        .populate("updater");
+      return res.send({
+        total: total,
+        totalPages: totalPages,
+        perPage: perPage,
+        page: currentPage,
+        data: data
+      })
+    } catch (err) {
+      return res.badRequest();
+    }
+  }
 };
 

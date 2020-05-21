@@ -150,6 +150,12 @@ export default {
           if (field.type == "checkbox"){
             value = value ? "есть" : "нет";
           }
+          if (field.type == "model"){
+            value = value ? (value.name || value.id) : "";
+          }
+          if (field.type == "schedule"){
+            value = this.$getScheduleView(value);
+          }
           obj[key] = value;
           return obj;
         }, {});

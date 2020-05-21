@@ -189,7 +189,7 @@ export default {
     },
     showEdit(item, index, button) {
       this.isEdit = true;
-      this.title = `Редактирование: ${item.name || item.id}`;
+      this.title = `Редактирование: ${item.name || ""}`;
       this.id = item.id;
       this.itemForm.forEach(c => {
         switch (c.type) {
