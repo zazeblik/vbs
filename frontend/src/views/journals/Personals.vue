@@ -86,6 +86,7 @@ export default {
       this.itemForm.find(f => f.property == "defaultInstructor").models = this.persons;
       this.itemForm.find(f => f.property == "defaultPlace").models = this.places;
       this.itemForm.find(f => f.property == "hidden").hidden = true;
+      this.itemForm.find(f => f.property == "type").hidden = true;
       if (this.selectedInstructor)
         return;
 

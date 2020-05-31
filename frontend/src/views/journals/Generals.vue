@@ -77,6 +77,7 @@ export default {
       this.itemForm.find(f => f.property == "defaultInstructor").models = this.persons;
       this.itemForm.find(f => f.property == "defaultPlace").models = this.places;
       this.itemForm.find(f => f.property == "hidden").hidden = true;
+      this.itemForm.find(f => f.property == "type").hidden = true;
       if (this.selectedInstructor)
         return;
 
@@ -88,7 +89,7 @@ export default {
       });
     },
     async selectedInstructorChanged(){
-      this.itemForm[1].value = this.selectedInstructor;
+      this.itemForm.find(f => f.property == "defaultInstructor").value = this.selectedInstructor;
       await this.fetchData();
     },
     showAddModal() {

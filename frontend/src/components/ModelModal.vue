@@ -245,8 +245,10 @@ export default {
           case "color":
           case "schedule":
           case "model":
-          case "enum":
             c.value = c.value || null;
+            break;
+          case "enum":
+            c.value = c.value;
             break;
           case "collection":
             c.value = c.value || [];
