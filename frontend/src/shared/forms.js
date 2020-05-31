@@ -1,3 +1,4 @@
+const GroupType = require("../../../enums").GroupType;
 module.exports.ArchivePersonForm = [
   {
     label: "Участник",
@@ -113,7 +114,11 @@ module.exports.GroupForm = [
   {
     label: "Тип",
     property: "type",
-    type: "number",
+    type: "enum",
+    options: [
+      { text: "общая", value: GroupType.General },
+      { text: "индивидуальная", value: GroupType.Personal }
+    ],
     hidden: true,
     validations: {}
   },

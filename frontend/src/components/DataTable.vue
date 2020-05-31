@@ -153,6 +153,9 @@ export default {
           if (field.type == "model"){
             value = value ? (value.name || value.id) : "";
           }
+          if (field.type == "enum"){
+            value = value ? (field.options.find(o => o.value == value).text) : "";
+          }
           if (field.type == "schedule"){
             value = this.$getScheduleView(value);
           }

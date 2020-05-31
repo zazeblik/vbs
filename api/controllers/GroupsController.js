@@ -44,7 +44,7 @@ module.exports = {
     try {
       const id = Number(req.param("id"));
       const instructor = await Persons.findOne(id);
-      const persons = await Persons.find({ where: { id: { "!=": id } }, select: ["id", "name"]});
+      const persons = await Persons.find({select: ["id", "name"]});
       const places = await Places.find();
       const groups = await Groups.find({ type: GroupType.Personal, defaultInstructor: id, hidden: false });
       return res.send({ instructor, places, persons, groups });
@@ -63,7 +63,7 @@ module.exports = {
       const monthDateRange = GetMonthDateRange(year, month);
       
       const groups = await Groups
-        .find({ type: GroupType.Personal, defaultInstructor: id, hidden: false })
+        .find({ type: GroupType.Personal, hidden: false })
         .populate("members", {select: ["id", "name"]});
       const archivePersons = await ArchivePersons.find({ group: groups.map(g => g.id) });
       const groupIds = groups.map(g => g.id);
@@ -146,7 +146,8 @@ module.exports = {
             key: e.id.toString(),
             label: moment(e.startsAt).format("DD"),
             class: "text-center",
-            eventId: e.id
+            eventId: e.id,
+            event: e
           });
         });
         return row;
@@ -162,16 +163,25 @@ module.exports = {
     try {
       const places = await Places.find({ select: ["id", "name"] });
       const persons = await Persons.find({ select: ["id", "name"] });
-      const groups = await Groups
-        .find({ type: GroupType.General, hidden: false })
-        .populate("defaultInstructor")
-        .populate("members");
-
-      const instructors = groups.filter(g => g.defaultInstructor != null)
-        .map(g => {
-          return { id: g.defaultInstructor.id, name: g.defaultInstructor.name }
-        })
-        .filter((v, i, a) => (a.map(ai => ai.id)).indexOf(v.id) === i);
+      const groups = await Groups.find({ 
+        where: { 
+          type: GroupType.General, 
+          hidden: false 
+        }, 
+        select: ["defaultInstructor"]
+      });
+      const instructorIdsRaw = await Events
+        .getDatastore()
+        .sendNativeQuery(`select distinct instructor from vbs.events as e 
+                        where e.group in (select id from vbs.groups where type=${GroupType.General})`);
+      const instructorIds = instructorIdsRaw.rows.map(r => r.instructor);
+      const defaultInstructorIds = [...new Set(groups.map(g => g.defaultInstructor))];
+      const instructors = persons.filter(p => instructorIds.includes(p.id));
+      defaultInstructorIds.forEach(id => {
+        if (!instructorIds.includes(id)){
+          instructors.push(persons.find(p => p.id == id));
+        }
+      });
       return res.send({ places, persons, instructors });
     } catch (err) {
       return res.badRequest();
@@ -182,14 +192,19 @@ module.exports = {
       const places = await Places.find({ select: ["id", "name"] });
       const persons = await Persons.find({ select: ["id", "name"] });
       const groups = await Groups
-        .find({ type: GroupType.Personal, hidden: false })
-        .populate("defaultInstructor");
-      const instructors = groups.filter(g => g.defaultInstructor != null)
-        .map(g => {
-          return { id: g.defaultInstructor.id, name: g.defaultInstructor.name }
-        })
-        .filter((v, i, a) => (a.map(ai => ai.id)).indexOf(v.id) === i);
-      
+        .find({ type: GroupType.Personal, hidden: false });
+      const instructorIdsRaw = await Events
+        .getDatastore()
+        .sendNativeQuery(`select distinct instructor from vbs.events as e 
+                        where e.group in (select id from vbs.groups where type=${GroupType.Personal})`);
+      const instructorIds = instructorIdsRaw.rows.map(r => r.instructor);
+      const defaultInstructorIds = [...new Set(groups.map(g => g.defaultInstructor))];
+      const instructors = persons.filter(p => instructorIds.includes(p.id));
+      defaultInstructorIds.forEach(id => {
+        if (!instructorIds.includes(id)){
+          instructors.push(persons.find(p => p.id == id));
+        }
+      });
       return res.send({ places, persons, instructors });
     } catch (err) {
       return res.badRequest();

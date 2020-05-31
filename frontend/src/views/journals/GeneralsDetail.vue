@@ -78,9 +78,19 @@
           <span aria-hidden="true"><b-icon icon="list-check"></b-icon></span>
         </button>
         {{ data.label }}
-        <button type="button" class="close" title="Удалить занятие" aria-label="Close" @click="showRemoveEventConfirm(data.field)">
-          <span aria-hidden="true"><b-icon icon="plus" rotate="45"></b-icon></span>
-        </button>
+        <b-dropdown
+          size="sm" 
+          dropleft 
+          class="dropdown-actions" 
+          variant="link" 
+          toggle-class="text-decoration-none" 
+          no-caret>
+          <template v-slot:button-content>
+            <b-icon icon="three-dots-vertical"/><span class="sr-only">Actions</span>
+          </template>
+          <b-dropdown-item @click="showEditEventModal(data.field)">Редактировать</b-dropdown-item>
+          <b-dropdown-item @click="showRemoveEventConfirm(data.field)">Удалить</b-dropdown-item>
+        </b-dropdown>
       </template>
 
       <template v-slot:cell(person)="data">
@@ -179,13 +189,13 @@ export default {
       this.eventForm.find(f => f.property == "group").value = this.$route.params.id;
       this.eventForm.find(f => f.property == "instructor").value = this.defaultInstructor;
       this.eventForm.find(f => f.property == "place").value = this.defaultPlace;
-      let defaultStartsAt = new Date();
-      defaultStartsAt.setHours(17, 0, 0, 0);
-      this.eventForm.find(f => f.property == "startsAt").date = defaultStartsAt;
-      this.eventForm.find(f => f.property == "startsAt").time = "17:00";
-      this.eventForm.find(f => f.property == "startsAt").value = defaultStartsAt;
       this.eventForm.find(f => f.property == "duration").value = this.defaultDuration;
       this.$refs.eventModal.showAdd();
+    },
+    showEditEventModal(field) {
+      this.eventForm.find(f => f.property == "group").hidden = true;
+      this.eventForm.find(f => f.property == "instructor").hidden = false;
+      this.$refs.eventModal.showEdit(field.event);
     },
     showAddPaymentModal(person){
       this.paymentForm.find(f => f.property == "person").value = person.id;

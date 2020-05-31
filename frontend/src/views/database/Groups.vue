@@ -20,6 +20,15 @@ export default {
           sortable: true
         },
         {
+          key: "type",
+          label: "Тип",
+          sortable: true,
+          formatter: (value, key, item) => {
+            const field = GroupForm.find(f => f.property == "type");
+            return field.options.find(o => o.value == value).text;
+          }
+        },
+        {
           key: "updater",
           label: "Обновил",
           formatter: (value, key, item) => {
@@ -43,6 +52,7 @@ export default {
       this.itemForm.find(f => f.property == "defaultInstructor").models = settings.persons;
       this.itemForm.find(f => f.property == "defaultPlace").models = settings.places;
       this.itemForm.find(f => f.property == "hidden").hidden = false;
+      this.itemForm.find(f => f.property == "type").hidden = false;
     },
   }
 };

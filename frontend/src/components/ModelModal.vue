@@ -43,6 +43,13 @@
                 v-model="control.value"
                 :state="getValidationState(validationContext)"
               />
+              <b-select
+                v-if="control.type == 'enum'"
+                size="sm"
+                :options="control.options"
+                v-model="control.value"
+                :state="getValidationState(validationContext)"
+              />
               <b-form-checkbox
                 v-else-if="control.type == 'checkbox'"
                 size="lg"
@@ -141,6 +148,7 @@
 <script>
 import { ModelSelect } from 'vue-search-select'
 import FormSchedule from '../components/FormSchedule'
+
 export default {
   components: {
     ModelSelect,
@@ -169,6 +177,7 @@ export default {
           case "month":
           case "year":
           case "collection":
+          case "enum":
             result[c.property] = c.value;
             break;
           case "checkbox":
@@ -191,6 +200,7 @@ export default {
       this.isEdit = true;
       this.title = `Редактирование: ${item.name || ""}`;
       this.id = item.id;
+      
       this.itemForm.forEach(c => {
         switch (c.type) {
           case "string":
@@ -203,6 +213,7 @@ export default {
             c.value = item[c.property].id || item[c.property];
             break;
           case "collection":
+          case "enum":
             c.value = item[c.property];
             break;
           case "checkbox":
@@ -210,17 +221,56 @@ export default {
             break;
           case "date":
             c.value = item[c.property] ? new Date(item[c.property]) : null;
+          case "datetime":
+            c = this.setDateTimeValues(c, new Date(item[c.property]));
             break;
           default:
             break;
         }
       });
+      
       this.$root.$emit("bv::show::modal", this.modalId, button);
     },
     showAdd() {
       this.isEdit = false;
       this.title = 'Добавление';
+      this.setDefaultValues();
       this.$root.$emit("bv::show::modal", this.modalId);
+    },
+    setDefaultValues(){
+      this.itemForm.forEach(c => {
+        switch (c.type) {
+          case "string":
+          case "number":
+          case "color":
+          case "schedule":
+          case "model":
+          case "enum":
+            c.value = c.value || null;
+            break;
+          case "collection":
+            c.value = c.value || [];
+            break;
+          case "checkbox":
+            c.value = c.value || false;
+            break;
+          case "date":
+            c.value = c.value || new Date();
+          case "datetime":
+            let defaultDate = new Date();
+            defaultDate.setHours(17, 0, 0, 0);
+            c = this.setDateTimeValues(c, c.value || defaultDate);
+            break;
+          default:
+            break;
+        }
+      });
+    },
+    setDateTimeValues(field, value){
+      field.value = value;
+      field.date = value;
+      field.time = this.$moment(value).format("HH:mm");
+      return field;
     },
     async saveChanges() {
       const formValues = this.getFormValues();

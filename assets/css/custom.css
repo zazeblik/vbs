@@ -1,9 +1,15 @@
-.ui.search.selection.dropdown, .ui.search.selection.dropdown i, .ui.search.selection.dropdown input{
+.ui.search.selection.dropdown, .ui.search.selection.dropdown i, .ui.search.selection.dropdown input {
     height: calc(1.5em + 0.5rem + 2px);
     padding: 0.25rem 0.5rem !important;
     font-size: 0.875rem !important;
     line-height: 1.5 !important;
     border-radius: 0.2rem !important;
+}
+
+.ui.search.selection.dropdown .text {
+    max-height: calc(1.5em);
+    width: inherit;
+    overflow: hidden;
 }
 
 .ui.search.selection.dropdown[state="true"] {

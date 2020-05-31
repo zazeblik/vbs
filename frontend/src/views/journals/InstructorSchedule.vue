@@ -43,9 +43,19 @@
               <span aria-hidden="true"><b-icon icon="list-check"></b-icon></span>
             </button>
             {{getEventStart(event)}}‒{{getEventEnd(event)}}
-            <button type="button" class="close card-header-icon" title="Удалить занятие" aria-label="Close" @click="showRemoveEventConfirm(event)">
-              <span aria-hidden="true"><b-icon icon="plus" rotate="45"></b-icon></span>
-            </button>
+            <b-dropdown
+              size="sm" 
+              dropleft 
+              class="dropdown-actions" 
+              variant="link" 
+              toggle-class="text-decoration-none" 
+              no-caret>
+              <template v-slot:button-content>
+                <b-icon icon="three-dots-vertical"/><span class="sr-only">Actions</span>
+              </template>
+              <b-dropdown-item @click="showEditEventModal(event)">Редактировать</b-dropdown-item>
+              <b-dropdown-item @click="showRemoveEventConfirm(event)">Удалить</b-dropdown-item>
+            </b-dropdown>
           </template>
           <b-list-group>
             <b-list-group-item 
@@ -60,19 +70,6 @@
                 {{getMemberFirstName(member)}}&nbsp;&nbsp;
                 <span class="d-none d-sm-inline-block">{{getMemberSecondName(member)}}</span>
               </b-checkbox>
-              <b-dropdown 
-                v-if="!getMemberPayment(member, event)" 
-                size="sm" 
-                dropleft 
-                class="dropdown-actions" 
-                variant="link" 
-                toggle-class="text-decoration-none" 
-                no-caret>
-                  <template v-slot:button-content>
-                    <b-icon icon="three-dots-vertical"/><span class="sr-only">Actions</span>
-                  </template>
-                  <b-dropdown-item @click="showAddPaymentModal(member, event)">Оплатить занятие</b-dropdown-item>
-                </b-dropdown>
             </b-list-group-item>
           </b-list-group>
         </b-card>
@@ -85,19 +82,12 @@
       ref="eventModal"
       @formSaved="fetchData"
     />
-    <ModelModal
-      modalId="paymentModal"
-      :baseUrl="paymentUrl"
-      :itemForm="paymentForm"
-      ref="paymentModal"
-      @formSaved="fetchData"
-    />
   </b-container>
 </template>
 <script>
 const GroupType = require("../../../../enums").GroupType;
 import ModelModal from "../../components/ModelModal";
-import { GroupForm, EventForm, PaymentForm } from "../../shared/forms";
+import { GroupForm, EventForm } from "../../shared/forms";
 export default {
   components: {
     ModelModal
@@ -115,7 +105,6 @@ export default {
         return { value: i, text: m };
       }),
       eventForm: EventForm,
-      paymentForm: PaymentForm,
       instructor: null,
       groups: [],
       persons: [],
@@ -155,7 +144,15 @@ export default {
         }
       });
       result = appendWeek["0"] ? [appendWeek, ...result] : result;
-      return result.filter(w => this.weekContainsEvents(w));
+      result = result.filter(w => this.weekContainsEvents(w));
+      result.forEach((w, index) => {
+        if (!result[index]["0"]) {
+          let sundayDate = new Date(result[index]["6"].date);
+          sundayDate.setDate(sundayDate.getDate() + 1);
+          result[index]["0"] = { isShown: true, date: sundayDate, events: [] };
+        }
+      })
+      return result;
     }
   },
   methods: {
@@ -231,14 +228,6 @@ export default {
         return;
       }
     },
-    showAddPaymentModal(member, event){
-      this.paymentForm.find(f => f.property == "person").value = member.id;
-      this.paymentForm.find(f => f.property == "sum").value = this.groups.find(g => g.id == event.group).cost;
-      this.paymentForm.find(f => f.property == "description").value = 
-        `Оплата за занятие ${this.$moment(event.startsAt).format("DD.MM.YYYY HH:mm")}`;
-      this.paymentForm.find(f => f.property == "events").value = [event.id];
-      this.$refs.paymentModal.showAdd();
-    },
     fillMemberVisits(events){
       events.forEach(e => {
         e.members.forEach(m => {
@@ -267,16 +256,16 @@ export default {
       return false;
     },
     createEvent() {
-      this.eventForm[0].hidden = false;
-      this.eventForm[1].value = this.$route.params.id;
-      this.eventForm[1].hidden = true;
-      let defaultStartsAt = new Date();
-      defaultStartsAt.setHours(17, 0, 0, 0);
-      this.eventForm[3].date = defaultStartsAt;
-      this.eventForm[3].time = "17:00";
-      this.eventForm[3].value = defaultStartsAt;
-      this.eventForm[4].value = this.defaultDuration;
+      this.eventForm.find(f => f.property == "group").hidden = false;
+      this.eventForm.find(f => f.property == "instructor").value = this.$route.params.id;
+      this.eventForm.find(f => f.property == "instructor").hidden = true;
+      this.eventForm.find(f => f.property == "duration").value = this.defaultDuration;
       this.$refs.eventModal.showAdd();
+    },
+    showEditEventModal(event) {
+      this.eventForm.find(f => f.property == "group").hidden = true;
+      this.eventForm.find(f => f.property == "instructor").hidden = false;
+      this.$refs.eventModal.showEdit(event);
     },
     getEventStart(event) {
       return this.$moment(event.startsAt).format("HH:mm");
