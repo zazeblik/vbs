@@ -21,7 +21,7 @@ module.exports = {
     try {
       if (!req.param("id"))
         return res.badRequest();
-      await Persons.destroy(req.body)
+      await Persons.destroy(req.body).fetch();
       return res.ok();
     } catch (err) {
       return res.badRequest();

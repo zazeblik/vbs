@@ -1,4 +1,5 @@
 const GetMonthDateRange =  require('../utils/DateRangeHelper').GetMonthDateRange;
+const GroupType = require('../../enums').GroupType;
 
 module.exports = {
   attributes: {
@@ -13,7 +14,8 @@ module.exports = {
       via: 'payments'
     },
     group: {
-      model: 'groups'
+      model: 'groups',
+      required: true
     },
     sum: {
       type: 'number',
@@ -34,18 +36,106 @@ module.exports = {
     },
   },
   beforeCreate: async function (value, next) {
-    if (!value.events.length && value.group && value.month !== null && value.year){
-      try {
+    try {
+      const group = await Groups.findOne(value.group).populate("members");
+      if (group.type == GroupType.General){
+        if (value.month === null || value.year === null){
+          throw new Error("Платёж в общей группе должен содержать месяц и год. person:"+value.person)
+        }
+        const alreadyExistsPayment = await Payments.findOne({ 
+          group: value.group, 
+          month: value.month,
+          year: value.year,
+          person: value.person
+        });
+        if (alreadyExistsPayment != null) {
+          throw new Error("Месяц уже оплачен. person:"+value.person)
+        }
         const monthDateRange = GetMonthDateRange(value.year, value.month);
         const events = await Events
-          .find({ group: value.group, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
+          .find({ 
+            group: value.group, 
+            startsAt: { 
+              ">=": monthDateRange.start.valueOf(), 
+              "<=": monthDateRange.end.valueOf() 
+            } 
+          })
           .sort("startsAt ASC");
         value.events = events.map(e => e.id);
-      } catch (error) {
-        return next();
       }
+      const person = await Persons.findOne(value.person);
+      await Persons.updateOne({ id: person.id }).set({ balance: person.balance - value.sum })
+      return next();
+    } catch (error) {
+      return next(JSON.stringify([ error ]));
     }
-    return next();
+  },
+  beforeUpdate: async function (value, next) {
+    try {
+      const id = value.id;
+      const actualPayment = await Payments.findOne(id);
+      if (value.sum){
+        const person = await Persons.findOne(actualPayment.person);
+        const delta = actualPayment.sum - value.sum;
+        await Persons.updateOne({ id: person.id }).set({ balance: person.balance + delta })
+      }
+      if (value.person != null && actualPayment.person != value.person) {
+        throw new Error("В платеже не должен меняться участник");
+      }
+      if (value.group) {
+        if (actualPayment.group != value.group) {
+          throw new Error("В платеже не должна меняться группа");
+        }
+        const group = await Groups.findOne(value.group);
+        const actualMonth = actualPayment.month;
+        const actualYear = actualPayment.year;
+        const newMonth = value.month != null ? value.month : actualMonth;
+        const newYear = value.year ? value.year : actualYear;
+        const monthChanged = (value.month != null || value.year != null) 
+          && (actualMonth != newMonth || actualYear != newYear);
+        if (group.type == GroupType.General && monthChanged){
+          const alreadyExistsPayment = await Payments.findOne({ 
+            group: value.group, 
+            month: newMonth,
+            year: newYear,
+            person: actualPayment.person
+          });
+          if (alreadyExistsPayment != null) {
+            throw new Error("Месяц уже оплачен. person:"+value.person)
+          }
+          const actualDateRange = GetMonthDateRange(actualYear, actualMonth);
+          const newDateRange = GetMonthDateRange(newYear, newMonth);
+          const eventsToRemove = await Events.find({ 
+            group: actualPayment.group, 
+            startsAt: { 
+              ">=": actualDateRange.start.valueOf(), 
+              "<=": actualDateRange.end.valueOf() 
+            }
+          });
+          const eventsToAdd = await Events.find({ 
+            group: value.group,
+            startsAt: { 
+              ">=": newDateRange.start.valueOf(), 
+              "<=": newDateRange.end.valueOf() 
+            }
+          })
+          await Payments.removeFromCollection(id, "events").members(eventsToRemove.map(p => p.id));
+          await Payments.addToCollection(id, "events").members(eventsToAdd.map(p => p.id));
+        }
+      }
+      return next(); 
+    } catch (error) {
+      return next(JSON.stringify([ error ]));
+    }
+  },
+  afterDestroy: async function(value, next){
+    try {
+      const person = await Persons.findOne(value.person);
+      await Persons.updateOne({ id: person.id }).set({ balance: person.balance + value.sum })
+      return next();  
+    } catch (error) {
+      return next(JSON.stringify([ error ]));
+    }
   }
 };
 

@@ -23,6 +23,10 @@ module.exports = {
       collection: 'payments',
       via: 'person'
     },
+    incomes: {
+      collection: 'incomes',
+      via: 'person'
+    },
     bookNumber: {
       type: 'string',
       allowNull: true
@@ -58,15 +62,19 @@ module.exports = {
     address: {
       type: 'string',
       allowNull: true
+    },
+    balance: {
+      type: 'number',
+      defaultsTo: 0
     }
   },
-  beforeDestroy: async function(value, next){
+  afterDestroy: async function(value, next){
     try {
-      await ArchivePersons.destroy({person: value.id});
-      await Payments.destroy({person: value.id});  
+      await ArchivePersons.destroy({person: value.id}).fetch();
+      await Payments.destroy({person: value.id}).fetch();  
       next();
     } catch (error) {
-      next();  
+      return next(JSON.stringify([ error ]));
     }
   }
 };

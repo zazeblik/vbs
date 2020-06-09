@@ -28,7 +28,7 @@ module.exports = {
     try {
       if (!req.param("id"))
         return res.badRequest();
-      await ArchivePersons.destroy(req.body)
+      await ArchivePersons.destroy(req.body).fetch();
       return res.ok();
     } catch (err) {
       return res.badRequest();

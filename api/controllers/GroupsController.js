@@ -241,7 +241,7 @@ module.exports = {
   },
   delete: async function (req, res) {
     try {
-      await Groups.destroy(req.param("id"))
+      await Groups.destroy(req.param("id")).fetch();
       return res.ok();
     } catch (err) {
       return res.badRequest();

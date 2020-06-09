@@ -76,6 +76,7 @@ export default {
   methods: {
     async fetchData() {
       await this.fetchSettings();
+      if (!this.selectedInstructor) return;
       await this.fetchGroups();
     },
     async fetchSettings() {

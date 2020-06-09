@@ -21,7 +21,7 @@ module.exports = {
             return res
               .status(400)
               .send(err);
-          await Places.destroy(req.body)
+          await Places.destroy(req.body).fetch();
           return res.ok();
         } catch (err) {
           return res.badRequest();

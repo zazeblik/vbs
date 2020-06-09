@@ -257,7 +257,8 @@ export default {
             c.value = c.value || false;
             break;
           case "date":
-            c.value = c.value || new Date();
+            c.value = c.value || null; 
+            break;
           case "datetime":
             let defaultDate = new Date();
             defaultDate.setHours(17, 0, 0, 0);

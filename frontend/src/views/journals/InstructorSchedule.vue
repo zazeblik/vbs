@@ -209,8 +209,17 @@ export default {
         `/events/${member.isVisitor ? 'remove' : 'add' }-visitor/${event.id}`, 
         { visitors: [member.id] },
         true );
-      if (result.success)
+      if (result.success){
+        if (result.createdPayments && result.createdPayments.length){
+          result.createdPayments.forEach(p => event.payments.push(p)); 
+        }
+        if (result.removedPayments && result.removedPayments.length){
+          result.removedPayments.forEach(p => {
+            event.payments.splice(event.payments.findIndex(ep => ep.id == p), 1);
+          }); 
+        }
         return;
+      }
       
       member.isVisitor = !member.isVisitor;
     },
@@ -225,7 +234,14 @@ export default {
         event.members.filter(m => lostIds.includes(m.id)).forEach(m => {
           m.isVisitor = !allChecked;
         });
-        return;
+        if (result.createdPayments && result.createdPayments.length){
+          result.createdPayments.forEach(p => event.payments.push(p)); 
+        }
+        if (result.removedPayments && result.removedPayments.length){
+          result.removedPayments.forEach(p => {
+            event.payments.splice(event.payments.findIndex(ep => ep.id == p), 1);
+          }); 
+        }
       }
     },
     fillMemberVisits(events){

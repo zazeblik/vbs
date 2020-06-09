@@ -44,13 +44,13 @@ module.exports = {
       defaultsTo: false
     },
   },
-  beforeDestroy: async function(value, next){
+  afterDestroy: async function(value, next){
     try {
-      await ArchivePersons.destroy({group: value.id});
-      await Events.destroy({group: value.id});  
+      await ArchivePersons.destroy({group: value.id}).fetch();
+      await Events.destroy({group: value.id}).fetch();  
       next();
     } catch (error) {
-      next();  
+      return next(JSON.stringify([ error ]));
     }
   }
 };

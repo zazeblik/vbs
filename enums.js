@@ -9,3 +9,8 @@ module.exports.GroupType = {
     General: 0,
     Personal: 1
 }
+
+module.exports.TransactionType = {
+    Payment: 0,
+    Income: 1
+}

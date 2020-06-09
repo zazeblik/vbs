@@ -1,272 +1,170 @@
 <template>
-  <b-container class="py-2">
-    <h5>Приём платежей</h5>
-    <validation-observer ref="observer" v-slot="{ invalid }">
-      <b-form class="pt-2">
-        <validation-provider name="payer" :rules="{required: true}" v-slot="validationContext">
-          <b-form-group label="Участник" label-cols-sm="2">
-            <model-select
-              :options="$modelsToOptions(persons)"
-              v-model="payer"
-              :state="getValidationState(validationContext)" />
-          </b-form-group>
-        </validation-provider>
-        <b-form-group label="Шаблоны" :hidden="!payer" label-cols-sm="2">
-          <b-list-group>
-            <b-list-group-item 
-              class="py-1 px-2"
-              v-for="(template, index) in paymentTemplates" 
-              :key="'template'+index">
-              {{getGroupName(template)}} {{template.month ? `(${getMonthName(template.month)})` : ''}} - {{template.sum}} руб.
-              <button
-                type="button"
-                class="close"
-                @click="templateToPayment(template, index)">
-                <span aria-hidden="true">&darr;</span>
-              </button>
-            </b-list-group-item>
-          </b-list-group>
-        </b-form-group>
-        <b-form-row
-          v-for="(payment, index) in payments" 
-          :key="'payment'+index"
-          class="border pb-1 mb-1 bg-light">
-          <b-col>
-            <label>Группа</label>
-            <validation-provider
-              :name="'group' + index"
-              :rules="{required: true}"
-              v-slot="validationContext">
-              <model-select
-                :options="$modelsToOptions(payment.groups)"
-                v-model="payment.group"
-                :state="getValidationState(validationContext)" />
-            </validation-provider>
-          </b-col>
-          <b-col v-if="isGeneralGroupType(payment)">
-            <label>Месяц</label>
-            <validation-provider
-              :name="'month' + index"
-              :rules="{required: true}"
-              v-slot="validationContext">
-              <b-form-select
-                size="sm"
-                :options="months"
-                v-model="payment.month"
-                :state="getValidationState(validationContext)" />
-            </validation-provider>
-          </b-col>
-          <b-col class="col-3">
-            <label>Сумма</label>
-            <validation-provider
-              :name="'sum' + index"
-              :rules="{required: true, min: 0}"
-              v-slot="validationContext">
-              <b-form-input
-                size="sm"
-                type="number"
-                v-model="payment.sum"
-                :state="getValidationState(validationContext)" />
-            </validation-provider>
-          </b-col>
-          <b-col class="col-1">
-            <button
-              type="button"
-              class="close"
-              @click="payments.splice(index,1)">
-              <span aria-hidden="true">×</span>
-            </button>
-          </b-col>
-        </b-form-row>
-        <b-form-input size="sm" class="mb-1" :value="'Всего к оплате: '+ total+' руб.'" disabled></b-form-input>
-        <b-input-group size="sm" class="d-flex justify-content-center">
-          <b-input-group-prepend>
-            <b-button
-              variant="outline-success"
-              :hidden="addPaymentShown"
-              :disabled="!payer"
-              @click="addPaymentShown = true">
-              <b-icon icon="plus-circle-fill"></b-icon>&nbsp;
-              <span>Добавить платёж</span>
-            </b-button>
-          </b-input-group-prepend>
-          <b-form-select v-model="addPaymentType" :options="paymentTypes" :hidden="!addPaymentShown"></b-form-select>
-          <b-input-group-append>
-            <b-button variant="outline-success" :hidden="!addPaymentShown" @click="addPayment()">
-              <b-icon icon="check"></b-icon>
-            </b-button>
-            <b-button
-              variant="outline-danger"
-              :hidden="!addPaymentShown"
-              @click="addPaymentShown = false">
-              <b-icon icon="x"></b-icon>
-            </b-button>
-            <b-button 
-              variant="outline-success" 
-              :disabled="invalid || !payments.length"
-              @click="sendForm()">
-              <b-icon icon="check-circle"></b-icon>&nbsp;
-              <span>Сохранить</span>
-            </b-button>
-          </b-input-group-append>
-        </b-input-group>
-      </b-form>
-    </validation-observer>
+  <b-container fluid class="py-2">
+    <h5>История</h5>
+    <b-input-group prepend="Участник" size="sm">
+      <b-form-select v-model="payer" :options="$modelsToOptions(persons)"></b-form-select>
+      <b-form-input 
+        min="0" 
+        type="number" 
+        v-model="incomeSum"
+        :hidden="!addIncomeShown" />
+      <b-input-group-append>
+        <b-button variant="outline-success" :hidden="addIncomeShown" @click="addIncomeShown = true">
+          <b-iconstack>
+            <b-icon stacked icon="plus-circle-fill" shift-h="4" shift-v="-2" scale="0.6"></b-icon>
+            <b-icon stacked icon="credit-card"></b-icon>
+          </b-iconstack>
+          &nbsp;
+          <span class="d-none d-md-inline-block">Пополнить баланс</span>
+        </b-button>
+        <b-button variant="outline-success" :disabled="incomeSum <= 0" :hidden="!addIncomeShown" @click="addIncome">
+          <b-icon icon="check"></b-icon>
+        </b-button>
+        <b-button variant="outline-danger" :hidden="!addIncomeShown" @click="addIncomeShown = false">
+          <b-icon icon="x"></b-icon>
+        </b-button>
+        <b-button variant="outline-primary" @click="addPaymentsModalShow">
+          <b-iconstack>
+            <b-icon stacked icon="dash-circle-fill" shift-h="4" shift-v="-2" scale="0.6"></b-icon>
+            <b-icon stacked icon="credit-card"></b-icon>
+          </b-iconstack>
+          &nbsp;
+          <span class="d-none d-md-inline-block">Оплатить занятия</span>
+        </b-button>
+        <b-button variant="outline-success" @click="addPersonModalShow">
+          <b-icon icon="person-plus-fill"></b-icon>
+          &nbsp;
+          <span class="d-none d-md-inline-block">Добавить участника</span>
+        </b-button>
+      </b-input-group-append>
+    </b-input-group>
+    <b-input-group size="sm">
+      <b-form-input :value="`Баланс: ${balance} руб.`" disabled />
+      <div class="limit-arrow px-2" is-text>&darr;</div>
+      <b-form-select class="col-2" v-model="limit" :options="limits" />
+    </b-input-group>
+    <b-list-group>
+      <b-list-group-item
+        class="p-2"
+        v-for="transaction in transactions"
+        :key="`transaction_${transaction.type}_${transaction.id}`"
+        :variant="isIncome(transaction.type) ? 'success' : ''" >
+        <div>
+          <b v-if="isIncome(transaction.type)">{{transaction.sum > 0 ? '+' : ''}}{{transaction.sum}}</b>
+          <b v-else>{{transaction.sum > 0 ? '-' : ''}}{{transaction.sum}}</b>
+          &nbsp;
+          <span>{{transaction.description}}</span>
+        </div>
+        <small>{{$moment(transaction.updatedAt).format("DD.MM.YYYY HH:mm")}}</small>
+      </b-list-group-item>
+    </b-list-group>
+    <ModelModal 
+      modalId="personModal" 
+      :baseUrl="personUrl" 
+      :itemForm="personForm" 
+      ref="personModal" 
+      @formSaved="fetchSettings" />
+    <PaymentsModal 
+      modalId="paymentsModal"
+      ref="paymentsModal" 
+      :generals="generals"
+      :personals="personals"
+      :unpayedEvents="personalUnpayedEvents"
+      :payer="payer" 
+      @formSaved="fetchPage" />
   </b-container>
 </template>
 
 <script>
+import ModelModal from "../../components/ModelModal";
+import PaymentsModal from "../../components/PaymentsModal";
 import { ModelSelect } from "vue-search-select";
-import { GroupType } from "../../../../enums";
+import { GroupType, TransactionType } from "../../../../enums";
+import { PersonForm } from "../../shared/forms";
 export default {
   components: {
-    ModelSelect
+    ModelSelect,
+    ModelModal,
+    PaymentsModal
   },
   data() {
     return {
       baseUrl: "/payments",
+      personUrl: "/persons",
       persons: [],
       generals: [],
       personals: [],
-      months: [],
-      addPaymentShown: false,
-      addPaymentType: GroupType.Personal,
+      unpayedEvents: {},
+      personalUnpayedEvents: [],
+      personForm: PersonForm,
+      addIncomeShown: false,
       payer: null,
-      paymentTypes: [
-        { text: "Общие", value: GroupType.General },
-        { text: "Индивидуальные", value: GroupType.Personal }
-      ],
-      payments: [],
-      paymentTemplates: []
+      incomeSum: 0,
+      balance: 0,
+      transactions: [],
+      limit: 25,
+      limits: [25, 50, 100, 200]
     };
   },
-  computed: {
-    total() {
-      let result = 0;
-      this.payments.forEach(payment => {
-        if (!isNaN(payment.sum)) result += Number(payment.sum);
-      });
-      return result;
-    }
-  },
   async mounted() {
-    this.months = this.calculateMonths();
-    await this.fetchSettings();
+    await this.fetchPage();
   },
   watch: {
     payer(val) {
-      this.payments = [];
-      this.fillTemplates();
+      this.updatePayer();
+      this.resetIncomeForm();
+      this.fetchTransactions();
+    },
+    limit(val) {
+      this.fetchTransactions();
     }
   },
   methods: {
+    async fetchPage(){
+      await this.fetchSettings();
+      if (!this.payer) return;
+      await this.fetchTransactions();
+    },
     async fetchSettings() {
       const settings = await this.$getAsync(`${this.baseUrl}/settings`);
       this.persons = settings.persons;
-      this.generals = settings.groups.filter(g => g.type == GroupType.General);
-      this.personals = settings.groups.filter(g => g.type == GroupType.Personal);
+      this.generals = settings.generals;
+      this.personals = settings.personals;
+      this.unpayedEvents = settings.unpayedEvents;
+      if (!this.persons.length) return;
+      if (!this.payer) this.payer = this.persons[0].id;
+      this.updatePayer();
     },
-    async sendForm(){
-      this.payments = [];
-      this.fillTemplates();
+    async fetchTransactions() {
+      this.transactions = await this.$getAsync(`${this.baseUrl}/transactions`, { 
+        person: this.payer, 
+        limit: this.limit 
+      }); 
     },
-    isGeneralGroupType(payment){
-      return payment.type == GroupType.General; 
+    updatePayer() {
+      this.balance = this.persons.find(p => p.id == this.payer).balance;
+      this.personalUnpayedEvents = this.unpayedEvents[this.payer];
     },
-    fillTemplates(){
-      this.paymentTemplates = [];
-      this.generals.forEach(g => {
-        if (!g.members.includes(this.payer)) return;
-        this.paymentTemplates.push({
-          type: GroupType.General,
-          month: this.getNextMonth(),
-          groups: this.getPaymentGroups(GroupType.General),
-          group: g.id,
-          sum: g.cost
-        })
-      })
-      this.personals.forEach(g => {
-        if (!g.members.includes(this.payer)) return;
-        this.paymentTemplates.push({
-          type: GroupType.Personal,
-          month: null,
-          groups: this.getPaymentGroups(GroupType.Personal),
-          group: g.id,
-          sum: g.cost
-        })
-      })
+    async addIncome(){
+      await this.$postAsync(`${this.baseUrl}/create-income`, {
+        sum: this.incomeSum,
+        person: this.payer
+      });
+      this.resetIncomeForm();
+      await this.fetchPage();
     },
-    getValidationState({ dirty, validated, valid = null }) {
-      return dirty || validated ? valid : null;
+    isIncome( type ){
+      return type == TransactionType.Income;
     },
-    templateToPayment(template, index){
-      this.payments.push(Object.assign({}, template));
+    resetIncomeForm(){
+      this.addIncomeShown = false;
+      this.incomeSum = 0;
     },
-    addPayment() {
-      let payment = {
-        type: this.addPaymentType,
-        month:
-          this.addPaymentType == GroupType.General
-            ? this.getCurrentMonth()
-            : null,
-        groups: this.getPaymentGroups(this.addPaymentType)
-      };
-      const firstGroup = payment.groups[0]; 
-      payment.group = firstGroup ? firstGroup.id : null;
-      payment.sum = firstGroup ? firstGroup.cost : 0;
-      this.payments.push(payment);
-      this.addPaymentShown = false;
+    addPersonModalShow(){
+      this.$refs.personModal.showAdd();
     },
-    getPaymentGroups(type) {
-      return type == GroupType.General 
-        ? this.generals.sort(this.sortByPayerInMembers) 
-        : this.personals.sort(this.sortByPayerInMembers);
-    },
-    sortByPayerInMembers(a, b) {
-      const aIsIncludes = a.members.includes(this.payer);
-      const bIsIncludes = b.members.includes(this.payer);
-      if (a < b) return -1;
-      if (a > b) return 1;
-      return 0;
-    },
-    getGroupName(template){
-      return this.isGeneralGroupType(template) 
-        ? this.generals.find(g => g.id == template.group).name
-        : this.personals.find(g => g.id == template.group).name;
-    },
-    calculateMonths() {
-      for (let i = -6; i <= 6; i++) {
-        let date = new Date();
-        let day = date.getDate();
-        date.setMonth(date.getMonth() + i);
-        if (date.getDate() != day) {
-          date.setDate(0);
-        }
-        const month = `${date.getMonth()} ${date.getFullYear()}`; 
-        this.months.push({
-          text: this.getMonthName(month),
-          value: month
-        });
-      }
-      return this.months;
-    },
-    getCurrentMonth() {
-      let date = new Date();
-      return `${date.getMonth()} ${date.getFullYear()}`;
-    },
-    getNextMonth() {
-      let date = new Date();
-      let day = date.getDate();
-      date.setMonth(date.getMonth() + 1);
-      if (date.getDate() != day) {
-        date.setDate(0);
-      }
-      return `${date.getMonth()} ${date.getFullYear()}`;
-    },
-    getMonthName(month){
-      if (!month) return "";
-      const match = month.split(" ");
-      return `${this.$moment.months()[Number(match[0])]} ${match[1]}`
+    addPaymentsModalShow(){
+      this.$refs.paymentsModal.show();
     }
   }
 };
@@ -275,5 +173,8 @@ export default {
 <style scoped>
 form {
   font-size: small;
+}
+.limit-arrow {
+  background: #e9ecef !important;
 }
 </style>

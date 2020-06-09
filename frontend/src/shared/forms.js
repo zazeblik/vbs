@@ -1,4 +1,5 @@
 const GroupType = require("../../../enums").GroupType;
+
 module.exports.ArchivePersonForm = [
   {
     label: "Участник",
