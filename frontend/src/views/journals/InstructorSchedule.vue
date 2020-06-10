@@ -61,7 +61,7 @@
             <b-list-group-item 
               class="p-0 pl-1 text-left"
               v-for="member in event.members"
-              :variant="getMemberPayment(member, event) ? 'success': 'danger'"
+              :variant="getMemberPaymentColor(member, event)"
               :key="member.id">
               <b-checkbox 
                 v-model="member.isVisitor"
@@ -218,6 +218,7 @@ export default {
             event.payments.splice(event.payments.findIndex(ep => ep.id == p), 1);
           }); 
         }
+        this.updateMemberBalances(result.personBalances);
         return;
       }
       
@@ -242,8 +243,19 @@ export default {
             event.payments.splice(event.payments.findIndex(ep => ep.id == p), 1);
           }); 
         }
+        this.updateMemberBalances(result.personBalances);
       }
     },
+    updateMemberBalances(personBalances){
+      if (!personBalances) return;
+      for (const personId in personBalances) {
+        this.events.forEach(e => {
+          const member = e.members.find(m => m.id == personId);
+          if (!member) return;
+          member.balance = personBalances[personId];
+        })
+      }
+    }, 
     fillMemberVisits(events){
       events.forEach(e => {
         e.members.forEach(m => {
@@ -256,8 +268,12 @@ export default {
     isEventVisitor(member, event){
       return !!event.visitors.find(v => v.id == member.id);
     },
-    getMemberPayment(member, event){
-      return !!event.payments.find(p => p.person == member.id);
+    getMemberPaymentColor(member, event){
+      const isPayed = !!event.payments.find(p => p.person == member.id);
+      if (isPayed) return 'success';
+      const group = this.groups.find(g => g.id == event.group);
+      if (member.balance >= group.cost) return 'primary';
+      return 'danger';
     },
     getMemberFirstName(member) {
       return member.name.split(" ")[0];

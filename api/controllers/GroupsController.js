@@ -64,7 +64,7 @@ module.exports = {
       
       const groups = await Groups
         .find({ type: GroupType.Personal, hidden: false })
-        .populate("members", {select: ["id", "name"]});
+        .populate("members", {select: ["id", "name", "balance"]});
       const archivePersons = await ArchivePersons.find({ group: groups.map(g => g.id) });
       const groupIds = groups.map(g => g.id);
       let events = await Events

@@ -44,6 +44,7 @@ module.exports = {
       const event = await Events.findOne(id).populate("payments");
       const group = await Groups.findOne(event.group);
       let createdPayments = [];
+      let personBalances = {};
       if (group.type == GroupType.Personal){
         const eventPaymentsPersons = event.payments.map(p => p.person);
         const cost = group.cost;
@@ -61,10 +62,15 @@ module.exports = {
             }
           });
         createdPayments = await Payments.createEach(payments).fetch();
+        const updatedPersons = await Persons.find({id: payments.map(p => p.person)});
+        updatedPersons.forEach(p => { 
+          personBalances[p.id] = p.balance;
+        });
       }
       return res.send({
         success: true,
-        createdPayments: createdPayments
+        createdPayments,
+        personBalances
       });
     } catch (error) {
       return res.badRequest();
@@ -85,19 +91,24 @@ module.exports = {
       const event = await Events.findOne(id).populate("payments");
       const group = await Groups.findOne(event.group);
       let removedPayments = [];
+      let personBalances = {};
       if (group.type == GroupType.Personal){
         const payments = event.payments
-          .filter(p => visitors.includes(p.person))
-          .map(p => p.id);
+          .filter(p => visitors.includes(p.person));
         if (payments.length){
-          await Payments.destroy({ id: payments }).fetch();
-          removedPayments = payments;
+          await Payments.destroy({ id: payments.map(p => p.id) }).fetch();
+          removedPayments = payments.map(p => p.id);
+          const updatedPersons = await Persons.find({id: payments.map(p => p.person)});
+          updatedPersons.forEach(p => { 
+            personBalances[p.id] = p.balance;
+          });
         }
       }
       await Events.removeFromCollection(id, "visitors").members(visitors);
       return res.send({
         success: true,
-        removedPayments: removedPayments
+        removedPayments,
+        personBalances
       });
     } catch (error) {
       return res.badRequest();

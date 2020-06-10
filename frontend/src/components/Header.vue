@@ -17,7 +17,7 @@
             <b-dropdown-item to="/cp/generals">Общие</b-dropdown-item>
             <b-dropdown-item to="/cp/personals">Индивидуальные</b-dropdown-item>
           </b-nav-item-dropdown>
-          <b-nav-item to="/cp/payments">Платежи</b-nav-item>
+          <b-nav-item to="/cp/payments">Оплата</b-nav-item>
         </b-navbar-nav>
 
         <!-- Right aligned nav items -->
