@@ -56,6 +56,13 @@
           <span>{{transaction.description}}</span>
         </div>
         <small>{{$moment(transaction.updatedAt).format("DD.MM.YYYY HH:mm")}}</small>
+        <b-dropdown dropleft class="dropdown-actions" variant="link" toggle-class="text-decoration-none" no-caret>
+          <template v-slot:button-content>
+            <b-icon icon="three-dots-vertical"/><span class="sr-only">Actions</span>
+          </template>
+          <b-dropdown-item @click="showEditTransactionModal(transaction)">Редактировать</b-dropdown-item>
+          <b-dropdown-item @click="showRemoveTransactionConfirm(transaction)">Удалить</b-dropdown-item>
+        </b-dropdown>
       </b-list-group-item>
     </b-list-group>
     <ModelModal 
@@ -64,6 +71,18 @@
       :itemForm="personForm" 
       ref="personModal" 
       @formSaved="fetchSettings" />
+    <ModelModal 
+      modalId="editPaymentModal" 
+      :baseUrl="baseUrl" 
+      :itemForm="paymentForm" 
+      ref="editPaymentModal" 
+      @formSaved="fetchPage" />
+    <ModelModal 
+      modalId="editIncomeModal" 
+      :baseUrl="incomeUrl" 
+      :itemForm="incomeForm" 
+      ref="editIncomeModal" 
+      @formSaved="fetchPage" />
     <PaymentsModal 
       modalId="paymentsModal"
       ref="paymentsModal" 
@@ -80,7 +99,7 @@ import ModelModal from "../../components/ModelModal";
 import PaymentsModal from "../../components/PaymentsModal";
 import { ModelSelect } from "vue-search-select";
 import { GroupType, TransactionType } from "../../../../enums";
-import { PersonForm } from "../../shared/forms";
+import { PersonForm, PaymentForm, IncomeForm } from "../../shared/forms";
 export default {
   components: {
     ModelSelect,
@@ -91,12 +110,15 @@ export default {
     return {
       baseUrl: "/payments",
       personUrl: "/persons",
+      incomeUrl: "/incomes",
       persons: [],
       generals: [],
       personals: [],
       unpayedEvents: {},
       personalUnpayedEvents: [],
       personForm: PersonForm,
+      paymentForm: PaymentForm,
+      incomeForm: IncomeForm,
       addIncomeShown: false,
       payer: null,
       incomeSum: 0,
@@ -146,11 +168,34 @@ export default {
       this.personalUnpayedEvents = this.unpayedEvents[this.payer];
     },
     async addIncome(){
-      await this.$postAsync(`${this.baseUrl}/create-income`, {
+      await this.$postAsync(`${this.incomeUrl}/create`, {
         sum: this.incomeSum,
         person: this.payer
       });
       this.resetIncomeForm();
+      await this.fetchPage();
+    },
+    async showRemoveTransactionConfirm(transaction) {
+      try {
+        const confirm = await this.$bvModal.msgBoxConfirm(
+          `Вы уверены, что хотите удалить ${transaction.description}?`,
+          {
+            cancelTitle: "Отмена",
+            cancelVariant: "outline-secondary",
+            okTitle: "Удалить",
+            okVariant: "danger"
+          }
+        );
+        if (!confirm) return;
+        await this.removeTransaction(transaction);
+      } catch (error) {
+        if (error.response) {
+          this.$error(error.response.data.message || error.response.data);
+        }
+      }
+    },
+    async removeTransaction(transaction) {
+      await this.$postAsync(`/${this.isIncome(transaction.type) ? 'incomes' : 'payments'}/delete/${transaction.id}`);
       await this.fetchPage();
     },
     isIncome( type ){
@@ -162,6 +207,13 @@ export default {
     },
     addPersonModalShow(){
       this.$refs.personModal.showAdd();
+    },
+    showEditTransactionModal(transaction){
+      if (this.isIncome(transaction.type)){
+        this.$refs.editIncomeModal.showEdit(transaction);
+      } else {
+        this.$refs.editPaymentModal.showEdit(transaction);
+      }
     },
     addPaymentsModalShow(){
       this.$refs.paymentsModal.show();
@@ -176,5 +228,9 @@ form {
 }
 .limit-arrow {
   background: #e9ecef !important;
+}
+
+.dropdown-actions {
+  margin-top: -1.5rem;
 }
 </style>

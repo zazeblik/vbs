@@ -10,6 +10,7 @@ module.exports = {
   },
   edit: async function (req, res){
     try {
+      req.body.id = req.param("id");
       await ArchivePersons.update(req.param("id"), req.body)
       return res.ok();
     } catch (err) {

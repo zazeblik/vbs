@@ -32,10 +32,11 @@ module.exports = {
   },
   beforeUpdate: async function (value, next) {
     try {
-      const actualIncome = await Incomes.findOne(value.id);
+      const id = value.id;
+      const actualIncome = await Incomes.findOne(id);
       if (value.sum){
-        const person = await Incomes.findOne(actualIncome.person);
-        const delta = actualIncome.sum - value.sum;
+        const person = await Persons.findOne(actualIncome.person);
+        const delta = value.sum - actualIncome.sum;
         await Persons.updateOne({ id: person.id }).set({ balance: person.balance + delta })
       }
       if (value.person != null && actualIncome.person != value.person) {

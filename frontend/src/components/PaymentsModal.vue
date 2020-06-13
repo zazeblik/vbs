@@ -267,6 +267,7 @@ export default {
       }
       if (this.isOncePayment(payment)){
         await this.tryFetchGroupEvents(payment);
+        payment.sum = firstGroup ? firstGroup.onceCost : 0;
       }
       this.payments.push(payment);
       this.addPaymentShown = false;

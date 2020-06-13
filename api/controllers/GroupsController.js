@@ -248,6 +248,7 @@ module.exports = {
   edit: async function (req, res) {
     try {
       req.body.updater = req.session.User.id;
+      req.body.id = req.param("id");
       await Groups.update(req.param("id"), req.body)
       return res.ok();
     } catch (err) {

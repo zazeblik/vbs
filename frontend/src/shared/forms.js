@@ -19,6 +19,29 @@ module.exports.ArchivePersonForm = [
   }
 ];
 
+module.exports.IncomeForm = [
+  {
+    property: "person",
+    type: "model",
+    hidden: true
+  },
+  {
+    label: "Сумма",
+    property: "sum",
+    type: "number",
+    validations: {
+      min: 0,
+      required: true
+    }
+  },
+  {
+    label: "Описание",
+    property: "description",
+    type: "string",
+    validations: {}
+  }
+];
+
 module.exports.PaymentForm = [
   {
     property: "person",

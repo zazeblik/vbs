@@ -85,6 +85,7 @@ module.exports = {
   edit: async function (req, res) {
     try {
       req.body.updater = req.session.User.id;
+      req.body.id = req.param("id");
       await Payments.update(req.param("id"), req.body)
       return res.ok();
     } catch (err) {
@@ -95,15 +96,6 @@ module.exports = {
     try {
       req.body.updater = req.session.User.id;
       await Payments.create(req.body)
-      return res.ok();
-    } catch (err) {
-      return res.badRequest();
-    }
-  },
-  createIncome: async function (req, res) {
-    try {
-      req.body.updater = req.session.User.id;
-      await Incomes.create(req.body);
       return res.ok();
     } catch (err) {
       return res.badRequest();

@@ -27,6 +27,7 @@
               <template slot="button-content"> 
                 <b-icon icon="people-circle" />
               </template>
+              <b-dropdown-item v-if="!isControlPanelShown" href="/cp/payments">Панель управления</b-dropdown-item>
               <b-dropdown-item href="/auth/logout">Выйти</b-dropdown-item>
             </b-nav-item-dropdown>
             <b-nav-item v-else to="/auth">Войти</b-nav-item>

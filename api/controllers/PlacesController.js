@@ -1,6 +1,7 @@
 module.exports = {
     edit: async function (req, res){
         try {
+          req.body.id = req.param("id");
           await Places.update(req.param("id"), req.body)
           return res.ok();
         } catch (err) {

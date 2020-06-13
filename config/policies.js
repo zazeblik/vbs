@@ -30,4 +30,16 @@ module.exports.policies = {
   places: {
     '*': 'authenticated'
   },
+  archivePersons: {
+    '*': 'authenticated'
+  },
+  events: {
+    '*': 'authenticated'
+  },
+  incomes: {
+    '*': 'authenticated'
+  },
+  payments: {
+    '*': 'authenticated'
+  },
 };
