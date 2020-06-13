@@ -39,7 +39,22 @@
               v-slot="validationContext">
               <model-select
                 :options="$modelsToOptions(payment.groups)"
-                v-model="payment.group"
+                :value="payment.group"
+                @input="payment.group = $event; tryFetchGroupEvents(payment);"
+                :state="getValidationState(validationContext)" />
+            </validation-provider>
+          </b-col>
+          <b-col v-if="isGeneralGroupType(payment)">
+            <label>Месяц</label>
+            <validation-provider
+              :name="'month' + index"
+              :rules="{required: true}"
+              v-slot="validationContext">
+              <b-form-select
+                size="sm"
+                :options="months"
+                v-model="payment.month"
+                @change="tryFetchGroupEvents(payment)"
                 :state="getValidationState(validationContext)" />
             </validation-provider>
           </b-col>
@@ -55,16 +70,15 @@
                 :state="getValidationState(validationContext)" />
             </validation-provider>
           </b-col>
-          <b-col v-if="isGeneralGroupType(payment)">
-            <label>Месяц</label>
+          <b-col v-if="isOncePayment(payment)">
+            <label>Занятие</label>
             <validation-provider
-              :name="'month' + index"
+              :name="'monthEvent' + index"
               :rules="{required: true}"
               v-slot="validationContext">
-              <b-form-select
-                size="sm"
-                :options="months"
-                v-model="payment.month"
+              <model-select
+                :options="$modelsToOptions(getPreparedUnpayedGroupEvents(payment.monthEvents))"
+                v-model="payment.event"
                 :state="getValidationState(validationContext)" />
             </validation-provider>
           </b-col>
@@ -103,7 +117,7 @@
           </b-button>
           <b-form-select v-model="addPaymentType" :options="filteredPaymentTypes" :hidden="!addPaymentShown"></b-form-select>
           <b-input-group-append>
-            <b-button variant="outline-success" :hidden="!addPaymentShown" @click="addPayment()">
+            <b-button variant="outline-success" :hidden="!addPaymentShown" @click="addPayment">
               <b-icon icon="check"></b-icon>
             </b-button>
             <b-button
@@ -114,7 +128,7 @@
             </b-button>
             <b-button
               variant="success"
-              :disabled="invalid || !payments.length || isDublicateExist"
+              :disabled="invalid || !payments.length"
               @click="sendForm">
               <span>Сохранить</span>
             </b-button>
@@ -129,6 +143,9 @@
 <script>
 import { ModelSelect } from 'vue-search-select'
 import { GroupType } from "../../../enums";
+
+const OncePay = 10;
+
 export default {
   components: {
     ModelSelect
@@ -143,7 +160,8 @@ export default {
       months: [],
       paymentTypes: [
         { text: "Общие", value: GroupType.General },
-        { text: "Индивидуальные", value: GroupType.Personal }
+        { text: "Индивидуальные", value: GroupType.Personal },
+        { text: "Разовый платёж", value: OncePay }
       ],
       addPaymentType: GroupType.General
     };
@@ -156,24 +174,21 @@ export default {
       });
       return result;
     },
+    preparedUnpayedEvents() {
+      let result = [];
+      this.unpayedEvents.forEach(e => {
+        let prepared = Object.assign({}, e);
+        prepared.name = `${this.getGroupName(prepared)} ${this.getEventDate(prepared)}`;
+        result.push(prepared);
+      })
+      return result;
+    },
     filteredPaymentTypes() {
       let result = this.paymentTypes;
       if (!this.unpayedEvents.length) {
         result = result.filter(pt => pt.value != GroupType.Personal);
       }
       return result; 
-    },
-    preparedUnpayedEvents() {
-      let result = [];
-      this.unpayedEvents.forEach(e => {
-        let prepared = Object.assign({}, e);
-        prepared.name = `${this.getGroupName(prepared)} ${this.$moment(prepared.startsAt).format('DD.MM')}`;
-        result.push(prepared);
-      })
-      return result;
-    },
-    isDublicateExist() {
-      return false;
     }
   },
   mounted() {
@@ -188,17 +203,39 @@ export default {
       this.$root.$emit("bv::show::modal", this.modalId);
     },
     getPaymentDescription(payment){
+      const groupName = this.getGroupName(payment); 
+      const monthInfo = payment.month && !this.isOncePayment(payment) ? '('+this.getMonthName(payment.month)+')' : ''
       const event = payment.event;
-      return `${this.getGroupName(payment)} ${payment.month ? '('+this.getMonthName(payment.month)+')' : ''}`+
-        `${event ? this.$moment(this.unpayedEvents.find(e => e.id == event).startsAt).format('DD.MM') : ''}`
+      let eventInfo = '';
+      if (event){
+        eventInfo = this.isOncePayment(payment)
+          ? this.getEventDate(payment.monthEvents.find(e => e.id == event))
+          : this.getEventDate(this.unpayedEvents.find(e => e.id == event))
+      }
+      return `${groupName} ${monthInfo}${eventInfo}`;
+    },
+    getEventDate(event){
+      return this.$moment(event.startsAt).format('DD.MM')
     },
     getGroupName(template){
-      return this.isGeneralGroupType(template) 
+      return this.isGeneralGroupType(template)
         ? this.generals.find(g => g.id == template.group).name
         : this.personals.find(g => g.id == template.group).name;
     },
     isGeneralGroupType(payment){
-      return payment.type == GroupType.General; 
+      return payment.type == GroupType.General || payment.type == OncePay; 
+    },
+    isOncePayment(payment){
+      return payment.type == OncePay; 
+    },
+    getPreparedUnpayedGroupEvents(unpayedEvents) {
+      let result = [];
+      unpayedEvents.forEach(e => {
+        let prepared = Object.assign({}, e);
+        prepared.name = this.getEventDate(prepared);
+        result.push(prepared);
+      })
+      return result;
     },
     getMonthName(month){
       if (!month) return "";
@@ -212,11 +249,11 @@ export default {
       if (paymentGroupMonth.includes(`${template.month}${template.group}`)) return;
       this.payments.push(Object.assign({}, template));
     },
-    addPayment() {
+    async addPayment() {
       let payment = {
         type: this.addPaymentType,
         month:
-          this.addPaymentType == GroupType.General
+          this.addPaymentType == GroupType.General || this.addPaymentType == OncePay
             ? this.getCurrentMonth()
             : null,
         groups: this.getPaymentGroups(this.addPaymentType)
@@ -224,9 +261,12 @@ export default {
       const firstGroup = payment.groups[0];
       payment.group = firstGroup ? firstGroup.id : null;
       payment.sum = firstGroup ? firstGroup.cost : 0;
-      if (this.addPaymentType == GroupType.Personal){
+      if (this.addPaymentType == GroupType.Personal && this.unpayedEvents.length){
         const firstEvent = this.unpayedEvents[0];
         payment.event = firstEvent ? firstEvent.id : null;
+      }
+      if (this.isOncePayment(payment)){
+        await this.tryFetchGroupEvents(payment);
       }
       this.payments.push(payment);
       this.addPaymentShown = false;
@@ -236,7 +276,7 @@ export default {
       return `${date.getMonth()} ${date.getFullYear()}`;
     },
     getPaymentGroups(type) {
-      return type == GroupType.General 
+      return type == GroupType.General || type == OncePay
         ? this.generals.sort(this.sortByPayerInMembers) 
         : this.personals.sort(this.sortByPayerInMembers);
     },
@@ -246,6 +286,22 @@ export default {
       if (a < b) return -1;
       if (a > b) return 1;
       return 0;
+    },
+    async tryFetchGroupEvents(payment){
+      if (!this.isOncePayment(payment)) return;
+      const match = payment.month ? payment.month.split(" ") : null;
+      if (!match) return;
+      payment.event = null;
+      payment.monthEvents = await this.$getAsync(this.baseUrl + "/group-unpayed-events", {
+        person: this.payer,
+        group: payment.group,
+        month: match[0],
+        year: match[1]
+      });
+      if (payment.monthEvents.length){
+        const firstEvent = payment.monthEvents[0];
+        payment.event = firstEvent ? firstEvent.id : null;
+      }
     },
     async sendForm(){
       const result = await this.$postAsync(`${this.baseUrl}/create-all`, this.getPreparedPayments(), true);
@@ -265,7 +321,7 @@ export default {
     getPreparedPayments(){
       let resultPayments = [];
       this.payments.forEach(p => {
-        const match = p.month ? p.month.split(" ") : null;
+        const match = p.month && p.type == GroupType.General ? p.month.split(" ") : null;
         const month = match ? Number(match[0]) : null;
         const year = match ? Number(match[1]) : null;
         let payment = {

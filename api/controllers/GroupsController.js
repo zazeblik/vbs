@@ -117,9 +117,7 @@ module.exports = {
         .sort("startsAt ASC")
         .populate("visitors", {select: ["id"]})
         .populate("payments", {select: ["id", "person", "sum"]});
-      let fields = [{
-        key: "person", label: "Фамилия Имя"
-      }]
+      let fields = [{ key: "person", label: "Фамилия Имя" }];
       let rows = groupMembers.map(gm => {
         let row = {
           person: gm,

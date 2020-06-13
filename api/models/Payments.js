@@ -38,10 +38,7 @@ module.exports = {
   beforeCreate: async function (value, next) {
     try {
       const group = await Groups.findOne(value.group).populate("members");
-      if (group.type == GroupType.General){
-        if (value.month === null || value.year === null){
-          throw new Error("Платёж в общей группе должен содержать месяц и год. person:"+value.person)
-        }
+      if (group.type == GroupType.General && value.month && value.year){
         const alreadyExistsPayment = await Payments.findOne({ 
           group: value.group, 
           month: value.month,

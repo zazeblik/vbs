@@ -27,7 +27,7 @@
               label-cols-sm="3"
               label-size="sm"
               :label="control.label"
-              v-if="!control.hidden"
+              v-if="!isHiddenControl(control)"
               class="mb-1"
             >
               <b-form-input
@@ -165,6 +165,11 @@ export default {
   methods: {
     getValidationState({ dirty, validated, valid = null }) {
       return dirty || validated ? valid : null;
+    },
+    isHiddenControl(control) {
+      if (control.hidden) return true;
+      if (control.visibility) return !control.visibility(this.itemForm);
+      return false;
     },
     getFormValues() {
       let result = {};

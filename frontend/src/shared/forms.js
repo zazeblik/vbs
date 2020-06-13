@@ -85,6 +85,22 @@ module.exports.GroupForm = [
     }
   },
   {
+    label: "Разовый платёж",
+    property: "onceCost",
+    type: "number",
+    visibility: (form) => {
+      const typeField = form.find(f => f.property == "type");
+      if ( typeField && typeField.value == GroupType.Personal ) {
+        return false;
+      }
+      return true;
+    },
+    validations: {
+      min: 0,
+      required: true
+    }
+  },
+  {
     label: "Тренер",
     property: "defaultInstructor",
     type: "model",

@@ -23,6 +23,7 @@ module.exports.routes = {
   '/payments/delete/:id': 'PaymentsController.delete',
   '/payments/create-all': 'PaymentsController.createAll',
   '/payments/create-income': 'PaymentsController.createIncome',
+  '/payments/group-unpayed-events': 'PaymentsController.groupUnpayedEvents',
   '/cp*': function(req, res) {
     return res.redirect('/?route=' + req.url.substr(1))
   }

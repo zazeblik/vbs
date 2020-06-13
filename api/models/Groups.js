@@ -31,6 +31,10 @@ module.exports = {
       min: 0,
       required: true
     },
+    onceCost: {
+      type: 'number',
+      allowNull: true
+    },
     schedule: {
       type: 'string',
       allowNull: true
