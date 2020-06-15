@@ -24,6 +24,10 @@ export default new Router({
             component: () => import('./views/ControlPanel.vue'),
             children: [
                 {
+                    path: '',
+                    component: () => import('./views/Dashboard.vue'),
+                },
+                {
                     name: 'generals',
                     path: 'generals',
                     component: () => import('./views/journals/Generals.vue')

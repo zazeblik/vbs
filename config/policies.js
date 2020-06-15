@@ -42,4 +42,7 @@ module.exports.policies = {
   payments: {
     '*': 'authenticated'
   },
+  dashboard: {
+    '*': 'authenticated'
+  },
 };

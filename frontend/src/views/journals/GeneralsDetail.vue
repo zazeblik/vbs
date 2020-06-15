@@ -155,7 +155,7 @@ export default {
       groupUrl: '/groups',
       paymentUrl: '/payments',
       selectedYear: new Date().getFullYear(),
-      years: this.getYears(),
+      years: this.$getYears(),
       selectedMonth: new Date().getMonth(),
       months: this.$moment.months().map((m, i) => { return { value: i, text: m } }),
       fields: [],
@@ -374,14 +374,6 @@ export default {
       this.defaultDuration = detail.group.defaultDuration;
       this.selectedPerson = null;
       this.title = this.group.name;
-    },
-    getYears() {
-      const currentYear = new Date().getFullYear();
-      var years = [];
-      for (var i = currentYear - 5; i <= currentYear + 5; i++) {
-          years.push(i);
-      }
-      return years;
     }
   }
 };

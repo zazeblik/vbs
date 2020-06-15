@@ -25,6 +25,7 @@ module.exports.routes = {
   '/payments/group-unpayed-events': 'PaymentsController.groupUnpayedEvents',
   '/incomes/edit/:id': 'IncomesController.edit',
   '/incomes/delete/:id': 'IncomesController.delete',
+  '/dashboard/month-info': 'DashboardController.monthInfo',
   '/cp*': function(req, res) {
     return res.redirect('/?route=' + req.url.substr(1))
   }

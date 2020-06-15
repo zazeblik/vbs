@@ -99,7 +99,7 @@ export default {
       eventUrl: "/events",
       paymentUrl: "/payments",
       selectedYear: new Date().getFullYear(),
-      years: this.getYears(),
+      years: this.$getYears(),
       selectedMonth: new Date().getMonth(),
       months: this.$moment.months().map((m, i) => {
         return { value: i, text: m };
@@ -304,14 +304,6 @@ export default {
     },
     getEventEnd(event) {
        return this.$moment(event.startsAt).add('minutes', event.duration).format("HH:mm");
-    },
-    getYears() {
-      const currentYear = new Date().getFullYear();
-      var years = [];
-      for (var i = currentYear - 5; i <= currentYear + 5; i++) {
-        years.push(i);
-      }
-      return years;
     },
     getFields(){
       let weekdays = this.$moment.weekdays();

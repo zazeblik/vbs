@@ -60,3 +60,7 @@ button.check-all {
     border: none !important;
     background: none !important;
 }
+
+.fc-toolbar.fc-header-toolbar{
+    margin-bottom: 0 !important;
+}

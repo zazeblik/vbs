@@ -63,6 +63,15 @@ Vue.prototype.$modelsToOptions = function (models){
   })
 }
 
+Vue.prototype.$getYears = function() {
+  const currentYear = new Date().getFullYear();
+  var years = [];
+  for (var i = currentYear - 3; i <= currentYear + 3; i++) {
+      years.push(i);
+  }
+  return years;
+}
+
 Vue.prototype.$getAsync = async function (url, query) {
   try {
     const response = await axios.get(url, {
