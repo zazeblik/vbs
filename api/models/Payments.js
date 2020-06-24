@@ -1,3 +1,6 @@
+const Events = require('./Events');
+const Groups = require('./Groups');
+
 const GetMonthDateRange =  require('../utils/DateRangeHelper').GetMonthDateRange;
 const GroupType = require('../../enums').GroupType;
 
@@ -37,7 +40,7 @@ module.exports = {
   },
   beforeCreate: async function (value, next) {
     try {
-      const group = await Groups.findOne(value.group).populate("members");
+      const group = await sails.models.groups.findOne(value.group).populate("members");
       if (group.type == GroupType.General && value.month && value.year){
         const alreadyExistsPayment = await Payments.findOne({ 
           group: value.group, 
@@ -46,10 +49,10 @@ module.exports = {
           person: value.person
         });
         if (alreadyExistsPayment != null) {
-          throw new Error("Месяц уже оплачен. person:"+value.person)
+          return next("Месяц уже оплачен. person: "+value.person);
         }
         const monthDateRange = GetMonthDateRange(value.year, value.month);
-        const events = await Events
+        const events = await sails.models.events
           .find({ 
             group: value.group, 
             startsAt: { 
@@ -59,6 +62,12 @@ module.exports = {
           })
           .sort("startsAt ASC");
         value.events = events.map(e => e.id);
+      }
+      if (group.type == GroupType.Personal && value.events.length) {
+        let paymentEvents = await sails.models.events.find({ id: value.events }).populate('payments');
+        if (paymentEvents.some(x => x.payments.find(p => p.payer == value.person))){
+          return next("Занятие уже оплачено. events: " + value.events);
+        }
       }
       const person = await Persons.findOne(value.person);
       await Persons.updateOne({ id: person.id }).set({ balance: person.balance - value.sum })
@@ -77,11 +86,11 @@ module.exports = {
         await Persons.updateOne({ id: person.id }).set({ balance: person.balance + delta })
       }
       if (value.person != null && actualPayment.person != value.person) {
-        throw new Error("В платеже не должен меняться участник");
+        return next("В платеже не должен меняться участник. person: " + value.person);
       }
       if (value.group) {
         if (actualPayment.group != value.group) {
-          throw new Error("В платеже не должна меняться группа");
+          return next("В платеже не должна меняться группа");
         }
         const group = await Groups.findOne(value.group);
         const actualMonth = actualPayment.month;
@@ -98,7 +107,7 @@ module.exports = {
             person: actualPayment.person
           });
           if (alreadyExistsPayment != null) {
-            throw new Error("Месяц уже оплачен. person:"+value.person)
+            return next("Месяц уже оплачен. person: " + value.person);
           }
           const actualDateRange = GetMonthDateRange(actualYear, actualMonth);
           const newDateRange = GetMonthDateRange(newYear, newMonth);
@@ -135,4 +144,3 @@ module.exports = {
     }
   }
 };
-

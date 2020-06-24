@@ -3,10 +3,12 @@ const GroupType = require('../../enums').GroupType;
 module.exports = {
   attributes: {
     group: {
-      model: 'groups'
+      model: 'groups',
+      required: true
     },
     instructor: {
-      model: 'persons'
+      model: 'persons',
+      required: true
     },
     startsAt: {
       type: 'number',
@@ -32,6 +34,9 @@ module.exports = {
   },
   beforeCreate: async function (value, next) {
     try {
+      if (await isAlreadyExistsEvent(value.group, value.startsAt, value.duration)) {
+        return next(`Занятие в это время уже есть. ${JSON.stringify(value)}`);
+      }
       const startsDate = new Date(value.startsAt);
       const month = startsDate.getMonth();
       const year = startsDate.getFullYear();
@@ -48,7 +53,16 @@ module.exports = {
       const id = valueToSet.id;
       const actualEvent = await Events.findOne({id});
       if (valueToSet.group != null && actualEvent.group != valueToSet.group) {
-        throw new Error("В событии не должна меняться группа");
+        return next("В событии не должна меняться группа");
+      }
+      const eventTimeChanged = valueToSet.startsAt || valueToSet.duration;
+      const isExistsEvent = await isAlreadyExistsEvent(
+        actualEvent.group, 
+        valueToSet.startsAt || actualEvent.startsAt,
+        value.duration || actualEvent.duration,
+        id )
+      if (eventTimeChanged && isExistsEvent) {
+        return next(`Занятие в это время уже есть. ${JSON.stringify(value)}`);
       }
       const group = await Groups.findOne(actualEvent.group);
       if (group.type == GroupType.General){
@@ -74,3 +88,15 @@ module.exports = {
     }
   }
 };
+
+async function isAlreadyExistsEvent(group, startsAt, duration, excludeId) {
+  let query = { 
+    group: group, 
+    startsAt: { ">=": startsAt, "<": startsAt + duration * 60 * 1000 } 
+  };
+  if (excludeId) {
+    query.id = { "!=" : excludeId };
+  }
+  const alreadyExistsCount = await Events.count(query);
+  return !!alreadyExistsCount;
+}

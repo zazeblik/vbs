@@ -31,7 +31,7 @@ module.exports = {
       
       return res.send({ persons, generals, personals, unpayedEvents });
     } catch (error) {
-      return res.badRequest();
+      return res.badRequest(error.message);
     }
   },
   groupUnpayedEvents: async function (req, res){
@@ -51,7 +51,7 @@ module.exports = {
       const result = events.filter(e => !e.payments.map(p => p.person).includes(person));
       return res.send(result);
     } catch (error) {
-      return res.badRequest();
+      return res.badRequest(error.message);
     }
   },
   transactions: async function (req, res){
@@ -70,8 +70,8 @@ module.exports = {
         if (a.updatedAt == b.updatedAt) return 0;
       }).slice(0, limit);
       return res.send(transactions);
-    } catch (error) {
-      return res.badRequest();
+    } catch (err) {
+      return res.badRequest(err.message);
     }
   },
   delete: async function (req, res) {
@@ -79,7 +79,7 @@ module.exports = {
       await Payments.destroy(req.param("id")).fetch();
       return res.ok();
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   edit: async function (req, res) {
@@ -89,7 +89,7 @@ module.exports = {
       await Payments.update(req.param("id"), req.body)
       return res.ok();
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   create: async function (req, res) {
@@ -98,18 +98,35 @@ module.exports = {
       await Payments.create(req.body)
       return res.ok();
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   createAll: async function (req, res) {
     try {
       req.body.forEach(p => {
         p.updater = req.session.User.id;
-      })
-      await Payments.createEach(req.body)
+      });
+      let uniquePaymentEvents = [];
+      let paymentsToCreate = [];
+      req.body.forEach(payment => {
+        if (!payment.events) return;
+        const events = payment.events;
+        let isContainsDublicates = false;
+        for (let i = 0; i < events.length; i++) {
+          const event = events[i];
+          if (!uniquePaymentEvents.includes(event)){
+            uniquePaymentEvents.push(event);
+          } else {
+            isContainsDublicates = true;
+            break;
+          }
+        }
+        if (!isContainsDublicates) paymentsToCreate.push(payment);
+      });
+      await Payments.createEach(paymentsToCreate);
       return res.ok();
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
 };

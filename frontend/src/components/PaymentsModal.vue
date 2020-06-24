@@ -310,7 +310,7 @@ export default {
         return;
       }
       this.$root.$emit("bv::hide::modal", this.modalId);
-      this.$bvToast.toast('Сохранено платежей: ' + this.payments.length, {
+      this.$bvToast.toast('Статус запроса: ' + result, {
         title: 'Платежи успешно сохранены',
         variant: 'success',
         autoHideDelay: 3000,

@@ -7,7 +7,7 @@ module.exports = {
       await Events.destroy(req.param("id")).fetch();
       return res.ok();
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   edit: async function (req, res) {
@@ -17,7 +17,7 @@ module.exports = {
       await Events.update(req.param("id"), req.body)
       return res.ok();
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   create: async function (req, res) {
@@ -26,7 +26,7 @@ module.exports = {
       await Events.create(req.body)
       return res.ok();
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   addVisitor: async function (req, res) {
@@ -74,7 +74,7 @@ module.exports = {
         personBalances
       });
     } catch (error) {
-      return res.badRequest();
+      return res.badRequest(error.message);
     }
   },
   removeVisitor: async function (req, res) {
@@ -112,7 +112,7 @@ module.exports = {
         personBalances
       });
     } catch (error) {
-      return res.badRequest();
+      return res.badRequest(error.message);
     }
   },
 };
