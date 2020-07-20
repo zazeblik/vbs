@@ -3,6 +3,16 @@ module.exports.paths = {
 }
 module.exports.routes = {
   '/auth': '/?route=auth',
+  '/articles': '/?route=articles',
+  '/photo': '/?route=photo',
+  '/tournaments': '/?route=tournaments',
+  '/boss': '/?route=boss',
+  '/places': '/?route=places',
+  '/feedback': '/?route=feedback',
+  '/contacts': '/?route=contacts',
+  '/instructors': '/?route=instructors',
+  '/groups': '/?route=groups',
+  '/schedule': '/?route=schedule',
   '/persons/edit/:id': 'PersonsController.edit',
   '/archivepersons/edit/:id': 'ArchivePersonsController.edit',
   '/places/edit/:id': 'PlacesController.edit',

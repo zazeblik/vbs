@@ -288,6 +288,7 @@ export default {
       this.events = info.events;
       this.payments = info.payments;
       this.incomes = info.incomes;
+      if (!this.$refs.fullCalendar) return;
       let calendarApi = this.$refs.fullCalendar.getApi();
       calendarApi.gotoDate(new Date(this.selectedYear, this.selectedMonth));
     },

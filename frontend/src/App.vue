@@ -1,10 +1,10 @@
 <template>
   <div id="app">
     <Header 
+      :settings="settings"
       :isAuthShown="isAuthShown"
-      :isControlPanelShown="isControlPanelShown"
-       />
-    <router-view />
+      :isControlPanelShown="isControlPanelShown" />
+    <router-view :class="isSiteShown ? 'mt-5 pt-5 site-page' : null" />
   </div>
 </template>
 
@@ -14,12 +14,22 @@ export default {
   name: 'app',
   data() {
     return {
+      settings: null,
+      baseUrl: "/site",
       isAuthShown: false,
       isControlPanelShown: false
     }
   },
   components: {
     Header
+  },
+  computed: {
+    isSiteShown() {
+      return !this.isAuthShown && !this.isControlPanelShown;
+    }
+  },
+  async mounted(){
+    this.settings = await this.$getAsync(`${this.baseUrl}/settings`);
   },
   methods: {
     showHomeHeader() {

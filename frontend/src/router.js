@@ -12,6 +12,11 @@ export default new Router({
             component: () => import('./views/Home.vue')
         },
         {
+            path: '/articles',
+            beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
+            component: () => import('./views/pages/Articles.vue')
+        },
+        {
             path: '/auth',
             name: 'auth',
             beforeEnter: (to, from, next) => Vue.prototype.$isAuthenticated ? next({name: 'cp'}) : next(),
@@ -63,6 +68,10 @@ export default new Router({
                 {
                     path: 'payments',
                     component: () => import('./views/payments/Payments.vue')
+                },
+                {
+                    path: 'settings',
+                    component: () => import('./views/site/Settings.vue')
                 }
             ]
         }

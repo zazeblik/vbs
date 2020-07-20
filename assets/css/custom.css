@@ -64,3 +64,26 @@ button.check-all {
 .fc-toolbar.fc-header-toolbar{
     margin-bottom: 0 !important;
 }
+
+.site-page {
+    min-height: calc(100vh - 184px - 1rem);
+}
+
+@media (min-width: 768px) {
+  .col-md-6 {
+    -ms-flex: 0 0 50% !important;
+    flex: 0 0 calc(50% - 1rem) !important;
+    max-width: calc(50% - 1rem) !important;
+  }
+}
+
+.material {
+    padding: 1rem;
+    background: #fff;
+    margin: 0.5rem;
+}
+
+.article img {
+    max-width: 100%;
+    height: auto;
+}

@@ -45,4 +45,8 @@ module.exports.policies = {
   dashboard: {
     '*': 'authenticated'
   },
+  site: {
+    '*': 'authenticated',
+    settings: true
+  }
 };

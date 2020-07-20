@@ -1,20 +1,20 @@
 <template>
   <div>
     <validation-observer ref="observer" v-slot="{ invalid }">
-    <b-modal
-      :id="modalId"
-      :title="title"
-      @close="resetForm"
-      @cancel="resetForm"
-      size="lg"
-      cancel-title="Отмена"
-      cancel-variant="outline-secondary"
-      ok-title="Сохранить"
-      ok-variant="success"
-      @ok="saveChanges"
-      no-stacking
-      :ok-disabled="invalid"
-    >
+      <b-modal
+        :id="modalId"
+        :title="title"
+        @close="resetForm"
+        @cancel="resetForm"
+        size="lg"
+        cancel-title="Отмена"
+        cancel-variant="outline-secondary"
+        ok-title="Сохранить"
+        ok-variant="success"
+        @ok="saveChanges"
+        no-stacking
+        :ok-disabled="invalid"
+      >
         <b-form>
           <validation-provider
             v-for="(control, index) in itemForm.filter(c => c.type != 'schedule')"
@@ -81,9 +81,7 @@
                 :isDisabled="!control.models.length"
                 :state="getValidationState(validationContext)"
               />
-              <b-input-group
-                v-if="control.type == 'datetime'"
-                size="sm" >
+              <b-input-group v-if="control.type == 'datetime'" size="sm">
                 <b-form-datepicker
                   placeholder="Выберите дату"
                   show-decade-nav
@@ -118,7 +116,7 @@
                     control.value = date;
                   }"
                   :state="getValidationState(validationContext)"
-                  no-close-button 
+                  no-close-button
                 />
               </b-input-group>
               <b-form-invalid-feedback
@@ -139,22 +137,21 @@
             />
           </b-form-group>
         </b-form>
-      
-    </b-modal>
+      </b-modal>
     </validation-observer>
   </div>
 </template>
 
 <script>
-import { ModelSelect } from 'vue-search-select'
-import FormSchedule from '../components/FormSchedule'
+import { ModelSelect } from "vue-search-select";
+import FormSchedule from "../components/FormSchedule";
 
 export default {
   components: {
     ModelSelect,
     FormSchedule
   },
-  props: [ "baseUrl", "itemForm", "modalId" ],
+  props: ["baseUrl", "itemForm", "modalId"],
   data() {
     return {
       title: "",
@@ -205,7 +202,7 @@ export default {
       this.isEdit = true;
       this.title = `Редактирование: ${item.name || ""}`;
       this.id = item.id;
-      
+
       this.itemForm.forEach(c => {
         switch (c.type) {
           case "string":
@@ -233,16 +230,16 @@ export default {
             break;
         }
       });
-      
+
       this.$root.$emit("bv::show::modal", this.modalId, button);
     },
     showAdd() {
       this.isEdit = false;
-      this.title = 'Добавление';
+      this.title = "Добавление";
       this.setDefaultValues();
       this.$root.$emit("bv::show::modal", this.modalId);
     },
-    setDefaultValues(){
+    setDefaultValues() {
       this.itemForm.forEach(c => {
         switch (c.type) {
           case "string":
@@ -262,7 +259,7 @@ export default {
             c.value = c.value || false;
             break;
           case "date":
-            c.value = c.value || null; 
+            c.value = c.value || null;
             break;
           case "datetime":
             let defaultDate = new Date();
@@ -274,7 +271,7 @@ export default {
         }
       });
     },
-    setDateTimeValues(field, value){
+    setDateTimeValues(field, value) {
       field.value = value;
       field.date = value;
       field.time = this.$moment(value).format("HH:mm");
@@ -282,12 +279,12 @@ export default {
     },
     async saveChanges() {
       const formValues = this.getFormValues();
-      if (this.isEdit){
+      if (this.isEdit) {
         await this.$postAsync(`${this.baseUrl}/edit/${this.id}`, formValues);
       } else {
         await this.$postAsync(`${this.baseUrl}/create`, formValues);
       }
-      
+
       this.resetForm();
       this.$emit("formSaved");
     },
