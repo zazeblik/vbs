@@ -14,3 +14,12 @@ module.exports.TransactionType = {
     Payment: 0,
     Income: 1
 }
+
+module.exports.SiteBlock = {
+    Unset: 0,
+    Articles: 1,
+    Club: 2,
+    Boss: 3,
+    Feedback: 4,
+    Сourse: 5
+}

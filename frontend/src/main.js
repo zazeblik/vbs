@@ -17,6 +17,7 @@ import {
 } from "vee-validate";
 import ru from "vee-validate/dist/locale/ru.json";
 import * as rules from "vee-validate/dist/rules";
+import CKEditor from '@ckeditor/ckeditor5-vue';
 
 const moment = require('moment');
 require('moment/locale/ru');
@@ -27,6 +28,7 @@ Object.keys(rules).forEach(rule => extend(rule, rules[rule]));
 Vue.component("ValidationObserver", ValidationObserver);
 Vue.component("ValidationProvider", ValidationProvider);
 Vue.use(require('vue-moment'), { moment });
+Vue.use( CKEditor );
 Vue.use(VueAxios, axios)
 Vue.use(BootstrapVue)
 Vue.use(BootstrapVueIcons) 

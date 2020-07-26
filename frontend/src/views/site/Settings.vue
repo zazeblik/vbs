@@ -11,7 +11,8 @@
       </validation-provider>
       <validation-provider :name="subtitleLabel" :rules="{ min: 3 }" v-slot="validationContext">
         <b-form-group label-cols-sm="3" label-size="sm" :label="subtitleLabel" class="mb-1" >
-          <b-form-input size="sm" v-model="subtitle" @change="save(validationContext, { subtitle })" :state="getValidationState(validationContext)" />
+          <b-form-input size="sm" v-model="subtitle" 
+            @change="save(validationContext, { subtitle })" :state="getValidationState(validationContext)" />
           <b-form-invalid-feedback id="feedback_subtitle">{{ validationContext.errors[0] }}</b-form-invalid-feedback>
         </b-form-group>
       </validation-provider>

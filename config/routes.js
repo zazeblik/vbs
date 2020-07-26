@@ -37,6 +37,9 @@ module.exports.routes = {
   '/incomes/delete/:id': 'IncomesController.delete',
   '/dashboard/month-info': 'DashboardController.monthInfo',
   '/dashboard/create-month-events': 'DashboardController.createMonthEvents',
+  '/materials/edit/:id': 'MaterialsController.edit',
+  '/materials/delete/:id': 'MaterialsController.delete',
+  '/site/uploads*': 'SiteController.uploads',
   '/cp*': function(req, res) {
     return res.redirect('/?route=' + req.url.substr(1))
   }

@@ -13,6 +13,7 @@
         ok-variant="success"
         @ok="saveChanges"
         no-stacking
+        no-enforce-focus
         :ok-disabled="invalid"
       >
         <b-form>
@@ -24,7 +25,7 @@
             v-slot="validationContext"
           >
             <b-form-group
-              label-cols-sm="3"
+              :label-cols-sm="control.type == 'content' ? 12 : 3"
               label-size="sm"
               :label="control.label"
               v-if="!isHiddenControl(control)"
@@ -33,6 +34,13 @@
               <b-form-input
                 v-if="control.type == 'string'"
                 size="sm"
+                v-model="control.value"
+                :state="getValidationState(validationContext)"
+              />
+              <ckeditor
+                v-if="control.type == 'content'"
+                :editor="editor"
+                :config="editorConfig"
                 v-model="control.value"
                 :state="getValidationState(validationContext)"
               />
@@ -117,7 +125,7 @@
                   }"
                   :state="getValidationState(validationContext)"
                   no-close-button
-                />
+                /> 
               </b-input-group>
               <b-form-invalid-feedback
                 :id="'feedback_'+control.property"
@@ -145,6 +153,9 @@
 <script>
 import { ModelSelect } from "vue-search-select";
 import FormSchedule from "../components/FormSchedule";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import '@ckeditor/ckeditor5-build-classic/build/translations/ru'; 
+import {UploadAdapter} from "../shared/uploadAdapter";
 
 export default {
   components: {
@@ -156,23 +167,34 @@ export default {
     return {
       title: "",
       id: null,
-      isEdit: false
+      isEdit: false,
+      editor: ClassicEditor,
+      editorConfig: {
+        language: "ru",
+        extraPlugins: [this.uploadAdapterPlugin]
+      }
     };
   },
   methods: {
     getValidationState({ dirty, validated, valid = null }) {
       return dirty || validated ? valid : null;
     },
+    uploadAdapterPlugin(editor) {
+      editor.plugins.get("FileRepository").createUploadAdapter = loader => {
+        return new UploadAdapter(loader);
+      };
+    },
     isHiddenControl(control) {
       if (control.hidden) return true;
       if (control.visibility) return !control.visibility(this.itemForm);
       return false;
-    },
+    }, 
     getFormValues() {
       let result = {};
       this.itemForm.forEach((c, index) => {
         switch (c.type) {
           case "string":
+          case "content":
           case "number":
           case "color":
           case "model":
@@ -206,6 +228,7 @@ export default {
       this.itemForm.forEach(c => {
         switch (c.type) {
           case "string":
+          case "content":
           case "number":
           case "color":
           case "schedule":
@@ -243,6 +266,7 @@ export default {
       this.itemForm.forEach(c => {
         switch (c.type) {
           case "string":
+          case "content":
           case "number":
           case "color":
           case "schedule":

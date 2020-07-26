@@ -1,3 +1,7 @@
+body {
+	--ck-z-default: 100;
+	--ck-z-modal: calc( var(--ck-z-default) + 999 );
+}
 .ui.search.selection.dropdown, .ui.search.selection.dropdown i, .ui.search.selection.dropdown input {
     height: calc(1.5em + 0.5rem + 2px);
     padding: 0.25rem 0.5rem !important;
@@ -87,3 +91,4 @@ button.check-all {
     max-width: 100%;
     height: auto;
 }
+

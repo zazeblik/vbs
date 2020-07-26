@@ -72,6 +72,10 @@ export default new Router({
                 {
                     path: 'settings',
                     component: () => import('./views/site/Settings.vue')
+                },
+                {
+                    path: 'materials',
+                    component: () => import('./views/site/Materials.vue')
                 }
             ]
         }

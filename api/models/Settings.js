@@ -9,6 +9,15 @@ module.exports = {
     },
     subtitle: {
       type: "string"
+    },
+    phone: {
+      type: "string"
+    },
+    email: {
+      type: "string"
+    },
+    fullName: {
+      type: "string"
     }
   },
 };

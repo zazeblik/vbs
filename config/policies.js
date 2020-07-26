@@ -45,8 +45,12 @@ module.exports.policies = {
   dashboard: {
     '*': 'authenticated'
   },
+  materials: {
+    '*': 'authenticated'
+  },
   site: {
     '*': 'authenticated',
+    uploads: true,
     settings: true
   }
 };

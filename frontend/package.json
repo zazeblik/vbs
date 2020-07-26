@@ -7,6 +7,14 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-build-classic": "git+https://github.com/zazeblik/ckeditor5-build-classic.git",
+    "@ckeditor/ckeditor5-dev-utils": "^23.0.0",
+    "@ckeditor/ckeditor5-dev-webpack-plugin": "^23.0.0",
+    "@ckeditor/ckeditor5-image": "^20.0.0",
+    "@ckeditor/ckeditor5-link": "^20.0.0",
+    "@ckeditor/ckeditor5-theme-lark": "^20.0.0",
+    "@ckeditor/ckeditor5-upload": "^20.0.0",
+    "@ckeditor/ckeditor5-vue": "^1.0.1",
     "@fullcalendar/core": "^4.4.2",
     "@fullcalendar/daygrid": "^4.4.2",
     "@fullcalendar/vue": "^4.4.2",
@@ -14,6 +22,7 @@
     "bootstrap": "^4.4.1",
     "bootstrap-vue": "^2.13.0",
     "core-js": "^3.6.4",
+    "raw-loader": "^0.5.1",
     "vee-validate": "^3.3.0",
     "vue": "^2.6.11",
     "vue-axios": "^2.1.5",
@@ -24,6 +33,7 @@
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.2.0",
     "@vue/cli-service": "~4.2.0",
+    "postcss-loader": "^3.0.0",
     "sass": "^1.26.5",
     "sass-loader": "^8.0.2",
     "vue-template-compiler": "^2.6.11",

@@ -1,4 +1,6 @@
-const GroupType = require("../../../enums").GroupType;
+const Enums = require("../../../enums");
+const GroupType = Enums.GroupType;
+const SiteBlock = Enums.SiteBlock;
 
 module.exports.ArchivePersonForm = [
   {
@@ -176,6 +178,55 @@ module.exports.GroupForm = [
     validations: {}
   },
 ];
+
+module.exports.MaterialForm = [
+  {
+    label: "Наименование",
+    property: "name",
+    type: "string",
+    validations: {
+      required: true
+    }
+  },
+  {
+    label: "Изображение",
+    property: "image",
+    type: "image",
+    validations: {}
+  },
+  {
+    label: "Контент",
+    property: "content",
+    type: "content"
+  },
+  {
+    label: "Опубликовано",
+    property: "public",
+    type: "boolean",
+    validations: {}
+  },
+  {
+    label: "На главной",
+    property: "onMain",
+    type: "boolean",
+    validations: {}
+  },
+  {
+    label: "Блок",
+    property: "block",
+    type: "enum",
+    options: [
+      { text: "не задано", value: SiteBlock.Unset },
+      { text: "статьи", value: SiteBlock.Articles },
+      { text: "о клубе", value: SiteBlock.Club },
+      { text: "направления", value: SiteBlock.Сourse },
+      { text: "руководители", value: SiteBlock.Boss },
+      { text: "отзывы", value: SiteBlock.Feedback },
+
+    ],
+    validations: {}
+  },
+]
 
 module.exports.EventForm = [
   {
