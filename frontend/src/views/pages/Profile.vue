@@ -12,7 +12,7 @@
             <b-form-input
               size="sm"
               v-model="$user.login"
-              @change="save(validationContext, { login: $settings.login })"
+              @change="save(validationContext, { login: $user.login })"
               :state="getValidationState(validationContext)"
             />
             <b-form-invalid-feedback id="feedback_login">{{ validationContext.errors[0] }}</b-form-invalid-feedback>
@@ -52,7 +52,6 @@ export default {
   methods: {
     save(validationState, changes) {
       const state = this.getValidationState(validationState);
-      console.log(state)
       if (state) {
         this.$postAsync(`${this.baseUrl}/profile`, changes);
       }

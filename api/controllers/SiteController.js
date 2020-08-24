@@ -50,6 +50,8 @@ module.exports = {
   },
   profile: async function (req, res) {
     try {
+      delete req.body.role;
+      delete req.body.person;
       await Users.update(req.session.User.id, req.body);
       return res.ok();
     } catch (err) {
