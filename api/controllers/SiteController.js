@@ -1,30 +1,26 @@
 const path = require('path');
 const fs = require('fs');
+const GroupType = require('../../enums').GroupType;
+const DateRangeHelper =  require('../utils/DateRangeHelper');
 
 module.exports = {
-  upload: function (req, res) {
+  publicSchedule: async function (req, res) {
+    if (!req.param("year")) return res.status(400).send("year не указан");
+    if (!req.param("month")) return res.status(400).send("month не указан");
     try {
-      const filename = new Date().getTime() + '_' + req.param('name');
-      const file = req.file('file');
-      if (req.method == "POST" && file && filename) {
-        file.upload({
-          saveAs: filename,
-          dirname: path.resolve(sails.config.appPath, 'uploads')
-        }, function whenDone(err, uploadedFiles) {
-          if (err) {
-            return res.negotiate(err);
-          }
-          if (uploadedFiles.length === 0) {
-            return res.badRequest('No file was uploaded');
-          }
-          return res.ok({
-            result: 'success',
-            url: '/site/uploads/' + filename
-          })
-        })
-      } else {
-        return res.badRequest("Need POST with file and name parameters")
-      }
+      const year = Number(req.param("year"));
+      const month = Number(req.param("month"));
+      const monthDateRange = DateRangeHelper.GetMonthDateRange(year, month);
+      const groups = await Groups.find({ type: GroupType.General, hidden: false });
+      const groupIds = groups.map(g => g.id);
+      const events = await Events
+        .find({ group: groupIds, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
+        .sort("startsAt ASC")
+        .populate("instructor")
+        .populate("group")
+        .populate("place");
+      
+      return res.send(events);
     } catch (err) {
       return res.badRequest(err.message);
     }
@@ -51,6 +47,14 @@ module.exports = {
   settings: async function (req, res) {
     const settings = await Settings.findOne(1);
     return res.send(settings);
+  },
+  profile: async function (req, res) {
+    try {
+      await Users.update(req.session.User.id, req.body);
+      return res.ok();
+    } catch (err) {
+      return res.badRequest(err.message);
+    }
   }
 };
 

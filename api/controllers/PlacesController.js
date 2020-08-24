@@ -1,3 +1,4 @@
+const GroupType = require('../../enums').GroupType
 module.exports = {
   edit: async function (req, res) {
     try {
@@ -24,6 +25,14 @@ module.exports = {
           .send(err);
       await Places.destroy(req.body).fetch();
       return res.ok();
+    } catch (err) {
+      return res.badRequest();
+    }
+  },
+  materials: async function (req, res) {
+    try {
+      let places = await Places.find().populate("groups", { type: GroupType.General, hidden: false, schedule: { '!=': '' } });
+      return res.ok(places);
     } catch (err) {
       return res.badRequest();
     }

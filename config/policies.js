@@ -1,56 +1,52 @@
-/**
- * Policy Mappings
- * (sails.config.policies)
- *
- * Policies are simple functions which run **before** your actions.
- *
- * For more information on configuring policies, check out:
- * https://sailsjs.com/docs/concepts/policies
- */
-
 module.exports.policies = {
-
-  /***************************************************************************
-  *                                                                          *
-  * Default policy for all controllers and actions, unless overridden.       *
-  * (`true` allows public access)                                            *
-  *                                                                          *
-  ***************************************************************************/
-
-  // '*': true,
   users: {
-    '*': 'authenticated'
+    '*': ['authenticated', 'isControlPanelAvailable'],
+    authenticated: 'authenticated'
   },
   persons: {
-    '*': 'authenticated'
+    '*': ['authenticated', 'isControlPanelAvailable'],
+    find: true
   },
   groups: {
-    '*': 'authenticated'
+    '*': ['authenticated', 'isControlPanelAvailable'],
+    generalDefaultInstructors: true,
+    find: true
   },
   places: {
-    '*': 'authenticated'
+    '*': ['authenticated', 'isControlPanelAvailable'],
+    materials: true,
+    find: true
   },
   archivePersons: {
-    '*': 'authenticated'
+    '*': ['authenticated', 'isControlPanelAvailable']
   },
   events: {
-    '*': 'authenticated'
+    '*': ['authenticated', 'isControlPanelAvailable']
   },
   incomes: {
-    '*': 'authenticated'
+    '*': ['authenticated', 'isControlPanelAvailable']
   },
   payments: {
-    '*': 'authenticated'
+    '*': ['authenticated', 'isControlPanelAvailable']
   },
   dashboard: {
-    '*': 'authenticated'
+    '*': ['authenticated', 'isControlPanelAvailable']
   },
   materials: {
-    '*': 'authenticated'
+    '*': ['authenticated', 'isAdmin'],
+    find: true,
+    findOne: true
+  },
+  files: {
+    '*': ['authenticated', 'isControlPanelAvailable'],
+    upload: ['authenticated', 'isAdmin'],
+    find: true
   },
   site: {
-    '*': 'authenticated',
+    '*': ['authenticated', 'isAdmin'],
+    profile: 'authenticated',
     uploads: true,
+    publicSchedule: true,
     settings: true
   }
 };

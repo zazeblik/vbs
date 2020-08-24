@@ -5,7 +5,7 @@ module.exports = {
     }
     const login = req.param("login");
     const password = req.param("password");
-    Users.findOne({ login: login }).decrypt().exec(function(err, user) {
+    Users.findOne({ login: login }).populate('person').decrypt().exec(function(err, user) {
       if (err) {
         return res.status(500).send(err);
       } 

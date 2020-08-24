@@ -138,7 +138,7 @@ export default {
       this.isBusy = false;
     },
     getItemFormValue(item){
-      const allowed = this.itemForm.filter(f => !f.hidden).map(f => f.property);
+      const allowed = this.itemForm.filter(f => !f.hidden && f.type != "content").map(f => f.property);
       return Object.keys(item)
         .filter(key => allowed.includes(key))
         .reduce((obj, key) => {

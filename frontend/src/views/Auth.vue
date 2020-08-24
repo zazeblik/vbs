@@ -39,6 +39,7 @@
 
 <script>
 import Vue from 'vue'
+import { Role } from '../../../enums'
 export default {
   data() {
     return {
@@ -59,7 +60,7 @@ export default {
         return;
       Vue.prototype.$user = user;
       Vue.prototype.$isAuthenticated = true;
-      this.$router.push({name: 'cp'});
+      this.$router.push({name: user.role == Role.User ? 'home' : 'dashboard'});
     }
   }
 }

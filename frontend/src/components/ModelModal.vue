@@ -18,14 +18,14 @@
       >
         <b-form>
           <validation-provider
-            v-for="(control, index) in itemForm.filter(c => c.type != 'schedule')"
+            v-for="(control, index) in itemForm.filter(c => !lastFormTypes.includes(c.type))"
             :key="index"
             :name="getName(control.property)"
             :rules="control.validations"
             v-slot="validationContext"
           >
             <b-form-group
-              :label-cols-sm="control.type == 'content' ? 12 : 3"
+              label-cols-sm="3"
               label-size="sm"
               :label="control.label"
               v-if="!isHiddenControl(control)"
@@ -37,13 +37,26 @@
                 v-model="control.value"
                 :state="getValidationState(validationContext)"
               />
-              <ckeditor
-                v-if="control.type == 'content'"
-                :editor="editor"
-                :config="editorConfig"
+              <b-form-input
+                v-if="control.type == 'password'"
+                type="password"
+                :placeholder="control.placeholder"
+                size="sm"
                 v-model="control.value"
                 :state="getValidationState(validationContext)"
               />
+              <b-form-file
+                v-if="control.type == 'file'"
+                size="sm"
+                :value="control.file"
+                class="file-input"
+                :accept="control.accept"
+                @input="uploadImage($event, index)"
+                :state="getValidationState(validationContext)"
+                :placeholder="control.value ? control.value.substr(control.value.lastIndexOf('/') + 1) : 'Выберите или перетащите файл...'"
+                drop-placeholder="Перетащите файл сюда..."
+                browse-text="Выбрать..."
+              ></b-form-file>
               <b-form-input
                 v-if="control.type == 'number'"
                 type="number"
@@ -125,7 +138,7 @@
                   }"
                   :state="getValidationState(validationContext)"
                   no-close-button
-                /> 
+                />
               </b-input-group>
               <b-form-invalid-feedback
                 :id="'feedback_'+control.property"
@@ -144,6 +157,28 @@
               ref="formSchedule"
             />
           </b-form-group>
+          <b-form-group
+            label-cols-sm="12"
+            label-size="sm"
+            v-if="itemForm.some(c => c.type == 'content')"
+            :label="itemForm.find(c => c.type == 'content').label"
+            class="mb-1"
+          >
+            <ckeditor
+              :editor="editor"
+              :config="editorConfig"
+              v-model="itemForm.find(c => c.type == 'content').value"
+            />
+          </b-form-group>
+          <b-form-group
+            label-cols-sm="12"
+            label-size="sm"
+            v-if="itemForm.some(c => c.type == 'html')"
+            :label="itemForm.find(c => c.type == 'html').label"
+            class="mb-1"
+          >
+            <b-form-textarea size="sm" v-model="itemForm.find(c => c.type == 'html').value" />
+          </b-form-group>
         </b-form>
       </b-modal>
     </validation-observer>
@@ -154,13 +189,13 @@
 import { ModelSelect } from "vue-search-select";
 import FormSchedule from "../components/FormSchedule";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import '@ckeditor/ckeditor5-build-classic/build/translations/ru'; 
-import {UploadAdapter} from "../shared/uploadAdapter";
+import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
+import { UploadAdapter, UploadFile } from "../shared/uploadAdapter";
 
 export default {
   components: {
     ModelSelect,
-    FormSchedule
+    FormSchedule,
   },
   props: ["baseUrl", "itemForm", "modalId"],
   data() {
@@ -169,18 +204,24 @@ export default {
       id: null,
       isEdit: false,
       editor: ClassicEditor,
+      lastFormTypes: ["schedule", "content", "html"],
       editorConfig: {
         language: "ru",
-        extraPlugins: [this.uploadAdapterPlugin]
-      }
+        extraPlugins: [this.uploadAdapterPlugin],
+      },
     };
   },
   methods: {
     getValidationState({ dirty, validated, valid = null }) {
       return dirty || validated ? valid : null;
     },
+    async uploadImage(file, index) {
+      const result = await UploadFile(file);
+      this.itemForm[index].value =
+        result && result.default ? result.default : this.itemForm[index];
+    },
     uploadAdapterPlugin(editor) {
-      editor.plugins.get("FileRepository").createUploadAdapter = loader => {
+      editor.plugins.get("FileRepository").createUploadAdapter = (loader) => {
         return new UploadAdapter(loader);
       };
     },
@@ -188,13 +229,15 @@ export default {
       if (control.hidden) return true;
       if (control.visibility) return !control.visibility(this.itemForm);
       return false;
-    }, 
+    },
     getFormValues() {
       let result = {};
       this.itemForm.forEach((c, index) => {
         switch (c.type) {
           case "string":
           case "content":
+          case "html":
+          case "file":
           case "number":
           case "color":
           case "model":
@@ -203,6 +246,9 @@ export default {
           case "collection":
           case "enum":
             result[c.property] = c.value;
+            break;
+          case "password":
+            if (c.value) result[c.property] = c.value;
             break;
           case "checkbox":
             result[c.property] = c.value || false;
@@ -224,25 +270,40 @@ export default {
       this.isEdit = true;
       this.title = `Редактирование: ${item.name || ""}`;
       this.id = item.id;
-
-      this.itemForm.forEach(c => {
+      this.itemForm.forEach((c) => {
         switch (c.type) {
           case "string":
           case "content":
-          case "number":
+          case "html":
+          case "file":
           case "color":
           case "schedule":
             c.value = item[c.property] || c.defaultValue;
             break;
+          case "password":
+            c.validations.required = false;
+            c.placeholder = "Введите новый пароль...";
+            break;
+          case "number":
+            c.value = this.getNumberDefaultValue(
+              item[c.property],
+              c.defaultValue
+            );
+            break;
           case "model":
-            c.value = item[c.property].id || item[c.property];
+            c.value =  item[c.property] ? (item[c.property].id || item[c.property]) : null;
             break;
           case "collection":
-          case "enum":
             c.value = item[c.property];
             break;
           case "checkbox":
-            c.value = item[c.property] || c.defaultValue || false;
+            c.value = this.getCheckboxDefaultValue(
+              item[c.property],
+              c.defaultValue
+            );
+            break;
+          case "enum":
+            c.value = item[c.property] || c.options[0].value;
             break;
           case "date":
             c.value = item[c.property] ? new Date(item[c.property]) : null;
@@ -263,27 +324,33 @@ export default {
       this.$root.$emit("bv::show::modal", this.modalId);
     },
     setDefaultValues() {
-      this.itemForm.forEach(c => {
+      this.itemForm.forEach((c) => {
         switch (c.type) {
           case "string":
           case "content":
-          case "number":
+          case "html":
+          case "file":
           case "color":
           case "schedule":
           case "model":
+          case "date":
             c.value = c.value || null;
             break;
+          case "password":
+            c.validations.required = true;
+            c.placeholder = "Введите пароль...";
+            break;
+          case "number":
+            c.value = this.getNumberDefaultValue(c.value, c.defaultValue);
+            break;
           case "enum":
-            c.value = c.value;
+            c.value = c.value || c.options[0].value;
             break;
           case "collection":
             c.value = c.value || [];
             break;
           case "checkbox":
-            c.value = c.value || false;
-            break;
-          case "date":
-            c.value = c.value || null;
+            c.value = this.getCheckboxDefaultValue(c.value, c.defaultValue);
             break;
           case "datetime":
             let defaultDate = new Date();
@@ -313,20 +380,45 @@ export default {
       this.$emit("formSaved");
     },
     getName(property) {
-      const item = this.itemForm.find(f => f.property == property);
+      const item = this.itemForm.find((f) => f.property == property);
       return item ? item.label : property;
+    },
+    getCheckboxDefaultValue(value, defaultValue) {
+      if (typeof value === "boolean") {
+        return value;
+      } else if (typeof defaultValue === "boolean") {
+        return defaultValue;
+      } else {
+        return false;
+      }
+    },
+    getNumberDefaultValue(value, defaultValue) {
+      if (typeof value === "number") {
+        return value;
+      } else if (typeof defaultValue === "number") {
+        return defaultValue;
+      } else {
+        return null;
+      }
     },
     resetForm() {
       this.title = "";
       this.id = null;
-      this.itemForm.forEach(c => {
-        c.value = null;
+      this.itemForm.forEach((c) => {
+        c.value = c.type == "content" ? "" : null;
       });
-
       this.$nextTick(() => {
         this.$refs.observer.reset();
       });
-    }
-  }
+    },
+  },
 };
 </script>
+
+<style scoped>
+.file-input {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+</style>

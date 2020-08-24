@@ -237,6 +237,19 @@ module.exports = {
       return res.badRequest();
     }
   },
+  generalDefaultInstructors: async function (req, res) {
+    try {
+      const groups = await Groups.find({type: GroupType.General, hidden: false});
+      const defaultInstructorIds = [...new Set(groups.map(g => g.defaultInstructor))];
+      const instructors = await Persons.find({ id: defaultInstructorIds });
+      instructors.forEach(i => {
+        i.groups = groups.filter(g => g.defaultInstructor == i.id);
+      })
+      return res.ok(instructors);
+    } catch (err) {
+      return res.badRequest();
+    }
+  },
   delete: async function (req, res) {
     try {
       await Groups.destroy(req.param("id")).fetch();

@@ -3,18 +3,24 @@ module.exports.paths = {
 }
 module.exports.routes = {
   '/auth': '/?route=auth',
-  '/articles': '/?route=articles',
-  '/photo': '/?route=photo',
+  '/club': '/?route=club',
+  '/galery': '/?route=galery',
   '/tournaments': '/?route=tournaments',
   '/boss': '/?route=boss',
-  '/places': '/?route=places',
+  '/halls': '/?route=halls',
   '/feedback': '/?route=feedback',
   '/contacts': '/?route=contacts',
   '/instructors': '/?route=instructors',
   '/groups': '/?route=groups',
   '/schedule': '/?route=schedule',
+  '/privacy': '/?route=privacy',
+  '/profile': '/?route=profile',
+  '/data-transport': '/?route=data-transport',
+  '/service-rules': '/?route=service-rules',
+  '/payment-methods': '/?route=payment-methods',
   '/persons/edit/:id': 'PersonsController.edit',
   '/archivepersons/edit/:id': 'ArchivePersonsController.edit',
+  '/groups/general-default-instructors': 'GroupsController.generalDefaultInstructors',
   '/places/edit/:id': 'PlacesController.edit',
   '/groups/edit/:id': 'GroupsController.edit',
   '/groups/delete/:id': 'GroupsController.delete',
@@ -39,8 +45,12 @@ module.exports.routes = {
   '/dashboard/create-month-events': 'DashboardController.createMonthEvents',
   '/materials/edit/:id': 'MaterialsController.edit',
   '/materials/delete/:id': 'MaterialsController.delete',
+  '/users/edit/:id': 'UsersController.edit',
+  '/users/delete/:id': 'UsersController.delete',
+  '/files/edit/:id': 'FilesController.edit',
+  '/files/delete/:id': 'FilesController.delete',
   '/site/uploads*': 'SiteController.uploads',
-  '/cp*': function(req, res) {
-    return res.redirect('/?route=' + req.url.substr(1))
-  }
+  '/site/public-schedule': 'SiteController.publicSchedule',
+  '/cp*': function(req, res) { return res.redirect('/?route=' + req.url.substr(1)) },
+  '/articles*': function(req, res) { return res.redirect('/?route=' + req.url.substr(1)) },
 };

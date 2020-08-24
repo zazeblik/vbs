@@ -5,8 +5,9 @@
         <template slot="button-content">
           <b-icon icon="people-circle" />
         </template>
-        <b-dropdown-item v-if="isSiteShown" href="/cp">Панель управления</b-dropdown-item>
-        <b-dropdown-item v-else href="/">На сайт</b-dropdown-item>
+        <b-dropdown-item v-if="isSiteShown && $user.role != 0" href="/cp">Панель управления</b-dropdown-item>
+        <b-dropdown-item v-if="!isSiteShown" href="/">На сайт</b-dropdown-item>
+        <b-dropdown-item href="/profile">Профиль</b-dropdown-item>
         <b-dropdown-item href="/auth/logout">Выйти</b-dropdown-item>
       </b-nav-item-dropdown>
       <b-nav-item v-else to="/auth">Войти</b-nav-item>

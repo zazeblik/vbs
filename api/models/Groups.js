@@ -39,6 +39,11 @@ module.exports = {
       type: 'string',
       allowNull: true
     },
+    content: {
+      type: 'string',
+      columnType: 'LONGTEXT CHARACTER SET utf8mb4',
+      allowNull: true
+    },
     members: {
       collection: 'persons',
       via: 'groups'
@@ -52,7 +57,7 @@ module.exports = {
     try {
       await ArchivePersons.destroy({group: value.id}).fetch();
       await Events.destroy({group: value.id}).fetch();  
-      next();
+      return next();
     } catch (error) {
       return next(JSON.stringify([ error ]));
     }

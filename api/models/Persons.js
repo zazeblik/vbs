@@ -66,6 +66,11 @@ module.exports = {
     balance: {
       type: 'number',
       defaultsTo: 0
+    },
+    content: {
+      type: 'string',
+      columnType: 'LONGTEXT CHARACTER SET utf8mb4',
+      allowNull: true
     }
   },
   afterDestroy: async function(value, next){

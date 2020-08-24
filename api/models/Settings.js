@@ -18,6 +18,22 @@ module.exports = {
     },
     fullName: {
       type: "string"
+    },
+    vk: {
+      type: "string"
+    },
+    vkGroupId: {
+      type: "number",
+      allowNull: true
+    },
+    fb: {
+      type: "string"
+    },
+    instagram: {
+      type: "string"
+    },
+    marimedia: {
+      type: "string"
     }
   },
 };

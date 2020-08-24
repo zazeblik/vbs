@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <div v-if="$settings">
     <b-navbar v-if="isSiteShown" toggleable="lg" class="fixed-top shadow bg-white">
       <div class="text-center brand-block">
-        <div v-if="settings">
-          <a class="navbar-brand" to="/" v-if="settings.logo"></a>
-          <b-navbar-brand to="/" v-else>{{settings.name}}</b-navbar-brand>
+        <div v-if="$settings">
+          <a class="navbar-brand" to="/" v-if="$settings.logo"></a>
+          <b-navbar-brand to="/" v-else>{{$settings.name}}</b-navbar-brand>
           <br>
-          <a class="header-logo-lext d-none d-lg-inline" v-if="isSiteShown && settings.subtitle">{{settings.subtitle}}</a>
+          <a class="header-logo-lext d-none d-lg-inline" v-if="isSiteShown && $settings.subtitle">{{$settings.subtitle}}</a>
         </div>
       </div>
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
@@ -15,8 +15,8 @@
           <b-nav-item-dropdown id="siteNavDropdown" class="site-nav-item" text="О клубе">
             <b-dropdown-item to="/club">Наш клуб</b-dropdown-item>
             <b-dropdown-item to="/boss">Руководители</b-dropdown-item>
-            <b-dropdown-item to="/places">Залы</b-dropdown-item>
-            <b-dropdown-item to="/treners">Тренеры</b-dropdown-item>
+            <b-dropdown-item to="/halls">Залы</b-dropdown-item>
+            <b-dropdown-item to="/instructors">Тренеры</b-dropdown-item>
             <b-dropdown-item to="/feedback">Отзывы</b-dropdown-item>
             <b-dropdown-item to="/schedule">Расписание</b-dropdown-item>
           </b-nav-item-dropdown>
@@ -27,7 +27,6 @@
         <ProfileNav :isAuthShown="isAuthShown" :isSiteShown="isSiteShown" />
       </b-collapse>
     </b-navbar>
-
     <b-navbar v-else toggleable="lg" type="dark" variant="dark">
       <b-navbar-brand :to="isControlPanelShown ? '/cp' : '/'">CRM</b-navbar-brand>
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
@@ -36,22 +35,22 @@
           <b-nav-item-dropdown text="База данных">
             <b-dropdown-item to="/cp/persons">Участники</b-dropdown-item>
             <b-dropdown-item to="/cp/groups">Группы</b-dropdown-item>
-            <b-dropdown-item to="/cp/places">Залы</b-dropdown-item>
+            <b-dropdown-item to="/cp/places" v-if="$user.role == 2">Залы</b-dropdown-item>
             <b-dropdown-item to="/cp/archive">Архив</b-dropdown-item>
           </b-nav-item-dropdown>
           <b-nav-item-dropdown text="Журналы">
             <b-dropdown-item to="/cp/generals">Общие</b-dropdown-item>
             <b-dropdown-item to="/cp/personals">Индивидуальные</b-dropdown-item>
           </b-nav-item-dropdown>
-          <b-nav-item-dropdown text="Сайт">
+          <b-nav-item-dropdown text="Сайт" v-if="$user.role == 2">
             <b-dropdown-item to="/cp/settings">Настройки</b-dropdown-item>
             <b-dropdown-item to="/cp/materials">Материалы</b-dropdown-item>
-            <b-dropdown-item to="/cp/files">Документы</b-dropdown-item>
-            <b-dropdown-item to="/cp/profiles">Учётные записи</b-dropdown-item>
+            <b-dropdown-item to="/cp/files">Файлы</b-dropdown-item>
           </b-nav-item-dropdown>
-          <b-nav-item to="/cp/payments">Оплата</b-nav-item>
+          <b-nav-item to="/cp/payments" v-if="$user.role == 2">Оплата</b-nav-item>
+          <b-nav-item to="/cp/users">Учётные записи</b-nav-item>
         </b-navbar-nav>
-        <ProfileNav :isAuthShown="isAuthShown" :isSiteShown="isSiteShown" :settings="settings" />
+        <ProfileNav :isAuthShown="isAuthShown" :isSiteShown="isSiteShown" />
       </b-collapse>
     </b-navbar>
   </div>

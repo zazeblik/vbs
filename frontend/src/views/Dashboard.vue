@@ -29,6 +29,7 @@
           :header="{left:'',center: '',right: ''}"
           locale="ru"
           :firstDay="1"
+          height="auto"
           :events="calendarEvents"
         />
       </b-tab>

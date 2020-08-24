@@ -1,49 +1,25 @@
 <template>
   <div>
     <b-container>
-      <div class="material shadow">
-        <h4 class="capitalize-letter">Правило 10.000 часов.</h4>
+      <div 
+        v-for="(value, key) in articles"
+        :key="'articles_'+key"
+        class="material shadow">
+        <h4 class="capitalize-letter">{{ value.name }}</h4>
         <div class="article">
           <p>
-            <img src="https://i.ytimg.com/vi/YXKf1koenYY/maxresdefault.jpg"/>
+            <b-img-lazy v-if="value.image" center  :src="value.image" :alt="value.name"></b-img-lazy>
           </p>
-          <p>Двадцать лет назад психолог Андрес Эриксон вместе с двумя коллегами провел исследование в Академии музыки в Берлине. Студентов — скрипачей разделили на три группы. В первую вошли звезды, потенциальные солисты мирового класса. Во вторую- те, кого оценили как перспективных. В третью — студенты, которые вряд ли могли бы стать профессиональными музыкантами, в лучшем случае — учителями музыки в школе. Всем участникам задали один вопрос: сколько часов вы практиковались с того момента, как впервые взяли в руки скрипку, и до сегодняшнего дня ?</p>
+          <div v-html="value.content"></div>
         </div>
-      </div>
-      <div class="material shadow">
-        <h4 class="capitalize-letter">Правило 10.000 часов.</h4>
-        <div class="article">
-          <p>
-            <img src="https://i.ytimg.com/vi/YXKf1koenYY/maxresdefault.jpg"/>
-          </p>
-          <p>Двадцать лет назад психолог Андрес Эриксон вместе с двумя коллегами провел исследование в Академии музыки в Берлине. Студентов — скрипачей разделили на три группы. В первую вошли звезды, потенциальные солисты мирового класса. Во вторую- те, кого оценили как перспективных. В третью — студенты, которые вряд ли могли бы стать профессиональными музыкантами, в лучшем случае — учителями музыки в школе. Всем участникам задали один вопрос: сколько часов вы практиковались с того момента, как впервые взяли в руки скрипку, и до сегодняшнего дня ?</p>
-        </div>
-      </div>
-      <div class="material shadow">
-        <h4 class="capitalize-letter">Правило 10.000 часов.</h4>
-        <div class="article">
-          <p>
-            <img src="https://i.ytimg.com/vi/YXKf1koenYY/maxresdefault.jpg"/>
-          </p>
-          <p>Двадцать лет назад психолог Андрес Эриксон вместе с двумя коллегами провел исследование в Академии музыки в Берлине. Студентов — скрипачей разделили на три группы. В первую вошли звезды, потенциальные солисты мирового класса. Во вторую- те, кого оценили как перспективных. В третью — студенты, которые вряд ли могли бы стать профессиональными музыкантами, в лучшем случае — учителями музыки в школе. Всем участникам задали один вопрос: сколько часов вы практиковались с того момента, как впервые взяли в руки скрипку, и до сегодняшнего дня ?</p>
-        </div>
-      </div>
-      <div class="material shadow">
-        <h4 class="capitalize-letter">Правило 10.000 часов.</h4>
-        <div class="article">
-          <p>
-            <img src="https://i.ytimg.com/vi/YXKf1koenYY/maxresdefault.jpg"/>
-          </p>
-          <p>Двадцать лет назад психолог Андрес Эриксон вместе с двумя коллегами провел исследование в Академии музыки в Берлине. Студентов — скрипачей разделили на три группы. В первую вошли звезды, потенциальные солисты мирового класса. Во вторую- те, кого оценили как перспективных. В третью — студенты, которые вряд ли могли бы стать профессиональными музыкантами, в лучшем случае — учителями музыки в школе. Всем участникам задали один вопрос: сколько часов вы практиковались с того момента, как впервые взяли в руки скрипку, и до сегодняшнего дня ?</p>
-        </div>
-      </div>
-      <div class="material shadow">
-        <h4 class="capitalize-letter">Правило 10.000 часов.</h4>
-        <div class="article">
-          <p>
-            <img src="https://i.ytimg.com/vi/YXKf1koenYY/maxresdefault.jpg"/>
-          </p>
-          <p>Двадцать лет назад психолог Андрес Эриксон вместе с двумя коллегами провел исследование в Академии музыки в Берлине. Студентов — скрипачей разделили на три группы. В первую вошли звезды, потенциальные солисты мирового класса. Во вторую- те, кого оценили как перспективных. В третью — студенты, которые вряд ли могли бы стать профессиональными музыкантами, в лучшем случае — учителями музыки в школе. Всем участникам задали один вопрос: сколько часов вы практиковались с того момента, как впервые взяли в руки скрипку, и до сегодняшнего дня ?</p>
+        <div class="article-footer">
+          <b-link :to="'/articles/'+value.id">Подробнее...</b-link>
+          <div class="text-right">
+            <VueGoodshareVkontakte has_icon />
+            <VueGoodshareFacebook has_icon />
+            <VueGoodshareViber has_icon />
+            <VueGoodshareWhatsApp has_icon /> 
+          </div>
         </div>
       </div>
     </b-container>
@@ -51,7 +27,40 @@
 </template>
 
 <script>
+import VueGoodshareVkontakte from "vue-goodshare/src/providers/Vkontakte";
+import VueGoodshareFacebook from "vue-goodshare/src/providers/Facebook";
+import VueGoodshareViber from "vue-goodshare/src/providers/Viber";
+import VueGoodshareWhatsApp from "vue-goodshare/src/providers/WhatsApp";
+import VueGoodshareTelegram from "vue-goodshare/src/providers/Telegram";
+const SiteBlock = require("../../../../enums").SiteBlock;
 export default {
-  
+  components: {
+    VueGoodshareVkontakte,
+    VueGoodshareFacebook,
+    VueGoodshareViber,
+    VueGoodshareWhatsApp,
+    VueGoodshareTelegram
+  },
+  data() {
+    return {
+      baseUrl: "/materials",
+      articles: []
+    }
+  },
+  async mounted() {
+    this.articles = await this.$getAsync(`${this.baseUrl}`, {
+      public: true,
+      block: SiteBlock.Articles,
+      sort: 'priority DESC'
+    });
+  }
 }
 </script>
+
+<style scoped>
+.article {
+  max-height: 35rem;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+</style>

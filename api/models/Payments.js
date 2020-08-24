@@ -1,6 +1,3 @@
-const Events = require('./Events');
-const Groups = require('./Groups');
-
 const GetMonthDateRange =  require('../utils/DateRangeHelper').GetMonthDateRange;
 const GroupType = require('../../enums').GroupType;
 
@@ -40,7 +37,7 @@ module.exports = {
   },
   beforeCreate: async function (value, next) {
     try {
-      const group = await sails.models.groups.findOne(value.group).populate("members");
+      const group = await Groups.findOne(value.group).populate("members");
       if (group.type == GroupType.General && value.month && value.year){
         const alreadyExistsPayment = await Payments.findOne({ 
           group: value.group, 
@@ -52,7 +49,7 @@ module.exports = {
           return next("Месяц уже оплачен. person: "+value.person);
         }
         const monthDateRange = GetMonthDateRange(value.year, value.month);
-        const events = await sails.models.events
+        const events = await Events
           .find({ 
             group: value.group, 
             startsAt: { 
@@ -64,7 +61,7 @@ module.exports = {
         value.events = events.map(e => e.id);
       }
       if (group.type == GroupType.Personal && value.events.length) {
-        let paymentEvents = await sails.models.events.find({ id: value.events }).populate('payments');
+        let paymentEvents = await Events.find({ id: value.events }).populate('payments');
         if (paymentEvents.some(x => x.payments.find(p => p.payer == value.person))){
           return next("Занятие уже оплачено. events: " + value.events);
         }

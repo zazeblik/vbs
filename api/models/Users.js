@@ -9,14 +9,15 @@ module.exports = {
     }, 
     password: {
       type: 'string',
+      required: true,
       custom: function(value) {
-        return _.isString(value) && value.length >= 8 && value.match(/[a-z]/i) && value.match(/[0-9]/);
+        return _.isString(value) && value.length >= 8 && value.match(/^([A-Za-z0-9]+)$/);
       },
       encrypt: true
     },
     role: {
       type: 'number',
-      isIn: [Role.User, Role.Coach, Role.LocalAdmin, Role.SystemAdmin],
+      isIn: [Role.User, Role.Coach, Role.LocalAdmin],
       defaultsTo: 0
     },
     person: {
@@ -24,7 +25,7 @@ module.exports = {
     }
   },
   customToJSON: function() {
-    return _.omit(this, ['createdAt', 'updatedAt', 'person', 'password'])
+    return _.omit(this, ['createdAt', 'updatedAt', 'password'])
   }
 };
 

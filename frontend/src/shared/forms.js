@@ -1,6 +1,8 @@
 const Enums = require("../../../enums");
 const GroupType = Enums.GroupType;
 const SiteBlock = Enums.SiteBlock;
+const FilesBlock = Enums.FilesBlock;
+const Role = Enums.Role;
 
 module.exports.ArchivePersonForm = [
   {
@@ -177,6 +179,11 @@ module.exports.GroupForm = [
     hidden: true,
     validations: {}
   },
+  {
+    label: "Описание",
+    property: "content",
+    type: "content"
+  },
 ];
 
 module.exports.MaterialForm = [
@@ -191,7 +198,8 @@ module.exports.MaterialForm = [
   {
     label: "Изображение",
     property: "image",
-    type: "image",
+    accept: "image/*",
+    type: "file",
     validations: {}
   },
   {
@@ -202,13 +210,14 @@ module.exports.MaterialForm = [
   {
     label: "Опубликовано",
     property: "public",
-    type: "boolean",
+    type: "checkbox",
+    defaultValue: true,
     validations: {}
   },
   {
     label: "На главной",
     property: "onMain",
-    type: "boolean",
+    type: "checkbox", 
     validations: {}
   },
   {
@@ -222,6 +231,46 @@ module.exports.MaterialForm = [
       { text: "направления", value: SiteBlock.Сourse },
       { text: "руководители", value: SiteBlock.Boss },
       { text: "отзывы", value: SiteBlock.Feedback },
+      { text: "контакты", value: SiteBlock.Contacts },
+    ],
+    validations: {}
+  },
+  {
+    label: "Приоритет",
+    property: "priority",
+    type: "number",
+    description: "Чем больше число, тем вше будет расположен материал",
+    defaultValue: 1,
+    validations: {
+      min: 1
+    }
+  }
+]
+
+module.exports.FileForm = [
+  {
+    label: "Наименование",
+    property: "name",
+    type: "string",
+    validations: {
+      required: true
+    }
+  },
+  {
+    label: "Файл",
+    property: "file",
+    accept: "*",
+    type: "file",
+    validations: {}
+  },
+  {
+    label: "Блок",
+    property: "block",
+    type: "enum",
+    options: [
+      { text: "турниры", value: FilesBlock.Tournaments },
+      { text: "фото", value: FilesBlock.Photo },
+      { text: "слайдер", value: FilesBlock.Slider }
 
     ],
     validations: {}
@@ -344,7 +393,12 @@ module.exports.PersonForm = [
     property: "address",
     type: "string",
     validations: {}
-  }
+  },
+  {
+    label: "Описание",
+    property: "content",
+    type: "content"
+  },
 ]
 
 module.exports.PlaceForm = [
@@ -363,5 +417,49 @@ module.exports.PlaceForm = [
     validations: {
       required: true
     }
-  }
+  },
+  {
+    label: "Описание",
+    property: "content",
+    type: "content"
+  },
+]
+
+module.exports.UserForm = [
+  {
+    label: "Логин",
+    property: "login",
+    type: "string",
+    validations: {
+      required: true
+    }
+  },
+  {
+    label: "Пароль",
+    property: "password",
+    type: "password",
+    validations: {
+      min: 8,
+      regex: /^([A-Za-z0-9]+)$/
+    }
+  },
+  {
+    label: "Участник",
+    property: "person",
+    type: "model",
+    models: [],
+    validations: {}
+  },
+  {
+    label: "Роль",
+    property: "role",
+    type: "enum",
+    options: [
+      { text: "участник", value: Role.User },
+      { text: "тренер", value: Role.Coach },
+      { text: "админ", value: Role.LocalAdmin }
+
+    ],
+    validations: {}
+  },
 ]
