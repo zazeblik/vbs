@@ -109,6 +109,7 @@ Vue.prototype.$isMobile = function() {
 };
 
 Vue.prototype.$url = window.location.origin;
+Vue.prototype.$location = window.location;
 
 axios.get('/site/settings')
   .then((response) => {

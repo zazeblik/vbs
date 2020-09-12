@@ -121,6 +121,28 @@
             <b-form-invalid-feedback id="feedback_marimedia">{{ validationContext.errors[0] }}</b-form-invalid-feedback>
           </b-form-group>
         </validation-provider>
+        <validation-provider :name="sberUsernameLabel" :rules="{ min: 3 }" v-slot="validationContext">
+          <b-form-group label-cols-sm="3" label-size="sm" :label="sberUsernameLabel" class="mb-1">
+            <b-form-input
+              size="sm"
+              v-model="$settings.sberUsername"
+              @change="save(validationContext, { sberUsername: $settings.sberUsername })"
+              :state="getValidationState(validationContext)"
+            />
+            <b-form-invalid-feedback id="feedback_sberUsername">{{ validationContext.errors[0] }}</b-form-invalid-feedback>
+          </b-form-group>
+        </validation-provider>
+        <validation-provider :name="sberPasswordLabel" :rules="{ min: 3 }" v-slot="validationContext">
+          <b-form-group label-cols-sm="3" label-size="sm" :label="sberPasswordLabel" class="mb-1">
+            <b-form-input
+              size="sm"
+              v-model="$settings.sberPassword"
+              @change="save(validationContext, { sberPassword: $settings.sberPassword })"
+              :state="getValidationState(validationContext)"
+            />
+            <b-form-invalid-feedback id="feedback_sberPassword">{{ validationContext.errors[0] }}</b-form-invalid-feedback>
+          </b-form-group>
+        </validation-provider>
       </b-form>
     </validation-observer>
   </b-container>
@@ -140,7 +162,9 @@ export default {
       vkGroupIdLabel: "ID группы VK",
       fbLabel: "Facebook",
       instagramLabel: "Instagram",
-      marimediaLabel: "Маримедиа"
+      marimediaLabel: "Маримедиа",
+      sberUsernameLabel: "Логин Cбербанк",
+      sberPasswordLabel: "Пароль Cбербанк"
     };
   },
   methods: {

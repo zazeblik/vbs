@@ -11,6 +11,8 @@
     "connect-mysql": "^4.0.0",
     "grunt": "1.0.4",
     "moment": "^2.25.3",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.6",
     "sails": "^1.2.3",
     "sails-hook-cron": "^3.1.0",
     "sails-hook-grunt": "^4.0.0",

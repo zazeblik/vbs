@@ -77,6 +77,7 @@ module.exports = {
     try {
       await ArchivePersons.destroy({person: value.id}).fetch();
       await Payments.destroy({person: value.id}).fetch();  
+      await Incomes.destroy({person: value.id}).fetch();  
       next();
     } catch (error) {
       return next(JSON.stringify([ error ]));

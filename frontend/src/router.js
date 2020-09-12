@@ -23,6 +23,11 @@ export default new Router({
       component: () => import('./views/pages/Club.vue')
     },
     {
+      path: '/prices',
+      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
+      component: () => import('./views/pages/Prices.vue')
+    },
+    {
       path: '/boss',
       beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
       component: () => import('./views/pages/Boss.vue')

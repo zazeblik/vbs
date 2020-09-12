@@ -1,4 +1,5 @@
 const moment = require('moment');
+const Users = require('../models/Users');
 const GroupType = require('../../enums').GroupType;
 
 module.exports = {

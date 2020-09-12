@@ -91,6 +91,7 @@
               <b-form-input
                 size="sm"
                 type="number"
+                :disabled="!isControlPanelShown"
                 v-model="payment.sum"
                 :state="getValidationState(validationContext)" />
             </validation-provider>
@@ -150,7 +151,7 @@ export default {
   components: {
     ModelSelect
   },
-  props: [ "modalId", "payer", "generals", "personals", "unpayedEvents" ],
+  props: [ "modalId", "payer", "generals", "personals", "unpayedEvents", "isControlPanelShown" ],
   data() {
     return {
       baseUrl: "/payments",
@@ -305,7 +306,10 @@ export default {
       }
     },
     async sendForm(){
-      const result = await this.$postAsync(`${this.baseUrl}/create-all`, this.getPreparedPayments(), true);
+      const result = await this.$postAsync(
+        `${this.baseUrl}/${this.isControlPanelShown ? 'create-all' : 'self-create-all'}`, 
+        this.getPreparedPayments(), 
+        true);
       if (result != "OK") {
         return;
       }
@@ -325,14 +329,20 @@ export default {
         const match = p.month && p.type == GroupType.General ? p.month.split(" ") : null;
         const month = match ? Number(match[0]) : null;
         const year = match ? Number(match[1]) : null;
+        let description = `Оплата ${this.getPaymentDescription(p)} `;
         let payment = {
-          person: this.payer,
           group: p.group,
           sum: p.sum,
           month: month,
-          description: `Оплата ${this.getPaymentDescription(p)} вручную`,
           year: year
         };
+        if (this.isControlPanelShown){
+          payment.person = this.payer;
+          description += 'вручную';
+        } else {
+          description += 'онлайн';
+        }
+        payment.description = description;
         if (p.event) {
           payment.events = [p.event];
         }

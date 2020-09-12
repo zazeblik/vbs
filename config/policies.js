@@ -1,6 +1,8 @@
+const { register } = require("../api/controllers/OrdersController");
+
 module.exports.policies = {
   users: {
-    '*': ['authenticated', 'isControlPanelAvailable'],
+    '*': ['authenticated', 'isAdmin'],
     authenticated: 'authenticated'
   },
   persons: {
@@ -27,10 +29,18 @@ module.exports.policies = {
     '*': ['authenticated', 'isControlPanelAvailable']
   },
   payments: {
-    '*': ['authenticated', 'isControlPanelAvailable']
+    '*': ['authenticated', 'isControlPanelAvailable'],
+    selfSettings: ['authenticated', 'hasPerson'],
+    selfTransactions: ['authenticated', 'hasPerson'],
+    selfCreateAll: ['authenticated', 'hasPerson']
   },
   dashboard: {
     '*': ['authenticated', 'isControlPanelAvailable']
+  },
+  orders: {
+    '*': false,
+    register: ['authenticated', 'hasPerson'],
+    confirm: ['authenticated', 'hasPerson']
   },
   materials: {
     '*': ['authenticated', 'isAdmin'],

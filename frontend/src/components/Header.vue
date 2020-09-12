@@ -19,6 +19,7 @@
             <b-dropdown-item to="/instructors">Тренеры</b-dropdown-item>
             <b-dropdown-item to="/feedback">Отзывы</b-dropdown-item>
             <b-dropdown-item to="/schedule">Расписание</b-dropdown-item>
+            <b-dropdown-item to="/prices">Прайс лист</b-dropdown-item>
           </b-nav-item-dropdown>
           <b-nav-item class="site-nav-item" to="/articles">Статьи</b-nav-item>
           <b-nav-item class="site-nav-item" to="/galery">Фото</b-nav-item>
@@ -48,7 +49,7 @@
             <b-dropdown-item to="/cp/files">Файлы</b-dropdown-item>
           </b-nav-item-dropdown>
           <b-nav-item to="/cp/payments" v-if="$user.role == 2">Оплата</b-nav-item>
-          <b-nav-item to="/cp/users">Учётные записи</b-nav-item>
+          <b-nav-item to="/cp/users" v-if="$user.role == 2">Учётные записи</b-nav-item>
         </b-navbar-nav>
         <ProfileNav :isAuthShown="isAuthShown" :isSiteShown="isSiteShown" />
       </b-collapse>

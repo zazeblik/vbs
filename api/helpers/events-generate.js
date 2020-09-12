@@ -52,7 +52,7 @@ module.exports = {
       }
       if (eventsToAdd.length) await Events.createEach(eventsToAdd);
     } catch (error) {
-      console.error
+      console.log(error)
     }
   }
 };

@@ -34,6 +34,15 @@ module.exports = {
     },
     marimedia: {
       type: "string"
+    },
+    marimedia: {
+      type: "string"
+    },
+    sberUsername: {
+      type: "string"
+    },
+    sberPassword: {
+      type: "string"
     }
   },
 };

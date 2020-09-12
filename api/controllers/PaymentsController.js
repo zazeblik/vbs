@@ -1,35 +1,19 @@
-const TransactionType = require('../../enums').TransactionType;
-const GroupType = require('../../enums').GroupType;
 const GetMonthDateRange =  require('../utils/DateRangeHelper').GetMonthDateRange;
+const PaymentsService = require('../services/PaymentsService');
+
 module.exports = {
+  selfSettings: async function (req, res){
+    try {
+      const settings = await PaymentsService.getPaymentSettings(req.session.User.person);
+      return res.send(settings);
+    } catch (error) {
+      return res.badRequest(error.message);
+    }
+  },
   settings: async function (req, res){
     try {
-      const persons = await Persons.find().sort('name ASC');
-      const groups = await Groups.find().populate("members", {select: ["id"]});
-      const personals = groups.filter(g => g.type == GroupType.Personal); 
-      const events = await Events
-        .find({group: personals.map(p => p.id)})
-        .populate("visitors")
-        .populate("payments");
-      const unpayedEvents = {};
-      persons.forEach(p => unpayedEvents[p.id] = []);
-      events.forEach(event => {
-        const visitors = event.visitors;
-        const paymentPersons = event.payments.map(p => p.person);
-        visitors.forEach(person => {
-          if (paymentPersons.includes(person.id)) return;
-          unpayedEvents[person.id].push(event); 
-        })
-      });
-      const generals = groups.filter(g => g.type == GroupType.General);
-      generals.forEach(group => {
-        group.members = group.members.map(m => m.id);  
-      });
-      personals.forEach(group => {
-        group.members = group.members.map(m => m.id);  
-      }); 
-      
-      return res.send({ persons, generals, personals, unpayedEvents });
+      const settings = await PaymentsService.getPaymentSettings();
+      return res.send(settings);
     } catch (error) {
       return res.badRequest(error.message);
     }
@@ -55,20 +39,22 @@ module.exports = {
     }
   },
   transactions: async function (req, res){
+    if (!req.param("person")) return res.status(400).send("person не указан");
+    if (!req.param("limit")) return res.status(400).send("limit не указан");
+    const person = Number(req.param("person"));
+    const limit = Number(req.param("limit"));
     try {
-      if (!req.param("person")) return res.status(400).send("person не указан");
-      if (!req.param("limit")) return res.status(400).send("limit не указан");
-      const person = Number(req.param("person"));
-      const limit = Number(req.param("limit"));
-      let payments = await Payments.find({ where: { person: person }, limit: limit, sort: "updatedAt DESC"});
-      let incomes = await Incomes.find({ where: { person: person }, limit: limit, sort: "updatedAt DESC"});
-      payments.forEach(payment => { payment.type =  TransactionType.Payment });
-      incomes.forEach(income => { income.type =  TransactionType.Income });
-      const transactions = [...payments, ...incomes].sort((a, b) => {
-        if (a.updatedAt > b.updatedAt) return -1;
-        if (a.updatedAt < b.updatedAt) return 1;
-        if (a.updatedAt == b.updatedAt) return 0;
-      }).slice(0, limit);
+      const transactions = await PaymentsService.getTransactions(person, limit);
+      return res.send(transactions);
+    } catch (err) {
+      return res.badRequest(err.message);
+    }
+  },
+  selfTransactions: async function (req, res){
+    if (!req.param("limit")) return res.status(400).send("limit не указан");
+    const limit = Number(req.param("limit"));
+    try {
+      const transactions = await PaymentsService.getTransactions(req.session.User.person, limit);
       return res.send(transactions);
     } catch (err) {
       return res.badRequest(err.message);
@@ -103,31 +89,30 @@ module.exports = {
   },
   createAll: async function (req, res) {
     try {
-      req.body.forEach(p => {
-        p.updater = req.session.User.id;
-      });
-      let uniquePaymentEvents = [];
-      let paymentsToCreate = [];
-      req.body.forEach(payment => {
-        if (!payment.events) return;
-        const events = payment.events;
-        let isContainsDublicates = false;
-        for (let i = 0; i < events.length; i++) {
-          const event = events[i];
-          if (!uniquePaymentEvents.includes(event)){
-            uniquePaymentEvents.push(event);
-          } else {
-            isContainsDublicates = true;
-            break;
-          }
-        }
-        if (!isContainsDublicates) paymentsToCreate.push(payment);
-      });
-      await Payments.createEach(paymentsToCreate);
+      req.body.forEach(p => { p.updater = req.session.User.id });
+      await PaymentsService.createAll(req.body);
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
     }
   },
+  selfCreateAll: async function (req, res) {
+    try {
+      let payments = req.body;
+      const person = await Persons.findOne(req.session.User.person);
+      let paymentsSum = 0;
+      payments.forEach(p => { 
+        p.updater = req.session.User.id;
+        p.person = req.session.User.person;
+        paymentsSum += p.sum;
+      });
+      if (person.balance < paymentsSum) {
+        return res.badRequest("На вашем балансе не достаточно средств для оплаты");
+      }
+      await PaymentsService.createAll(payments);
+      return res.ok();
+    } catch (err) {
+      return res.badRequest(err.message);
+    }
+  }
 };
-

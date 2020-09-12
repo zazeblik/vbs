@@ -25,6 +25,14 @@ module.exports = {
       return res.badRequest(err.message);
     }
   },
+  groups: async function (req, res) {
+    try {
+      const groups = await Groups.find({ type: GroupType.General, hidden: false });
+      return res.send(groups);
+    } catch (err) {
+      return res.badRequest(err.message);
+    }
+  },
   uploads: async function (req, res) {
     let filename = req.params[0];
     if (!filename) return res.notFound();

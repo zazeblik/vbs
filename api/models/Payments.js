@@ -46,7 +46,7 @@ module.exports = {
           person: value.person
         });
         if (alreadyExistsPayment != null) {
-          return next("Месяц уже оплачен. person: "+value.person);
+          return next("Месяц уже оплачен");
         }
         const monthDateRange = GetMonthDateRange(value.year, value.month);
         const events = await Events

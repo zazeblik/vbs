@@ -123,8 +123,7 @@ module.exports.GroupForm = [
       return true;
     },
     validations: {
-      min: 0,
-      required: true
+      min: 0
     }
   },
   {
