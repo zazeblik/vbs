@@ -65,6 +65,14 @@ module.exports = {
     } catch (err) {
       return res.badRequest(err.message);
     }
+  },
+  profilePerson: async function (req, res) {
+    try {
+      await Persons.update(req.session.User.person, req.body);
+      return res.ok();
+    } catch (err) {
+      return res.badRequest(err.message);
+    }
   }
 };
 

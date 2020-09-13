@@ -55,6 +55,7 @@ module.exports.routes = {
   '/files/delete/:id': 'FilesController.delete',
   '/site/uploads*': 'SiteController.uploads',
   '/site/public-schedule': 'SiteController.publicSchedule',
+  '/site/profilePerson': 'SiteController.profilePerson',
   '/cp*': function(req, res) { return res.redirect('/?route=' + req.url.substr(1)) },
   '/articles*': function(req, res) { return res.redirect('/?route=' + req.url.substr(1)) },
 };

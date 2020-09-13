@@ -7,38 +7,27 @@
       <b-tab class="pt-2" title="Профиль">
         <validation-observer ref="observer">
           <b-form>
-            <validation-provider
-              :name="loginLabel"
-              :rules="{ required: true, min: 2 }"
-              v-slot="validationContext"
-            >
-              <b-form-group label-cols-sm="3" label-size="sm" :label="loginLabel" class="mb-1">
-                <b-form-input
-                  size="sm"
-                  v-model="$user.login"
-                  @change="save(validationContext, { login: $user.login })"
-                  :state="getValidationState(validationContext)"
-                />
-                <b-form-invalid-feedback id="feedback_login">{{ validationContext.errors[0] }}</b-form-invalid-feedback>
-              </b-form-group>
-            </validation-provider>
-            <validation-provider 
-              :name="passwordLabel" 
-              :rules="{ min: 8, regex: /^([A-Za-z0-9]+)$/ }" 
-              v-slot="validationContext"
-            >
-              <b-form-group label-cols-sm="3" label-size="sm" :label="passwordLabel" class="mb-1">
-                <b-form-input
-                  size="sm"
-                  type="password"
-                  placeholder="Введите новый пароль..."
-                  v-model="password"
-                  @change="save(validationContext, { password })"
-                  :state="getValidationState(validationContext)"
-                />
-                <b-form-invalid-feedback id="feedback_password">{{ validationContext.errors[0] }}</b-form-invalid-feedback>
-              </b-form-group>
-            </validation-provider>
+            <UpdatableField
+              v-if="$user.person"
+              label="Фамилия Имя"
+              :validations="{ required: true, min: 2 }"
+              :fieldValue="person.name"
+              field="name"
+              updateUrl="/site/profile-person" />
+            <UpdatableField 
+              label="Логин"
+              :validations="{ required: true, min: 2 }"
+              :fieldValue="$user.login"
+              field="login"
+              updateUrl="/site/profile" />
+            <UpdatableField 
+              label="Пароль"
+              :validations="{ min: 8, regex: /^([A-Za-z0-9]+)$/ }"
+              :fieldValue="password"
+              field="password"
+              updateUrl="/site/profile"
+              type="password"
+              placeholder="Введите новый пароль..." />
           </b-form>
         </validation-observer>
       </b-tab>
@@ -48,29 +37,22 @@
 
 <script>
 import PaymentsBlock from "../../components/PaymentsBlock";
+import UpdatableField from "../../components/UpdatableField";
 export default {
   components: {
     PaymentsBlock,
+    UpdatableField
+  },
+  async mounted(){
+    if (this.$user.person){
+      this.person = await this.$getAsync('/persons/'+this.$user.person);
+    }
   },
   data() {
     return {
-      baseUrl: "/site",
-      loginLabel: "Логин",
-      passwordLabel: "Пароль",
-      password: null
+      password: null,
+      person: null
     };
-  },
-  methods: {
-    save(validationState, changes) {
-      const state = this.getValidationState(validationState);
-      if (state) {
-        this.$postAsync(`${this.baseUrl}/profile`, changes);
-      }
-      return state;
-    },
-    getValidationState({ dirty, validated, valid = null }) {
-      return dirty || validated ? valid : null;
-    }
-  },
+  }
 };
 </script>

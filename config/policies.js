@@ -7,7 +7,8 @@ module.exports.policies = {
   },
   persons: {
     '*': ['authenticated', 'isControlPanelAvailable'],
-    find: true
+    find: true,
+    findOne: true
   },
   groups: {
     '*': ['authenticated', 'isControlPanelAvailable'],
@@ -55,6 +56,7 @@ module.exports.policies = {
   site: {
     '*': ['authenticated', 'isAdmin'],
     profile: 'authenticated',
+    profilePerson: ['authenticated', 'hasPerson'],
     uploads: true,
     publicSchedule: true,
     settings: true
