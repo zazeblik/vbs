@@ -5,7 +5,20 @@
     v-slot="validationContext"
   >
     <b-form-group label-cols-sm="3" label-size="sm" :label="label" class="mb-1">
+      <b-form-datepicker
+        v-if="type == 'date'"
+        size="sm"
+        placeholder="Выберите дату"
+        show-decade-nav
+        :date-format-options="{ day: '2-digit', month: '2-digit', year: 'numeric'  }"
+        value-as-date
+        :start-weekday="1"
+        v-model="model"
+        @hidden="save(validationContext)"
+        :state="getValidationState(validationContext)"
+      />
       <b-form-input
+        v-else
         size="sm"
         :type="type"
         v-model="model"
@@ -22,8 +35,10 @@
 export default {
   props: [ "label", "validations", "fieldValue", "field", "updateUrl", "type", "placeholder" ],
   data() {
+    const updatableField = this.initComponent();
     return {
-      model: this.fieldValue
+      updatableField: updatableField,
+      model: updatableField.initModel()
     }
   },
   methods: {
@@ -31,7 +46,7 @@ export default {
       const state = this.getValidationState(validationState);
       if (state) {
         let changes = {};
-        changes[this.field] = this.model;
+        changes[this.field] = this.updatableField.convertModel(this.model);
         const result = await this.$postAsync(this.updateUrl, changes, true);
         this.$bvToast.toast('Статус запроса: ' + result, {
           title: `Значение ${this.label} ${result == 'OK' ? 'успешно' : 'не'} сохранено`,
@@ -45,6 +60,50 @@ export default {
     getValidationState({ dirty, validated, valid = null }) {
       return dirty || validated ? valid : null;
     },
+
+    convertModel(model) {
+      if ( this.type == 'date' ) { 
+        return model.getTime();
+      }
+      return model;
+    },
+
+    initComponent() {
+      if ( this.type == 'date' ) {
+        return new dateUpdatableField(this.fieldValue);
+      } else {
+        return new defaultUpdatableField(this.fieldValue);
+      }
+    }
+  }
+}
+
+class dateUpdatableField {
+  constructor(fieldValue) {
+    this.fieldValue = fieldValue;
+  }
+
+  convertModel(model) {
+    return model.getTime();
+  }
+  
+  initModel() {
+    return this.fieldValue
+      ? new Date(this.fieldValue)
+      : new Date();
+  }
+}
+
+class defaultUpdatableField {
+  constructor(fieldValue) {
+    this.fieldValue = fieldValue;
+  }
+
+  convertModel(model) {
+    return model;
+  }
+  initModel() {
+    return this.fieldValue;
   }
 }
 </script>

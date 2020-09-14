@@ -6,13 +6,20 @@
       </b-tab>
       <b-tab class="pt-2" title="Профиль">
         <validation-observer ref="observer">
-          <b-form>
+          <b-form v-if="isLoaded">
             <UpdatableField
               v-if="$user.person"
               label="Фамилия Имя"
               :validations="{ required: true, min: 2 }"
               :fieldValue="person.name"
               field="name"
+              updateUrl="/site/profile-person" />
+            <UpdatableField
+              v-if="$user.person"
+              type="date"
+              label="Дата рождения"
+              :fieldValue="person.birthday"
+              field="birthday"
               updateUrl="/site/profile-person" />
             <UpdatableField 
               label="Логин"
@@ -46,12 +53,14 @@ export default {
   async mounted(){
     if (this.$user.person){
       this.person = await this.$getAsync('/persons/'+this.$user.person);
+      this.isLoaded = true;
     }
   },
   data() {
     return {
       password: null,
-      person: null
+      person: null,
+      isLoaded: false
     };
   }
 };

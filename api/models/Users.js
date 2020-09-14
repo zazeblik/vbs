@@ -5,7 +5,8 @@ module.exports = {
     login: {
       type: 'string',
       isNotEmptyString: true,
-      required: true
+      required: true,
+      unique: true
     }, 
     password: {
       type: 'string',
