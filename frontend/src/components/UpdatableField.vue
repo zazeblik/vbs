@@ -17,15 +17,22 @@
         @hidden="save(validationContext)"
         :state="getValidationState(validationContext)"
       />
+      <b-form-checkbox
+        size="lg"
+        v-else-if="type == 'checkbox'"
+        v-model="model"
+        @input="save({dirty: true, valid: true})"
+        :state="getValidationState({dirty: true, valid: true})"
+      />
       <b-form-input
         v-else
-        size="sm"
         :type="type"
         v-model="model"
         :placeholder="placeholder"
         @change="save(validationContext)"
         :state="getValidationState(validationContext)"
       />
+
       <b-form-invalid-feedback :id="'feedback_'+field">{{ validationContext.errors[0] }}</b-form-invalid-feedback>
     </b-form-group>
   </validation-provider>

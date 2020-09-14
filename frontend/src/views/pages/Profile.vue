@@ -7,20 +7,69 @@
       <b-tab class="pt-2" title="Профиль">
         <validation-observer ref="observer">
           <b-form v-if="isLoaded">
-            <UpdatableField
-              v-if="$user.person"
-              label="Фамилия Имя"
-              :validations="{ required: true, min: 2 }"
-              :fieldValue="person.name"
-              field="name"
-              updateUrl="/site/profile-person" />
-            <UpdatableField
-              v-if="$user.person"
-              type="date"
-              label="Дата рождения"
-              :fieldValue="person.birthday"
-              field="birthday"
-              updateUrl="/site/profile-person" />
+            <div v-if="$user.person">
+              <UpdatableField
+                label="Фамилия Имя"
+                :validations="{ required: true, min: 2 }"
+                :fieldValue="person.name"
+                field="name"
+                updateUrl="/site/profile-person" />
+              <UpdatableField
+                type="date"
+                label="Дата рождения"
+                :fieldValue="person.birthday"
+                field="birthday"
+                updateUrl="/site/profile-person" />
+              <UpdatableField
+                label="Номер книжки"
+                :fieldValue="person.bookNumber"
+                field="bookNumber"
+                updateUrl="/site/profile-person" />
+              <UpdatableField
+                label="Класс"
+                :fieldValue="person.danceClass"
+                field="danceClass"
+                updateUrl="/site/profile-person" />
+              <UpdatableField
+                type="date"
+                label="Дата присвоения"
+                :fieldValue="person.danceClassApproveDate"
+                field="danceClassApproveDate"
+                updateUrl="/site/profile-person" />
+              <UpdatableField
+                label="Разряд"
+                :fieldValue="person.rank"
+                field="rank"
+                updateUrl="/site/profile-person" />
+              <UpdatableField
+                label="Разряд Мин.Спорта"
+                :fieldValue="person.rankMinsport"
+                field="rankMinsport"
+                updateUrl="/site/profile-person" />
+              <UpdatableField
+                type="date"
+                label="Действие разряда"
+                :fieldValue="person.rankEnds"
+                field="rankEnds"
+                updateUrl="/site/profile-person" />
+              <UpdatableField
+                label="Разрядная книжка"
+                type="checkbox"
+                :fieldValue="person.rankBookExists"
+                field="rankBookExists"
+                updateUrl="/site/profile-person" />
+              <UpdatableField
+                label="Телефон"
+                :fieldValue="person.phone"
+                field="phone"
+                updateUrl="/site/profile-person" />
+              <UpdatableField
+                label="Адрес"
+                :fieldValue="person.address"
+                field="address"
+                updateUrl="/site/profile-person" />
+            </div>
+            <hr />
             <UpdatableField 
               label="Логин"
               :validations="{ required: true, min: 2 }"
