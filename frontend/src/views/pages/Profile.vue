@@ -6,8 +6,8 @@
       </b-tab>
       <b-tab class="pt-2" title="Профиль">
         <validation-observer ref="observer">
-          <b-form v-if="isLoaded">
-            <div v-if="$user.person">
+          <b-form>
+            <div v-if="$user.person && isLoaded">
               <UpdatableField
                 label="Фамилия Имя"
                 :validations="{ required: true, min: 2 }"
