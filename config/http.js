@@ -10,9 +10,6 @@ module.exports.http = {
       'www',
       'favicon',
     ],
-    bodyParser: require('skipper')({
-      strict: true,
-      limit: '50mb'
-    })
+    bodyParser: require('skipper')({ strict: true, limit: 52428800 })
   }
 };

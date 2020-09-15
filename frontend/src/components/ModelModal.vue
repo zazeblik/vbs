@@ -16,170 +16,172 @@
         no-enforce-focus
         :ok-disabled="invalid"
       >
-        <b-form>
-          <validation-provider
-            v-for="(control, index) in itemForm.filter(c => !lastFormTypes.includes(c.type))"
-            :key="index"
-            :name="getName(control.property)"
-            :rules="control.validations"
-            v-slot="validationContext"
-          >
-            <b-form-group
-              label-cols-sm="3"
-              label-size="sm"
-              :label="control.label"
-              v-if="!isHiddenControl(control)"
-              class="mb-1"
+        <b-overlay :show="showSpinner" rounded="sm">
+          <b-form>
+            <validation-provider
+              v-for="(control, index) in itemForm.filter(c => !lastFormTypes.includes(c.type))"
+              :key="index"
+              :name="getName(control.property)"
+              :rules="control.validations"
+              v-slot="validationContext"
             >
-              <b-form-input
-                v-if="control.type == 'string'"
-                size="sm"
-                v-model="control.value"
-                :state="getValidationState(validationContext)"
-              />
-              <b-form-input
-                v-if="control.type == 'password'"
-                type="password"
-                :placeholder="control.placeholder"
-                size="sm"
-                v-model="control.value"
-                :state="getValidationState(validationContext)"
-              />
-              <b-form-file
-                v-if="control.type == 'file'"
-                size="sm"
-                :value="control.file"
-                class="file-input"
-                :accept="control.accept"
-                @input="uploadImage($event, index)"
-                :state="getValidationState(validationContext)"
-                :placeholder="control.value ? control.value.substr(control.value.lastIndexOf('/') + 1) : 'Выберите или перетащите файл...'"
-                drop-placeholder="Перетащите файл сюда..."
-                browse-text="Выбрать..."
-              ></b-form-file>
-              <b-form-input
-                v-if="control.type == 'number'"
-                type="number"
-                size="sm"
-                v-model="control.value"
-                :state="getValidationState(validationContext)"
-              />
-              <b-select
-                v-if="control.type == 'enum'"
-                size="sm"
-                :options="control.options"
-                v-model="control.value"
-                :state="getValidationState(validationContext)"
-              />
-              <b-form-checkbox
-                v-else-if="control.type == 'checkbox'"
-                size="lg"
-                v-model="control.value"
-                :state="getValidationState(validationContext)"
-              />
-              <b-form-input
-                v-if="control.type == 'color'"
-                type="color"
-                size="sm"
-                v-model="control.value"
-                :state="getValidationState(validationContext)"
-              />
-              <b-form-datepicker
-                v-else-if="control.type == 'date'"
-                size="sm"
-                placeholder="Выберите дату"
-                show-decade-nav
-                :date-format-options="{ day: '2-digit', month: '2-digit', year: 'numeric'  }"
-                value-as-date
-                :start-weekday="1"
-                v-model="control.value"
-                :state="getValidationState(validationContext)"
-              />
-              <model-select
-                v-if="control.type == 'model'"
-                :options="$modelsToOptions(control.models)"
-                v-model="control.value"
-                :isDisabled="!control.models.length"
-                :state="getValidationState(validationContext)"
-              />
-              <b-input-group v-if="control.type == 'datetime'" size="sm">
+              <b-form-group
+                label-cols-sm="3"
+                label-size="sm"
+                :label="control.label"
+                v-if="!isHiddenControl(control)"
+                class="mb-1"
+              >
+                <b-form-input
+                  v-if="control.type == 'string'"
+                  size="sm"
+                  v-model="control.value"
+                  :state="getValidationState(validationContext)"
+                />
+                <b-form-input
+                  v-if="control.type == 'password'"
+                  type="password"
+                  :placeholder="control.placeholder"
+                  size="sm"
+                  v-model="control.value"
+                  :state="getValidationState(validationContext)"
+                />
+                <b-form-file
+                  v-if="control.type == 'file'"
+                  size="sm"
+                  :value="control.file"
+                  class="file-input"
+                  :accept="control.accept"
+                  @input="uploadImage($event, index)"
+                  :state="getValidationState(validationContext)"
+                  :placeholder="control.value ? control.value.substr(control.value.lastIndexOf('/') + 1) : 'Выберите или перетащите файл...'"
+                  drop-placeholder="Перетащите файл сюда..."
+                  browse-text="Выбрать..."
+                ></b-form-file>
+                <b-form-input
+                  v-if="control.type == 'number'"
+                  type="number"
+                  size="sm"
+                  v-model="control.value"
+                  :state="getValidationState(validationContext)"
+                />
+                <b-select
+                  v-if="control.type == 'enum'"
+                  size="sm"
+                  :options="control.options"
+                  v-model="control.value"
+                  :state="getValidationState(validationContext)"
+                />
+                <b-form-checkbox
+                  v-else-if="control.type == 'checkbox'"
+                  size="lg"
+                  v-model="control.value"
+                  :state="getValidationState(validationContext)"
+                />
+                <b-form-input
+                  v-if="control.type == 'color'"
+                  type="color"
+                  size="sm"
+                  v-model="control.value"
+                  :state="getValidationState(validationContext)"
+                />
                 <b-form-datepicker
+                  v-else-if="control.type == 'date'"
+                  size="sm"
                   placeholder="Выберите дату"
                   show-decade-nav
                   :date-format-options="{ day: '2-digit', month: '2-digit', year: 'numeric'  }"
                   value-as-date
                   :start-weekday="1"
-                  :ref="'date_' + control.property"
-                  :value="control.date"
-                  @input="date => {
-                    control.date = date;
-                    const time = control.time.split(':');
-                    date.setHours(time[0]);
-                    date.setMinutes(time[1]);
-                    date.setSeconds(0, 0);
-                    control.value = date;
-                  }"
+                  v-model="control.value"
                   :state="getValidationState(validationContext)"
                 />
-                <b-form-timepicker
-                  placeholder="Выберите время"
-                  minutes-step="15"
-                  :ref="'time_' + control.property"
-                  hide-header
-                  :value="$moment(control.value).format('HH:mm')"
-                  @input="t => {
-                    control.time = t;
-                    let date = control.date;
-                    const time = t.split(':');
-                    date.setHours(time[0]);
-                    date.setMinutes(time[1]);
-                    date.setSeconds(0, 0);
-                    control.value = date;
-                  }"
+                <model-select
+                  v-if="control.type == 'model'"
+                  :options="$modelsToOptions(control.models)"
+                  v-model="control.value"
+                  :isDisabled="!control.models.length"
                   :state="getValidationState(validationContext)"
-                  no-close-button
                 />
-              </b-input-group>
-              <b-form-invalid-feedback
-                :id="'feedback_'+control.property"
-              >{{ validationContext.errors[0] }}</b-form-invalid-feedback>
+                <b-input-group v-if="control.type == 'datetime'" size="sm">
+                  <b-form-datepicker
+                    placeholder="Выберите дату"
+                    show-decade-nav
+                    :date-format-options="{ day: '2-digit', month: '2-digit', year: 'numeric'  }"
+                    value-as-date
+                    :start-weekday="1"
+                    :ref="'date_' + control.property"
+                    :value="control.date"
+                    @input="date => {
+                      control.date = date;
+                      const time = control.time.split(':');
+                      date.setHours(time[0]);
+                      date.setMinutes(time[1]);
+                      date.setSeconds(0, 0);
+                      control.value = date;
+                    }"
+                    :state="getValidationState(validationContext)"
+                  />
+                  <b-form-timepicker
+                    placeholder="Выберите время"
+                    minutes-step="15"
+                    :ref="'time_' + control.property"
+                    hide-header
+                    :value="$moment(control.value).format('HH:mm')"
+                    @input="t => {
+                      control.time = t;
+                      let date = control.date;
+                      const time = t.split(':');
+                      date.setHours(time[0]);
+                      date.setMinutes(time[1]);
+                      date.setSeconds(0, 0);
+                      control.value = date;
+                    }"
+                    :state="getValidationState(validationContext)"
+                    no-close-button
+                  />
+                </b-input-group>
+                <b-form-invalid-feedback
+                  :id="'feedback_'+control.property"
+                >{{ validationContext.errors[0] }}</b-form-invalid-feedback>
+              </b-form-group>
+            </validation-provider>
+            <b-form-group
+              label-cols-sm="3"
+              label-size="sm"
+              v-if="itemForm.some(c => c.type == 'schedule')"
+              :label="itemForm.find(c => c.type == 'schedule').label"
+              class="mb-1"
+            >
+              <FormSchedule
+                :value="itemForm.find(c => c.type == 'schedule').value"
+                ref="formSchedule"
+              />
             </b-form-group>
-          </validation-provider>
-          <b-form-group
-            label-cols-sm="3"
-            label-size="sm"
-            v-if="itemForm.some(c => c.type == 'schedule')"
-            :label="itemForm.find(c => c.type == 'schedule').label"
-            class="mb-1"
-          >
-            <FormSchedule
-              :value="itemForm.find(c => c.type == 'schedule').value"
-              ref="formSchedule"
-            />
-          </b-form-group>
-          <b-form-group
-            label-cols-sm="12"
-            label-size="sm"
-            v-if="itemForm.some(c => c.type == 'content')"
-            :label="itemForm.find(c => c.type == 'content').label"
-            class="mb-1"
-          >
-            <ckeditor
-              :editor="editor"
-              :config="editorConfig"
-              v-model="itemForm.find(c => c.type == 'content').value"
-            />
-          </b-form-group>
-          <b-form-group
-            label-cols-sm="12"
-            label-size="sm"
-            v-if="itemForm.some(c => c.type == 'html')"
-            :label="itemForm.find(c => c.type == 'html').label"
-            class="mb-1"
-          >
-            <b-form-textarea size="sm" v-model="itemForm.find(c => c.type == 'html').value" />
-          </b-form-group>
-        </b-form>
+            <b-form-group
+              label-cols-sm="12"
+              label-size="sm"
+              v-if="itemForm.some(c => c.type == 'content')"
+              :label="itemForm.find(c => c.type == 'content').label"
+              class="mb-1"
+            >
+              <ckeditor
+                :editor="editor"
+                :config="editorConfig"
+                v-model="itemForm.find(c => c.type == 'content').value"
+              />
+            </b-form-group>
+            <b-form-group
+              label-cols-sm="12"
+              label-size="sm"
+              v-if="itemForm.some(c => c.type == 'html')"
+              :label="itemForm.find(c => c.type == 'html').label"
+              class="mb-1"
+            >
+              <b-form-textarea size="sm" v-model="itemForm.find(c => c.type == 'html').value" />
+            </b-form-group>
+          </b-form>
+        </b-overlay>
       </b-modal>
     </validation-observer>
   </div>
@@ -203,6 +205,7 @@ export default {
       title: "",
       id: null,
       isEdit: false,
+      showSpinner: false,
       editor: ClassicEditor,
       lastFormTypes: ["schedule", "content", "html"],
       editorConfig: {
@@ -216,7 +219,9 @@ export default {
       return dirty || validated ? valid : null;
     },
     async uploadImage(file, index) {
+      this.showSpinner = true;
       const result = await UploadFile(file);
+      this.showSpinner = false;
       this.itemForm[index].value =
         result && result.default ? result.default : this.itemForm[index];
     },
@@ -291,7 +296,9 @@ export default {
             );
             break;
           case "model":
-            c.value =  item[c.property] ? (item[c.property].id || item[c.property]) : null;
+            c.value = item[c.property]
+              ? item[c.property].id || item[c.property]
+              : null;
             break;
           case "collection":
             c.value = item[c.property];
