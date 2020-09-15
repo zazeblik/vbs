@@ -110,10 +110,12 @@ Vue.prototype.$isMobile = function() {
 
 Vue.prototype.$url = window.location.origin;
 Vue.prototype.$location = window.location;
+Vue.prototype.$document = document;
 
 axios.get('/site/settings')
   .then((response) => {
-    Vue.prototype.$settings = response.data
+    Vue.prototype.$settings = response.data;
+    document.title = response.data.name;
     return axios.get('/users/authenticated')
   })  
   .then((response) => {

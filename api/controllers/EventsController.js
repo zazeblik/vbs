@@ -47,10 +47,10 @@ module.exports = {
       const group = await Groups.findOne(event.group);
       let createdPayments = [];
       let personBalances = {};
+      await Events.addToCollection(id, "visitors").members(visitors);
       if (group.type == GroupType.Personal){
         const eventPaymentsPersons = event.payments.map(p => p.person);
         const cost = group.cost;
-        await Events.addToCollection(id, "visitors").members(visitors);
         const payments = persons
           .filter(p => !eventPaymentsPersons.includes(p.id) && p.balance >= cost)
           .map(p => {
@@ -59,7 +59,7 @@ module.exports = {
               person: p.id,
               events: [event.id],
               group: group.id,
-              sum: group.cost,
+              sum: cost,
               description: `Посещение ${group.name} ${moment(event.startsAt).format("DD.MM")}`
             }
           });
