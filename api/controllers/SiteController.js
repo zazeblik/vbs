@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const GroupType = require('../../enums').GroupType;
 const DateRangeHelper =  require('../utils/DateRangeHelper');
+const { exec } = require('child_process')
 
 module.exports = {
   publicSchedule: async function (req, res) {
@@ -24,6 +25,12 @@ module.exports = {
     } catch (err) {
       return res.badRequest(err.message);
     }
+  },
+  icon: async function (req, res) {
+    fs.copyFile('frontend/public/favicon.ico', 'assets/favicon.ico', (err) => {
+      if (err) res.badRequest(err.message);
+      return res.ok();
+    });
   },
   groups: async function (req, res) {
     try {

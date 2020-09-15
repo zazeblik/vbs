@@ -12,10 +12,11 @@ class UploadAdapter {
     abort() {}
   }
 
-  function UploadFile(uploadedFile){
+  function UploadFile(uploadedFile, pathToSave, name){
     return new Promise((resolve, reject) => {
       const data = new FormData();
-      data.append("name", uploadedFile.name);
+      data.append("name", name || uploadedFile.name);
+      if (pathToSave) data.append("pathToSave", pathToSave);
       data.append("file", uploadedFile);
       axios({
         url: "/files/upload",

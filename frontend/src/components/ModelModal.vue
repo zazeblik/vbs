@@ -57,7 +57,7 @@
                   :placeholder="control.value ? control.value.substr(control.value.lastIndexOf('/') + 1) : 'Выберите или перетащите файл...'"
                   drop-placeholder="Перетащите файл сюда..."
                   browse-text="Выбрать..."
-                ></b-form-file>
+                />
                 <b-form-input
                   v-if="control.type == 'number'"
                   type="number"

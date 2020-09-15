@@ -16,6 +16,12 @@
           field="subtitle"
           updateUrl="/site/update" />
         <UpdatableField 
+          label="Иконка сайта"
+          type="icon"
+          :fieldValue="$settings.icon"
+          field="icon"
+          updateUrl="/site/update" />
+        <UpdatableField 
           label="Телефон"
           :validations="{ min: 3 }"
           :fieldValue="$settings.phone"

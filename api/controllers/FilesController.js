@@ -3,12 +3,14 @@ const path = require('path');
 module.exports = {
   upload: function (req, res) {
     try {
-      const filename = new Date().getTime() + '_' + req.param('name');
       const file = req.file('file');
+      let pathToSave = req.param('pathToSave') || 'uploads';
+      const name = req.param('name');
+      const filename = `${new Date().getTime()}_${name}`;
       if (req.method == "POST" && file && filename) {
         file.upload({
-          saveAs: filename,
-          dirname: path.resolve(sails.config.appPath, 'uploads')
+          saveAs: pathToSave != 'uploads' ? name : filename,
+          dirname: path.resolve(sails.config.appPath, pathToSave)
         }, function whenDone(err, uploadedFiles) {
           if (err) {
             return res.negotiate(err);
