@@ -27,6 +27,7 @@
       <b-form-input
         v-else
         :type="type"
+        size="sm"
         v-model="model"
         :placeholder="placeholder"
         @change="save(validationContext)"
