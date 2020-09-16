@@ -107,7 +107,7 @@ export default {
       if (this.type == 'icon'){
         await this.$postAsync('/site/icon');
       } else {
-        await this.save(validationContext);
+        await this.save({dirty: true, valid: true});
       }
     },
     convertModel(model) {

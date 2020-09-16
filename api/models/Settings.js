@@ -7,6 +7,10 @@ module.exports = {
     logo: {
       type: "string"
     },
+    replaceName: {
+      type: "boolean",
+      defaultsTo: false
+    },
     subtitle: {
       type: "string"
     },

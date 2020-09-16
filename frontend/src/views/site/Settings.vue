@@ -22,6 +22,18 @@
           field="icon"
           updateUrl="/site/update" />
         <UpdatableField 
+          label="Логотип сайта"
+          type="image"
+          :fieldValue="$settings.logo"
+          field="logo"
+          updateUrl="/site/update" />
+        <UpdatableField
+          label="Логотип вместо названия"
+          type="checkbox"
+          :fieldValue="$settings.replaceName"
+          field="replaceName"
+          updateUrl="/site/update" />
+        <UpdatableField 
           label="Телефон"
           :validations="{ min: 3 }"
           :fieldValue="$settings.phone"

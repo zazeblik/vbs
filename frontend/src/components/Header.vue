@@ -3,7 +3,9 @@
     <b-navbar v-if="isSiteShown" toggleable="lg" class="fixed-top shadow bg-white">
       <div class="text-center brand-block">
         <div v-if="$settings">
-          <a class="navbar-brand" to="/" v-if="$settings.logo"></a>
+          <a class="navbar-brand m-0 p-0" href="/" v-if="$settings.logo && $settings.replaceName">
+            <img :src="$settings.logo" height="40" />
+          </a>
           <b-navbar-brand to="/" v-else>{{$settings.name}}</b-navbar-brand>
           <br>
           <a class="header-logo-lext d-none d-lg-inline" v-if="isSiteShown && $settings.subtitle">{{$settings.subtitle}}</a>
