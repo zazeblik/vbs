@@ -1,6 +1,12 @@
 {
   "generators": {
-    "modules": {}
+    "modules": {
+      "grunt": false,
+      "sockets": false,
+      "views": false,
+      "pubsub": false,
+      "csrf": false
+    }
   },
   "_generatedWith": {
     "sails": "1.2.3",
