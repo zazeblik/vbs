@@ -59,7 +59,7 @@ module.exports = {
       const isExistsEvent = await sails.helpers.isAlreadyExistsEvent(
         actualEvent.group, 
         valueToSet.startsAt || actualEvent.startsAt,
-        value.duration || actualEvent.duration,
+        valueToSet.duration || actualEvent.duration,
         id )
       if (eventTimeChanged && isExistsEvent) {
         return next(`Занятие в это время уже есть. ${JSON.stringify(value)}`);
