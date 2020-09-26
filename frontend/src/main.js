@@ -115,7 +115,6 @@ Vue.prototype.$document = document;
 axios.get('/site/settings')
   .then((response) => {
     Vue.prototype.$settings = response.data;
-    document.title = response.data.name;
     return axios.get('/users/authenticated')
   })  
   .then((response) => {

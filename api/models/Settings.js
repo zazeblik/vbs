@@ -1,3 +1,6 @@
+const fs = require('fs');
+const { exec } = require('child_process');
+
 module.exports = {
   attributes: {
     name: {
@@ -49,5 +52,27 @@ module.exports = {
       type: "string"
     }
   },
+  beforeCreate: async function (value, next) {
+    try {
+      if (value.name){
+        fs.writeFileSync('frontend/portal.config.json', JSON.stringify({title: value.name}, null, 2));
+        exec('cd frontend && npm run build');	
+      }
+      return next();
+    } catch (error) {
+      return next(JSON.stringify([ error ]));
+    }
+  },
+  beforeUpdate: async function (value, next) {
+    try {
+      if (value.name){
+        fs.writeFileSync('frontend/portal.config.json', JSON.stringify({title: value.name}, null, 2));
+        exec('cd frontend && npm run build');
+      }
+      return next();
+    } catch (error) {
+      return next(JSON.stringify([ error ]));
+    }
+  }
 };
 
