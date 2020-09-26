@@ -85,17 +85,29 @@
                   v-model="control.value"
                   :state="getValidationState(validationContext)"
                 />
-                <b-form-datepicker
-                  v-else-if="control.type == 'date'"
-                  size="sm"
-                  placeholder="Выберите дату"
-                  show-decade-nav
-                  :date-format-options="{ day: '2-digit', month: '2-digit', year: 'numeric'  }"
-                  value-as-date
-                  :start-weekday="1"
-                  v-model="control.value"
-                  :state="getValidationState(validationContext)"
-                />
+                <b-input-group v-else-if="control.type == 'date'" class="w-50">
+                  <b-form-input
+                    size="sm"
+                    v-model="control.value"
+                    type="text"
+                    placeholder="Введите дату(YYYY-MM-DD)"
+                    autocomplete="off"
+                    :state="getValidationState(validationContext)"
+                  />
+                  <b-input-group-append>
+                    <b-form-datepicker
+                      size="sm"
+                      button-only
+                      placeholder="Выберите дату"
+                      right
+                      :date-format-options="{ day: '2-digit', month: '2-digit', year: 'numeric'  }"
+                      :start-weekday="1"
+                      v-model="control.value"
+                      :state="getValidationState(validationContext)"
+                    />
+                  </b-input-group-append>
+                </b-input-group>                
+                    
                 <model-select
                   v-if="control.type == 'model'"
                   :options="$modelsToOptions(control.models)"
@@ -104,38 +116,46 @@
                   :state="getValidationState(validationContext)"
                 />
                 <b-input-group v-if="control.type == 'datetime'" size="sm">
-                  <b-form-datepicker
-                    placeholder="Выберите дату"
-                    show-decade-nav
-                    :date-format-options="{ day: '2-digit', month: '2-digit', year: 'numeric'  }"
-                    value-as-date
-                    :start-weekday="1"
-                    :ref="'date_' + control.property"
-                    :value="control.date"
-                    @input="date => {
-                      control.date = date;
-                      const time = control.time.split(':');
-                      date.setHours(time[0]);
-                      date.setMinutes(time[1]);
-                      date.setSeconds(0, 0);
-                      control.value = date;
-                    }"
-                    :state="getValidationState(validationContext)"
-                  />
+                  <b-input-group class="w-50">
+                    <b-form-input
+                      v-model="control.value"
+                      size="sm"
+                      type="text"
+                      placeholder="Введите дату(YYYY-MM-DD)"
+                      autocomplete="off"
+                      @input="date => {
+                        control.date = date;
+                        control.value = date;
+                      }"
+                      :state="getValidationState(validationContext)"
+                    />
+                    <b-input-group-append>
+                      <b-form-datepicker
+                        size="sm"
+                        button-only
+                        placeholder="Выберите дату"
+                        right
+                        show-decade-nav
+                        :date-format-options="{ day: '2-digit', month: '2-digit', year: 'numeric'  }"
+                        :start-weekday="1"
+                        :ref="'date_' + control.property"
+                        :value="control.date"
+                        @input="date => {
+                          control.date = date;
+                          control.value = date;
+                        }"
+                        :state="getValidationState(validationContext)"
+                      />
+                    </b-input-group-append>
+                  </b-input-group> 
                   <b-form-timepicker
                     placeholder="Выберите время"
                     minutes-step="15"
                     :ref="'time_' + control.property"
                     hide-header
-                    :value="$moment(control.value).format('HH:mm')"
+                    :value="control.time"
                     @input="t => {
                       control.time = t;
-                      let date = control.date;
-                      const time = t.split(':');
-                      date.setHours(time[0]);
-                      date.setMinutes(time[1]);
-                      date.setSeconds(0, 0);
-                      control.value = date;
                     }"
                     :state="getValidationState(validationContext)"
                     no-close-button
@@ -203,6 +223,8 @@ export default {
   data() {
     return {
       title: "",
+      dateShowFormat: "YYYY-MM-DD",
+      dateTimeStringFormat: "YYYY-MM-DD HH:mm",
       id: null,
       isEdit: false,
       showSpinner: false,
@@ -259,8 +281,15 @@ export default {
             result[c.property] = c.value || false;
             break;
           case "date":
+            result[c.property] = c.value ? (new Date(c.value)).getTime() : null;
+            break;
           case "datetime":
-            result[c.property] = c.value ? c.value.getTime() : null;
+            result[c.property] = null;
+            if (c.date) {
+              const datetime = `${c.date} ${c.time}`;
+              const moment = this.$moment(datetime, this.dateTimeStringFormat)
+              result[c.property] = moment.toDate().getTime();
+            }
             break;
           case "schedule":
             result[c.property] = this.$refs["formSchedule"].getValue() || null;
@@ -313,9 +342,10 @@ export default {
             c.value = item[c.property] || c.options[0].value;
             break;
           case "date":
-            c.value = item[c.property] ? new Date(item[c.property]) : null;
+            c.value = item[c.property] ? this.$moment(item[c.property]).format(this.dateShowFormat) : '';
+            break;
           case "datetime":
-            c = this.setDateTimeValues(c, new Date(item[c.property]));
+            c = this.setDateTimeValues(c, this.$moment(item[c.property]));
             break;
           default:
             break;
@@ -340,6 +370,8 @@ export default {
           case "color":
           case "schedule":
           case "model":
+            c.value = c.value || null;
+            break;
           case "date":
             c.value = c.value || null;
             break;
@@ -362,7 +394,8 @@ export default {
           case "datetime":
             let defaultDate = new Date();
             defaultDate.setHours(17, 0, 0, 0);
-            c = this.setDateTimeValues(c, c.value || defaultDate);
+            const date = c.value || defaultDate;
+            c = this.setDateTimeValues(c, this.$moment(date));
             break;
           default:
             break;
@@ -370,9 +403,9 @@ export default {
       });
     },
     setDateTimeValues(field, value) {
-      field.value = value;
-      field.date = value;
-      field.time = this.$moment(value).format("HH:mm");
+      field.value = value.format(this.dateShowFormat);
+      field.date = value.format(this.dateShowFormat);
+      field.time = value.format("HH:mm");
       return field;
     },
     async saveChanges() {
