@@ -85,12 +85,12 @@
                   v-model="control.value"
                   :state="getValidationState(validationContext)"
                 />
-                <b-input-group v-else-if="control.type == 'date'" class="w-50">
+                <b-input-group v-else-if="control.type == 'date'">
                   <b-form-input
                     size="sm"
                     v-model="control.value"
                     type="text"
-                    placeholder="Введите дату(YYYY-MM-DD)"
+                    placeholder="Введите дату (DD.MM.YYYY)"
                     autocomplete="off"
                     :state="getValidationState(validationContext)"
                   />
@@ -100,10 +100,9 @@
                       button-only
                       placeholder="Выберите дату"
                       right
-                      :date-format-options="{ day: '2-digit', month: '2-digit', year: 'numeric'  }"
+                      :date-format-options="{ day: '2-digit', month: '2-digit', year: 'numeric' }"
                       :start-weekday="1"
                       v-model="control.value"
-                      :state="getValidationState(validationContext)"
                     />
                   </b-input-group-append>
                 </b-input-group>                
@@ -116,12 +115,12 @@
                   :state="getValidationState(validationContext)"
                 />
                 <b-input-group v-if="control.type == 'datetime'" size="sm">
-                  <b-input-group class="w-50">
+                  <b-input-group>
                     <b-form-input
                       v-model="control.value"
                       size="sm"
                       type="text"
-                      placeholder="Введите дату(YYYY-MM-DD)"
+                      placeholder="Введите дату (DD.MM.YYYY)"
                       autocomplete="off"
                       @input="date => {
                         control.date = date;
@@ -133,7 +132,6 @@
                       <b-form-datepicker
                         size="sm"
                         button-only
-                        placeholder="Выберите дату"
                         right
                         show-decade-nav
                         :date-format-options="{ day: '2-digit', month: '2-digit', year: 'numeric'  }"
@@ -144,7 +142,6 @@
                           control.date = date;
                           control.value = date;
                         }"
-                        :state="getValidationState(validationContext)"
                       />
                     </b-input-group-append>
                   </b-input-group> 
@@ -223,8 +220,8 @@ export default {
   data() {
     return {
       title: "",
-      dateShowFormat: "YYYY-MM-DD",
-      dateTimeStringFormat: "YYYY-MM-DD HH:mm",
+      dateShowFormat: "DD.MM.YYYY",
+      dateTimeStringFormat: "DD.MM.YYYY HH:mm",
       id: null,
       isEdit: false,
       showSpinner: false,

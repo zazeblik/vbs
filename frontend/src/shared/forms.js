@@ -338,7 +338,9 @@ module.exports.PersonForm = [
     label: "Дата рождения",
     property: "birthday",
     type: "date",
-    validations: {},
+    validations: {
+      regex: /^([0-2][0-9]|(3)[0-1])(\.)(((0)[0-9])|((1)[0-2]))(\.)\d{4}$/i
+    },
     value: null
   },
   {
@@ -357,7 +359,9 @@ module.exports.PersonForm = [
     label: "Дата присвоения",
     property: "danceClassApproveDate",
     type: "date",
-    validations: {},
+    validations: {
+      regex: /^([0-2][0-9]|(3)[0-1])(\.)(((0)[0-9])|((1)[0-2]))(\.)\d{4}$/i
+    },
     value: null
   },
   {
@@ -376,7 +380,9 @@ module.exports.PersonForm = [
     label: "Действие разряда",
     property: "rankEnds",
     type: "date",
-    validations: {},
+    validations: {
+      regex: /^([0-2][0-9]|(3)[0-1])(\.)(((0)[0-9])|((1)[0-2]))(\.)\d{4}$/i
+    },
     value: null
   },
   {
