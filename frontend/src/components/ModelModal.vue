@@ -88,7 +88,11 @@
                 <b-input-group v-else-if="control.type == 'date'">
                   <b-form-input
                     size="sm"
-                    v-model="control.value"
+                    :value="control.formattedDate"
+                    @input="dateString => {
+                      control.formattedDate = dateString;
+                      control.value = $moment(dateString, dateShowFormat).toDate();
+                    }"
                     type="text"
                     placeholder="Введите дату (DD.MM.YYYY)"
                     autocomplete="off"
@@ -98,7 +102,11 @@
                     <b-form-datepicker
                       size="sm"
                       button-only
-                      placeholder="Выберите дату"
+                      value-as-date
+                      @input="date => {
+                        control.formattedDate = $moment(date).format(dateShowFormat);
+                        control.value = date;
+                      }"
                       right
                       :date-format-options="{ day: '2-digit', month: '2-digit', year: 'numeric' }"
                       :start-weekday="1"
@@ -115,15 +123,20 @@
                   :state="getValidationState(validationContext)"
                 />
                 <b-input-group v-if="control.type == 'datetime'" size="sm">
-                  <b-input-group>
+                  <b-input-group class="w-50">
                     <b-form-input
-                      v-model="control.value"
                       size="sm"
                       type="text"
                       placeholder="Введите дату (DD.MM.YYYY)"
                       autocomplete="off"
-                      @input="date => {
-                        control.date = date;
+                      :value="control.formattedDate"
+                      @input="dateString => {
+                        control.formattedDate = dateString;
+                        const date = $moment(dateString, dateShowFormat).toDate();
+                        const time = control.time.split(':');
+                        date.setHours(time[0]);
+                        date.setMinutes(time[1]);
+                        date.setSeconds(0, 0);
                         control.value = date;
                       }"
                       :state="getValidationState(validationContext)"
@@ -134,12 +147,17 @@
                         button-only
                         right
                         show-decade-nav
+                        value-as-date
                         :date-format-options="{ day: '2-digit', month: '2-digit', year: 'numeric'  }"
                         :start-weekday="1"
                         :ref="'date_' + control.property"
-                        :value="control.date"
+                        :value="control.value"
                         @input="date => {
-                          control.date = date;
+                          control.formattedDate = $moment(date).format(dateShowFormat);
+                          const time = control.time.split(':');
+                          date.setHours(time[0]);
+                          date.setMinutes(time[1]);
+                          date.setSeconds(0, 0);
                           control.value = date;
                         }"
                       />
@@ -153,6 +171,12 @@
                     :value="control.time"
                     @input="t => {
                       control.time = t;
+                      let date = control.value;
+                      const time = t.split(':');
+                      date.setHours(time[0]);
+                      date.setMinutes(time[1]);
+                      date.setSeconds(0, 0);
+                      control.value = date;
                     }"
                     :state="getValidationState(validationContext)"
                     no-close-button
@@ -221,7 +245,6 @@ export default {
     return {
       title: "",
       dateShowFormat: "DD.MM.YYYY",
-      dateTimeStringFormat: "DD.MM.YYYY HH:mm",
       id: null,
       isEdit: false,
       showSpinner: false,
@@ -278,15 +301,8 @@ export default {
             result[c.property] = c.value || false;
             break;
           case "date":
-            result[c.property] = c.value ? (new Date(c.value)).getTime() : null;
-            break;
           case "datetime":
-            result[c.property] = null;
-            if (c.date) {
-              const datetime = `${c.date} ${c.time}`;
-              const moment = this.$moment(datetime, this.dateTimeStringFormat)
-              result[c.property] = moment.toDate().getTime();
-            }
+            result[c.property] = c.value ? c.value.getTime() : null;
             break;
           case "schedule":
             result[c.property] = this.$refs["formSchedule"].getValue() || null;
@@ -339,7 +355,8 @@ export default {
             c.value = item[c.property] || c.options[0].value;
             break;
           case "date":
-            c.value = item[c.property] ? this.$moment(item[c.property]).format(this.dateShowFormat) : '';
+            c.value = item[c.property] ? new Date(item[c.property]) : null;
+            c.formattedDate = item[c.property] ? this.$moment(item[c.property]).format(this.dateShowFormat) : '';
             break;
           case "datetime":
             c = this.setDateTimeValues(c, this.$moment(item[c.property]));
@@ -400,8 +417,8 @@ export default {
       });
     },
     setDateTimeValues(field, value) {
-      field.value = value.format(this.dateShowFormat);
-      field.date = value.format(this.dateShowFormat);
+      field.value = value.toDate();
+      field.formattedDate = value.format(this.dateShowFormat);
       field.time = value.format("HH:mm");
       return field;
     },
