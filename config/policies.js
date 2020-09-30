@@ -23,6 +23,9 @@ module.exports.policies = {
   archivePersons: {
     '*': ['authenticated', 'isControlPanelAvailable']
   },
+  salaryRules: {
+    '*': ['authenticated', 'isControlPanelAvailable']
+  },
   events: {
     '*': ['authenticated', 'isControlPanelAvailable']
   },

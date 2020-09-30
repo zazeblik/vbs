@@ -158,6 +158,15 @@ export default new Router({
           path: 'files',
           component: () => import('./views/site/Files.vue')
         },
+        ,
+        {
+          path: 'rules',
+          component: () => import('./views/salaries/Rules.vue')
+        },
+        {
+          path: 'calculation',
+          component: () => import('./views/salaries/Calculation.vue')
+        },
         {
           path: 'users',
           component: () => import('./views/users/Users.vue')

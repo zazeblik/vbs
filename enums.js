@@ -29,3 +29,9 @@ module.exports.FilesBlock = {
   Photo: 1,
   Slider: 2
 }
+
+module.exports.SalaryRuleType = {
+  Precentage: 0,
+  FixPerEvent: 1,
+  FixMonthly: 2
+}

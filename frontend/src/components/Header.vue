@@ -51,6 +51,10 @@
             <b-dropdown-item to="/cp/files">Файлы</b-dropdown-item>
           </b-nav-item-dropdown>
           <b-nav-item to="/cp/payments" v-if="$user.role == 2">Оплата</b-nav-item>
+          <b-nav-item-dropdown text="Зарплаты">
+            <b-dropdown-item to="/cp/rules">Правила рассчёта</b-dropdown-item>
+            <b-dropdown-item to="/cp/calculation">Рассчёт</b-dropdown-item>
+          </b-nav-item-dropdown>
           <b-nav-item to="/cp/users" v-if="$user.role == 2">Учётные записи</b-nav-item>
         </b-navbar-nav>
         <ProfileNav :isAuthShown="isAuthShown" :isSiteShown="isSiteShown" />

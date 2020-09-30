@@ -1,8 +1,10 @@
+const SalaryRules = require("../../../api/models/SalaryRules");
 const Enums = require("../../../enums");
 const GroupType = Enums.GroupType;
 const SiteBlock = Enums.SiteBlock;
 const FilesBlock = Enums.FilesBlock;
 const Role = Enums.Role;
+const SalaryRuleType = Enums.SalaryRuleType;
 
 module.exports.ArchivePersonForm = [
   {
@@ -272,6 +274,49 @@ module.exports.FileForm = [
       { text: "слайдер", value: FilesBlock.Slider }
 
     ],
+    validations: {}
+  },
+]
+
+module.exports.RuleForm = [
+  {
+    label: "Тренер",
+    property: "instructor",
+    type: "model",
+    models: [],
+    validations: {}
+  },
+  {
+    label: "Группа",
+    property: "group",
+    type: "model",
+    models: [],
+    validations: {}
+  },
+  {
+    label: "Тип",
+    property: "type",
+    type: "enum",
+    options: [
+      { text: "процент за занятие", value: SalaryRuleType.Precentage },
+      { text: "рубли за занятие", value: SalaryRuleType.FixPerEvent },
+      { text: "рубли за месяц", value: SalaryRuleType.FixMonthly }
+    ],
+    validations: {}
+  },
+  {
+    label: "Значение",
+    property: "value",
+    type: "number",
+    defaultValue: 0,
+    validations: {
+      min: 0
+    }
+  },
+  {
+    label: "Для индивидуальных групп",
+    property: "forPersonalGroups",
+    type: "checkbox",
     validations: {}
   },
 ]

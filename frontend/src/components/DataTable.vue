@@ -19,7 +19,7 @@
         </b-button-group>
       </b-input-group>
       
-      <b-input-group size="sm">
+      <b-input-group size="sm" v-if="!hideSearch">
         <b-input-group-prepend is-text>
           <b-icon icon="search"></b-icon>
         </b-input-group-prepend>
@@ -101,7 +101,7 @@ export default {
   components: {
     ModelModal
   },
-  props: ["baseUrl", "fields", "itemForm", "filterPlaceHolder"],
+  props: ["baseUrl", "fields", "itemForm", "filterPlaceHolder", "hideSearch"],
   data() {
     return {
       items: [],
