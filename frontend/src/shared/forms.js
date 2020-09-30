@@ -314,9 +314,13 @@ module.exports.RuleForm = [
     }
   },
   {
-    label: "Для индивидуальных групп",
-    property: "forPersonalGroups",
-    type: "checkbox",
+    label: "Для типа групп",
+    property: "forGroupType",
+    type: "enum",
+    options: [
+      { text: "общая", value: GroupType.General },
+      { text: "индивидуальная", value: GroupType.Personal }
+    ],
     validations: {}
   },
 ]

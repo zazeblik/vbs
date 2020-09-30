@@ -45,12 +45,13 @@ export default {
           sortable: true
         },
         {
-          key: "forPersonalGroups",
-          label: "Для индивидуальных групп",
+          key: "forGroupType",
+          label: "Для типа групп",
           type: "checkbox",
           sortable: true,
           formatter: (value, key, item) => {
-            return value ? "Да" : "Нет";
+            const field = RuleForm.find(f => f.property == "forGroupType");
+            return field.options.find(o => o.value == value).text;
           }
         },
         {

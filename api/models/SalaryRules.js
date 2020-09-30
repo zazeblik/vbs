@@ -1,4 +1,5 @@
 const SalaryRuleType = require('../../enums').SalaryRuleType
+const GroupType = require('../../enums').GroupType
 
 module.exports = {
   attributes: {
@@ -21,9 +22,10 @@ module.exports = {
       defaultsTo: SalaryRuleType.Precentage,
       isIn: [SalaryRuleType.Precentage, SalaryRuleType.FixPerEvent, SalaryRuleType.FixMonthly]
     },
-    forPersonalGroups: {
-      type: 'boolean',
-      defaultsTo: false
-    }
+    forGroupType: {
+      type: 'number',
+      isIn: [GroupType.General, GroupType.Personal],
+      defaultsTo: GroupType.General
+    },
   }
 };
