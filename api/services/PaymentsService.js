@@ -54,7 +54,7 @@ module.exports.createAll = async function (payments){
       paymentsToCreate.push(payment);
       return;
     } 
-    const events = p.events;
+    const events = payment.events;
     let isContainsDublicates = false;
     for (let i = 0; i < events.length; i++) {
       const event = events[i];
