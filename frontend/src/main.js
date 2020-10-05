@@ -108,6 +108,11 @@ Vue.prototype.$isMobile = function() {
   return check;
 };
 
+Array.prototype.sum = function(propertySelector = obj => obj) {
+  const intialValue = 0;
+  return this.reduce((sum, obj) => sum + propertySelector(obj), intialValue);
+};
+
 Vue.prototype.$url = window.location.origin;
 Vue.prototype.$location = window.location;
 Vue.prototype.$document = document;

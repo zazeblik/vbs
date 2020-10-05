@@ -1,7 +1,6 @@
 const DateRangeHelper =  require('../utils/DateRangeHelper');
 const SalaryCalculationService = require('../services/SalaryCalculationService');
 
-
 module.exports = {
   settings: async function (req, res) {
     try {
@@ -84,49 +83,13 @@ module.exports = {
     }
   },
   calculations: async function (req, res) {
+    if (!req.param("year")) return res.status(400).send("year не указан");
+    if (!req.param("month")) return res.status(400).send("month не указан");
     try {
-      const serviceResult = [{
-        instructor: "Николаев Роман",
-        types: [
-          {
-            name: "Общие",
-            groups: [
-              {
-                name: "Дети 4 года",
-                eventsCount: 7,
-                ruleDescription: "100 рублей за занятие",
-                sum: 700
-              },
-              {
-                name: "Дети 5 лет",
-                eventsCount: 6,
-                ruleDescription: "50% за месяц",
-                sum: 750
-              }
-            ],
-            totalSum: 1450
-          },
-          {
-            name: "Индивидуальные",
-            groups: [
-              {
-                name: "Егошин - Карманова",
-                eventsCount: 4,
-                ruleDescription: "50% за занятие",
-                sum: 1000
-              },
-              {
-                name: "Таланов - Таланова",
-                eventsCount: 3,
-                ruleDescription: "40% за занятие",
-                sum: 1200
-              }
-            ],
-            totalSum: 2200
-          }
-        ],
-        totalSum: 3650
-      }];
+      const year = Number(req.param("year"));
+      const month = Number(req.param("month"));
+      const monthDateRange = DateRangeHelper.GetMonthDateRange(year, month);
+      const serviceResult = await SalaryCalculationService.calculateSalaries(monthDateRange);
       return res.ok(serviceResult);
     } catch (err) {
       return res.badRequest();

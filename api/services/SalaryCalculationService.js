@@ -79,7 +79,7 @@ module.exports.calculateSalaries = async function(dateRange){
 
             if ( rule.type == SalaryRuleType.FixMonthly ) {
                 const monthsCount = end.diff((start), 'months') || 1;
-                salaryInfo.sum = rule.price * monthsCount;
+                salaryInfo.sum = rule.value * monthsCount;
             } else if ( rule.type == SalaryRuleType.FixPerEvent ) {
                 salaryInfo.sum = rule.value * eventsPerGroup.length;
             } else if (  rule.type == SalaryRuleType.Precentage ) {
