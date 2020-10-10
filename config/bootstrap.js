@@ -1,4 +1,8 @@
-const Role = require('../enums').Role
+const SalaryRules = require('../api/models/SalaryRules');
+
+const Role = require('../enums').Role;
+const GroupType = require('../enums').GroupType;
+const SalaryRuleType = require('../enums').SalaryRuleType;
 
 module.exports.bootstrap = async function() {
   if (await Users.count() == 0) {
@@ -6,5 +10,11 @@ module.exports.bootstrap = async function() {
   }
   if (await Settings.count() == 0) {
     await Settings.create({ name: 'Школа танцев', subtitle: 'Красота Движение Здоровье' })
+  }
+  if (await SalaryRules.count({ group: null, instructor: null, forGroupType: GroupType.Personal }) == 0) {
+    await SalaryRules.create({ value: 50, type: SalaryRuleType.Percentage, forGroupType: GroupType.Personal })
+  }
+  if (await SalaryRules.count({ group: null, instructor: null, forGroupType: GroupType.General }) == 0) {
+    await SalaryRules.create({ value: 50, type: SalaryRuleType.Precentage, forGroupType: GroupType.General })
   }
 };
