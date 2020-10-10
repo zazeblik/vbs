@@ -1,5 +1,3 @@
-const SalaryRules = require('../api/models/SalaryRules');
-
 const Role = require('../enums').Role;
 const GroupType = require('../enums').GroupType;
 const SalaryRuleType = require('../enums').SalaryRuleType;
