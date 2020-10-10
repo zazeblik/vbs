@@ -73,12 +73,7 @@
                   v-if="control.type == 'enum'"
                   size="sm"
                   :options="control.options"
-                  @input="(value) => {
-                    control.value = value;
-                    if (control.onChange){
-                      control.onChange(value);
-                    }
-                  }"
+                  v-model="control.value"
                   :state="getValidationState(validationContext)"
                 />
                 <b-form-checkbox
