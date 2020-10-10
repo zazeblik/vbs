@@ -19,8 +19,8 @@ module.exports = {
         }
       });
       return res.send({ groups, instructors });
-    } catch (error) {
-      return res.badRequest();
+    } catch (err) {
+      return res.badRequest(err.message);
     }
   },
   edit: async function (req, res) {
@@ -30,7 +30,7 @@ module.exports = {
       await SalaryRules.update(req.param("id"), req.body)
       return res.ok();
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   create: async function (req, res) {
@@ -39,19 +39,15 @@ module.exports = {
       await SalaryRules.create(req.body)
       return res.ok();
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   delete: async function (req, res) {
     try {
-      if (!req.param("id"))
-        return res
-          .status(400)
-          .send(err);
-      await SalaryRules.destroy(req.body).fetch();
+      await SalaryRules.destroy(req.body)
       return res.ok();
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   list: async function (req, res) {
@@ -79,7 +75,7 @@ module.exports = {
         data: data
       })
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   calculations: async function (req, res) {
@@ -92,7 +88,7 @@ module.exports = {
       const serviceResult = await SalaryCalculationService.calculateSalaries(monthDateRange);
       return res.ok(serviceResult);
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   }
 };

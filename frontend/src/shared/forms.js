@@ -36,7 +36,7 @@ module.exports.IncomeForm = [
     property: "sum",
     type: "number",
     validations: {
-      min: 0,
+      min_value: 0,
       required: true
     }
   },
@@ -44,7 +44,6 @@ module.exports.IncomeForm = [
     label: "Описание",
     property: "description",
     type: "string",
-    validations: {}
   }
 ];
 
@@ -64,7 +63,7 @@ module.exports.PaymentForm = [
     property: "sum",
     type: "number",
     validations: {
-      min: 0,
+      min_value: 0,
       required: true
     }
   },
@@ -73,20 +72,17 @@ module.exports.PaymentForm = [
     property: "month",
     type: "month",
     hidden: true,
-    validations: {}
   },
   {
     label: "Год",
     property: "year",
     type: "year",
     hidden: true,
-    validations: {}
   },
   {
     label: "Описание",
     property: "description",
     type: "string",
-    validations: {}
   },
   {
     property: "events",
@@ -109,7 +105,7 @@ module.exports.GroupForm = [
     property: "cost",
     type: "number",
     validations: {
-      min: 0,
+      min_value: 0,
       required: true
     }
   },
@@ -125,7 +121,7 @@ module.exports.GroupForm = [
       return true;
     },
     validations: {
-      min: 0
+      min_value: 0
     }
   },
   {
@@ -152,7 +148,7 @@ module.exports.GroupForm = [
     type: "number",
     description: "В минутах",
     validations: {
-      min: 0,
+      min_value: 0,
       required: true
     }
   },
@@ -165,20 +161,17 @@ module.exports.GroupForm = [
       { text: "индивидуальная", value: GroupType.Personal }
     ],
     hidden: true,
-    validations: {}
   },
   {
     label: "Расписание",
     property: "schedule",
     type: "schedule",
-    validations: {}
   },
   {
     label: "Скрыть",
     property: "hidden",
     type: "checkbox",
     hidden: true,
-    validations: {}
   },
   {
     label: "Описание",
@@ -201,7 +194,6 @@ module.exports.MaterialForm = [
     property: "image",
     accept: "image/*",
     type: "file",
-    validations: {}
   },
   {
     label: "Контент",
@@ -213,13 +205,11 @@ module.exports.MaterialForm = [
     property: "public",
     type: "checkbox",
     defaultValue: true,
-    validations: {}
   },
   {
     label: "На главной",
     property: "onMain",
     type: "checkbox", 
-    validations: {}
   },
   {
     label: "Блок",
@@ -234,7 +224,6 @@ module.exports.MaterialForm = [
       { text: "отзывы", value: SiteBlock.Feedback },
       { text: "контакты", value: SiteBlock.Contacts },
     ],
-    validations: {}
   },
   {
     label: "Приоритет",
@@ -243,7 +232,7 @@ module.exports.MaterialForm = [
     description: "Чем больше число, тем вше будет расположен материал",
     defaultValue: 1,
     validations: {
-      min: 1
+      min_value: 1
     }
   }
 ]
@@ -262,7 +251,6 @@ module.exports.FileForm = [
     property: "file",
     accept: "*",
     type: "file",
-    validations: {}
   },
   {
     label: "Блок",
@@ -272,9 +260,7 @@ module.exports.FileForm = [
       { text: "турниры", value: FilesBlock.Tournaments },
       { text: "фото", value: FilesBlock.Photo },
       { text: "слайдер", value: FilesBlock.Slider }
-
     ],
-    validations: {}
   },
 ]
 
@@ -284,14 +270,12 @@ module.exports.RuleForm = [
     property: "instructor",
     type: "model",
     models: [],
-    validations: {}
   },
   {
     label: "Группа",
     property: "group",
     type: "model",
     models: [],
-    validations: {}
   },
   {
     label: "Тип",
@@ -302,15 +286,21 @@ module.exports.RuleForm = [
       { text: "фиксированная сумма за занятие с человека", value: SalaryRuleType.FixPerEvent },
       { text: "фиксированная сумма за месяц занятий", value: SalaryRuleType.FixMonthly }
     ],
-    validations: {}
   },
   {
     label: "Значение",
     property: "value",
     type: "number",
-    defaultValue: 0,
-    validations: {
-      min: 0
+    rules: (form) => {
+      let rules = {
+        min_value: 1,
+        required: true
+      };
+      const typeField = form.find(f => f.property == "type");
+      if ( typeField &&  typeField.value == SalaryRuleType.Precentage ) {
+        rules.max_value = 100;
+      }
+      return rules;
     }
   },
   {
@@ -321,7 +311,13 @@ module.exports.RuleForm = [
       { text: "общая", value: GroupType.General },
       { text: "индивидуальная", value: GroupType.Personal }
     ],
-    validations: {}
+    visibility: (form) => {
+      const groupField = form.find(f => f.property == "group");
+      if ( groupField &&  groupField.value ) {
+        return false;
+      }
+      return true;
+    },
   },
 ]
 
@@ -368,7 +364,7 @@ module.exports.EventForm = [
     property: "duration",
     type: "number",
     validations: {
-      min: 0,
+      min_value: 0,
       required: true
     }
   }
@@ -396,13 +392,11 @@ module.exports.PersonForm = [
     label: "Номер книжки",
     property: "bookNumber",
     type: "string",
-    validations: {}
   },
   {
     label: "Класс",
     property: "danceClass",
     type: "string",
-    validations: {}
   },
   {
     label: "Дата присвоения",
@@ -417,13 +411,11 @@ module.exports.PersonForm = [
     label: "Разряд",
     property: "rank",
     type: "string",
-    validations: {}
   },
   {
     label: "Разряд Мин.Спорта",
     property: "rankMinsport",
     type: "string",
-    validations: {}
   },
   {
     label: "Действие разряда",
@@ -438,19 +430,16 @@ module.exports.PersonForm = [
     label: "Разрядная книжка",
     property: "rankBookExists",
     type: "checkbox",
-    validations: {}
   },
   {
     label: "Телефон",
     property: "phone",
     type: "string",
-    validations: {}
   },
   {
     label: "Адрес",
     property: "address",
     type: "string",
-    validations: {}
   },
   {
     label: "Описание",
@@ -505,8 +494,7 @@ module.exports.UserForm = [
     label: "Участник",
     property: "person",
     type: "model",
-    models: [],
-    validations: {}
+    models: []
   },
   {
     label: "Роль",
@@ -517,7 +505,6 @@ module.exports.UserForm = [
       { text: "тренер", value: Role.Coach },
       { text: "админ", value: Role.LocalAdmin }
 
-    ],
-    validations: {}
+    ]
   },
 ]

@@ -29,7 +29,7 @@ Object.keys(rules).forEach(rule => extend(rule, rules[rule]));
 Vue.component("ValidationObserver", ValidationObserver);
 Vue.component("ValidationProvider", ValidationProvider);
 Vue.use(require('vue-moment'), { moment });
-Vue.use( CKEditor );
+Vue.use(CKEditor);
 Vue.use(VueAxios, axios);
 Vue.use(BootstrapVue);
 Vue.use(BootstrapVueIcons);

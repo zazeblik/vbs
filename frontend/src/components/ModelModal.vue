@@ -19,10 +19,10 @@
         <b-overlay :show="showSpinner" rounded="sm">
           <b-form>
             <validation-provider
-              v-for="(control, index) in itemForm.filter(c => !lastFormTypes.includes(c.type))"
+              v-for="(control, index) in itemForm.filter((c) => !lastFormTypes.includes(c.type))"
               :key="index"
               :name="getName(control.property)"
-              :rules="control.validations"
+              :rules="getControlRules(control)"
               v-slot="validationContext"
             >
               <b-form-group
@@ -54,7 +54,11 @@
                   :accept="control.accept"
                   @input="uploadImage($event, index)"
                   :state="getValidationState(validationContext)"
-                  :placeholder="control.value ? control.value.substr(control.value.lastIndexOf('/') + 1) : 'Выберите или перетащите файл...'"
+                  :placeholder="
+                    control.value
+                      ? control.value.substr(control.value.lastIndexOf('/') + 1)
+                      : 'Выберите или перетащите файл...'
+                  "
                   drop-placeholder="Перетащите файл сюда..."
                   browse-text="Выбрать..."
                 />
@@ -69,7 +73,12 @@
                   v-if="control.type == 'enum'"
                   size="sm"
                   :options="control.options"
-                  v-model="control.value"
+                  @input="(value) => {
+                    control.value = value;
+                    if (control.onChange){
+                      control.onChange(value);
+                    }
+                  }"
                   :state="getValidationState(validationContext)"
                 />
                 <b-form-checkbox
@@ -89,7 +98,7 @@
                   <b-form-input
                     size="sm"
                     :value="control.formattedDate"
-                    @input="dateString => {
+                    @input="(dateString) => {
                       control.formattedDate = dateString;
                       control.value = $moment(dateString, dateShowFormat).toDate();
                     }"
@@ -103,22 +112,31 @@
                       size="sm"
                       button-only
                       value-as-date
-                      @input="date => {
+                      @input="(date) => {
                         control.formattedDate = $moment(date).format(dateShowFormat);
                         control.value = date;
                       }"
                       right
-                      :date-format-options="{ day: '2-digit', month: '2-digit', year: 'numeric' }"
+                      :date-format-options="{
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                      }"
                       :start-weekday="1"
                       v-model="control.value"
                     />
                   </b-input-group-append>
-                </b-input-group>                
-                    
+                </b-input-group>
                 <model-select
                   v-if="control.type == 'model'"
                   :options="$modelsToOptions(control.models)"
-                  v-model="control.value"
+                  :value="control.value"
+                  @input="(value) => {
+                    control.value = value;
+                    if (control.onChange){
+                      control.onChange(value);
+                    }
+                  }"
                   :isDisabled="!control.models.length"
                   :state="getValidationState(validationContext)"
                 />
@@ -130,15 +148,15 @@
                       placeholder="Введите дату (DD.MM.YYYY)"
                       autocomplete="off"
                       :value="control.formattedDate"
-                      @input="dateString => {
-                        control.formattedDate = dateString;
-                        const date = $moment(dateString, dateShowFormat).toDate();
-                        const time = control.time.split(':');
-                        date.setHours(time[0]);
-                        date.setMinutes(time[1]);
-                        date.setSeconds(0, 0);
-                        control.value = date;
-                      }"
+                      @input="(dateString) => {
+                          control.formattedDate = dateString;
+                          const date = $moment(dateString, dateShowFormat).toDate();
+                          const time = control.time.split(':');
+                          date.setHours(time[0]);
+                          date.setMinutes(time[1]);
+                          date.setSeconds(0, 0);
+                          control.value = date;
+                        }"
                       :state="getValidationState(validationContext)"
                     />
                     <b-input-group-append>
@@ -148,11 +166,15 @@
                         right
                         show-decade-nav
                         value-as-date
-                        :date-format-options="{ day: '2-digit', month: '2-digit', year: 'numeric'  }"
+                        :date-format-options="{
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                        }"
                         :start-weekday="1"
                         :ref="'date_' + control.property"
                         :value="control.value"
-                        @input="date => {
+                        @input="(date) => {
                           control.formattedDate = $moment(date).format(dateShowFormat);
                           const time = control.time.split(':');
                           date.setHours(time[0]);
@@ -162,14 +184,14 @@
                         }"
                       />
                     </b-input-group-append>
-                  </b-input-group> 
+                  </b-input-group>
                   <b-form-timepicker
                     placeholder="Выберите время"
                     minutes-step="15"
                     :ref="'time_' + control.property"
                     hide-header
                     :value="control.time"
-                    @input="t => {
+                    @input="(t) => {
                       control.time = t;
                       let date = control.value;
                       const time = t.split(':');
@@ -182,44 +204,47 @@
                     no-close-button
                   />
                 </b-input-group>
-                <b-form-invalid-feedback
-                  :id="'feedback_'+control.property"
-                >{{ validationContext.errors[0] }}</b-form-invalid-feedback>
+                <b-form-invalid-feedback :id="'feedback_' + control.property">{{
+                  validationContext.errors[0]
+                }}</b-form-invalid-feedback>
               </b-form-group>
             </validation-provider>
             <b-form-group
               label-cols-sm="3"
               label-size="sm"
-              v-if="itemForm.some(c => c.type == 'schedule')"
-              :label="itemForm.find(c => c.type == 'schedule').label"
+              v-if="itemForm.some((c) => c.type == 'schedule')"
+              :label="itemForm.find((c) => c.type == 'schedule').label"
               class="mb-1"
             >
               <FormSchedule
-                :value="itemForm.find(c => c.type == 'schedule').value"
+                :value="itemForm.find((c) => c.type == 'schedule').value"
                 ref="formSchedule"
               />
             </b-form-group>
             <b-form-group
               label-cols-sm="12"
               label-size="sm"
-              v-if="itemForm.some(c => c.type == 'content')"
-              :label="itemForm.find(c => c.type == 'content').label"
+              v-if="itemForm.some((c) => c.type == 'content')"
+              :label="itemForm.find((c) => c.type == 'content').label"
               class="mb-1"
             >
               <ckeditor
                 :editor="editor"
                 :config="editorConfig"
-                v-model="itemForm.find(c => c.type == 'content').value"
+                v-model="itemForm.find((c) => c.type == 'content').value"
               />
             </b-form-group>
             <b-form-group
               label-cols-sm="12"
               label-size="sm"
-              v-if="itemForm.some(c => c.type == 'html')"
-              :label="itemForm.find(c => c.type == 'html').label"
+              v-if="itemForm.some((c) => c.type == 'html')"
+              :label="itemForm.find((c) => c.type == 'html').label"
               class="mb-1"
             >
-              <b-form-textarea size="sm" v-model="itemForm.find(c => c.type == 'html').value" />
+              <b-form-textarea
+                size="sm"
+                v-model="itemForm.find((c) => c.type == 'html').value"
+              />
             </b-form-group>
           </b-form>
         </b-overlay>
@@ -276,6 +301,11 @@ export default {
       if (control.hidden) return true;
       if (control.visibility) return !control.visibility(this.itemForm);
       return false;
+    },
+    getControlRules(control) {
+      if (control.validations) return control.validations;
+      if (control.rules) return control.rules(this.itemForm);
+      return {};
     },
     getFormValues() {
       let result = {};
@@ -356,7 +386,9 @@ export default {
             break;
           case "date":
             c.value = item[c.property] ? new Date(item[c.property]) : null;
-            c.formattedDate = item[c.property] ? this.$moment(item[c.property]).format(this.dateShowFormat) : '';
+            c.formattedDate = item[c.property]
+              ? this.$moment(item[c.property]).format(this.dateShowFormat)
+              : "";
             break;
           case "datetime":
             c = this.setDateTimeValues(c, this.$moment(item[c.property]));
@@ -460,6 +492,7 @@ export default {
       this.id = null;
       this.itemForm.forEach((c) => {
         c.value = c.type == "content" ? "" : null;
+        delete c.onChange;
       });
       this.$nextTick(() => {
         this.$refs.observer.reset();

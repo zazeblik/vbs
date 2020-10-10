@@ -6,6 +6,7 @@
 </template>
 
 <script>
+const SalaryRuleType = require("../../../../enums").SalaryRuleType;
 import DataTable from "../../components/DataTable";
 import { RuleForm } from "../../shared/forms";
 export default {
@@ -13,6 +14,7 @@ export default {
     return {
       baseUrl: "/salaryrules",
       itemForm: RuleForm,
+      groups: [],
       fields: [
         {
           key: "instructor",
@@ -47,7 +49,6 @@ export default {
         {
           key: "forGroupType",
           label: "Для типа групп",
-          type: "checkbox",
           sortable: true,
           formatter: (value, key, item) => {
             const field = RuleForm.find(f => f.property == "forGroupType");
@@ -76,7 +77,13 @@ export default {
       const settings = await this.$getAsync(`${this.baseUrl}/settings`);
       this.itemForm.find(f => f.property == "instructor").models = settings.instructors;
       this.itemForm.find(f => f.property == "group").models = settings.groups;
+      this.itemForm.find(f => f.property == "group").onChange = this.onGroupChanged;
+      this.groups = settings.groups; 
     },
+    onGroupChanged(groupId) {
+      const group = this.groups.find(g => g.id == groupId);
+      this.itemForm.find(f => f.property == "forGroupType").value = group.type;
+    }
   }
 };
 </script>
