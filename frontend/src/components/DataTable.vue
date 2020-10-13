@@ -16,6 +16,13 @@
           >
             <b-icon icon="trash"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Удалить</span>
           </b-button>
+          <b-button
+            v-if="additionalButton"
+            variant="outline-primary"
+            @click="additionalButton.action"
+          >
+            <b-icon icon="caret-right"></b-icon>&nbsp;<span class="d-none d-md-inline-block">{{additionalButton.name}}</span>
+          </b-button>
         </b-button-group>
       </b-input-group>
       
@@ -72,6 +79,10 @@
         <b-button size="sm" variant="link" @click="row.toggleDetails">{{!row.item._showDetails ? 'Подробнее...' : 'Скрыть'}}</b-button>
       </template>
 
+      <template v-slot:cell(password)="row">
+        <b-button size="sm" variant="link" @click="togglePassword(row.item)">{{row.item.password}}</b-button>
+      </template>
+
       <template v-slot:row-details="row">
         <b-card>
           <ul>
@@ -101,7 +112,7 @@ export default {
   components: {
     ModelModal
   },
-  props: ["baseUrl", "fields", "itemForm", "filterPlaceHolder", "hideSearch"],
+  props: ["baseUrl", "fields", "itemForm", "filterPlaceHolder", "hideSearch", "additionalButton", "passwordShowButton"],
   data() {
     return {
       items: [],
@@ -136,6 +147,15 @@ export default {
       this.currentPage = result.page;
       this.total = result.total;
       this.isBusy = false;
+    },
+    async togglePassword(item) {
+      if ( item.isPasswordShowed ) {
+        item.isPasswordShowed = false;
+        item.password = '***';
+      } else {
+        item.isPasswordShowed = true;
+        item.password = await this.passwordShowButton.getPassword(item.id);
+      }
     },
     getItemFormValue(item){
       const allowed = this.itemForm.filter(f => !f.hidden && f.type != "content").map(f => f.property);

@@ -12,7 +12,7 @@ module.exports = {
       type: 'string',
       required: true,
       custom: function(value) {
-        return _.isString(value) && value.length >= 8 && value.match(/^([A-Za-z0-9]+)$/);
+        return _.isString(value) && value.length >= 8 && value.match(/^([A-Za-z0-9_]+)$/);
       },
       encrypt: true
     },

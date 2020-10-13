@@ -1,7 +1,14 @@
 <template>
   <b-container fluid class="py-2">
     <h5>Учётные записи</h5>
-    <DataTable :baseUrl="baseUrl" :fields="fields" :itemForm="itemForm" filterPlaceHolder="Введите логин..." />
+    <DataTable
+      :baseUrl="baseUrl"
+      :fields="fields"
+      :itemForm="itemForm"
+      filterPlaceHolder="Введите логин..."
+      :additionalButton="additionalButton"
+      :passwordShowButton="passwordShowButton"
+      ref="dataTable" />
   </b-container>
 </template>
 
@@ -13,6 +20,8 @@ export default {
     return {
       baseUrl: "/users",
       itemForm: UserForm,
+      additionalButton: null,
+      passwordShowButton: null,
       fields: [
         {
           key: "login",
@@ -36,6 +45,14 @@ export default {
             return value.name;
           }
         },
+        {
+          key: "password",
+          label: "Пароль",
+          formatter: (value, key, item) => {
+            if (!value) return "***";
+            return value.name;
+          }
+        },
       ]
     };
   },
@@ -43,6 +60,8 @@ export default {
     DataTable
   },
   async mounted(){
+    this.additionalButton = { name: 'Сгенерировать', action: this.syncAccounts };
+    this.passwordShowButton = { getPassword: this.getPassword };
     await this.fetchSettings();
   },
   methods: {
@@ -50,6 +69,14 @@ export default {
       const settings = await this.$getAsync(`${this.baseUrl}/settings`);
       this.itemForm.find(f => f.property == "person").models = settings.persons;
     },
+    async syncAccounts() {
+      await this.$getAsync(`${this.baseUrl}/generate`);
+      await this.$refs.dataTable.fetchTable();
+    },
+    async getPassword(userId) {
+      const response = await this.$getAsync(`${this.baseUrl}/get-password`, { id: userId })
+      return response.data;
+    }
   }
 };
 </script>

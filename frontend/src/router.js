@@ -167,6 +167,7 @@ export default new Router({
           component: () => import('./views/salaries/Calculation.vue')
         },
         {
+          name: 'users',
           path: 'users',
           component: () => import('./views/users/Users.vue')
         }

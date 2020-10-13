@@ -487,7 +487,7 @@ module.exports.UserForm = [
     type: "password",
     validations: {
       min: 8,
-      regex: /^([A-Za-z0-9]+)$/
+      regex: /^([A-Za-z0-9_]+)$/
     }
   },
   {

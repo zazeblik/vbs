@@ -54,6 +54,7 @@ module.exports.routes = {
   '/materials/delete/:id': 'MaterialsController.delete',
   '/users/edit/:id': 'UsersController.edit',
   '/users/delete/:id': 'UsersController.delete',
+  '/users/get-password': 'UsersController.getPassword',
   '/files/edit/:id': 'FilesController.edit',
   '/files/delete/:id': 'FilesController.delete',
   '/site/uploads*': 'SiteController.uploads',
