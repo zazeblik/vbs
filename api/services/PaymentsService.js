@@ -17,10 +17,12 @@ module.exports.getPaymentSettings = async function(person){
   persons.forEach(p => unpayedEvents[p.id] = []);
   events.forEach(event => {
     const visitors = event.visitors;
-    const paymentPersons = event.payments.map(p => p.person);
-    visitors.forEach(person => {
-      if (paymentPersons.includes(person.id)) return;
-      unpayedEvents[person.id].push(event); 
+    let paymentPersons = event.payments.map(p => p.person);
+    if (person) paymentPersons = [person];
+    visitors.forEach(p => {
+      if (paymentPersons.includes(p.id)) return;
+      if (person && p.id != person) return; 
+      unpayedEvents[p.id].push(event); 
     })
   });
   const generals = groups.filter(g => g.type == GroupType.General);
