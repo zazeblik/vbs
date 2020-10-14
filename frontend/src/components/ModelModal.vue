@@ -136,14 +136,19 @@
                   :state="getValidationState(validationContext)"
                 />
                 <b-input-group v-if="control.type == 'datetime'" size="sm">
-                  <b-input-group class="w-50">
-                    <b-form-input
-                      size="sm"
-                      type="text"
-                      placeholder="Введите дату (DD.MM.YYYY)"
-                      autocomplete="off"
-                      :value="control.formattedDate"
-                      @input="(dateString) => {
+                  <validation-provider
+                    :rules="{regex: /^([0-2][0-9]|(3)[0-1])(\.)(((0)[0-9])|((1)[0-2]))(\.)\d{4}$/i, required: true }"
+                    v-slot="validationContext"
+                    class="w-50"
+                  >
+                    <b-input-group>
+                      <b-form-input
+                        size="sm"
+                        type="text"
+                        placeholder="Введите дату (DD.MM.YYYY)"
+                        autocomplete="off"
+                        :value="control.formattedDate"
+                        @input="(dateString) => {
                           control.formattedDate = dateString;
                           const date = $moment(dateString, dateShowFormat).toDate();
                           const time = control.time.split(':');
@@ -152,52 +157,81 @@
                           date.setSeconds(0, 0);
                           control.value = date;
                         }"
-                      :state="getValidationState(validationContext)"
-                    />
-                    <b-input-group-append>
-                      <b-form-datepicker
+                        :state="getValidationState(validationContext)"
+                      />
+                      <b-input-group-append>
+                        <b-form-datepicker
+                          size="sm"
+                          button-only
+                          right
+                          show-decade-nav
+                          value-as-date
+                          :date-format-options="{
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                          }"
+                          :start-weekday="1"
+                          :ref="'date_' + control.property"
+                          :value="control.value"
+                          @input="(date) => {
+                            control.formattedDate = $moment(date).format(dateShowFormat);
+                            const time = control.time.split(':');
+                            date.setHours(time[0]);
+                            date.setMinutes(time[1]);
+                            date.setSeconds(0, 0);
+                            control.value = date;
+                          }"
+                        />
+                      </b-input-group-append>
+                    </b-input-group>
+                  </validation-provider>
+                  <validation-provider
+                    :rules="{ regex: /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, required: true }"
+                    v-slot="validationContext"
+                    class="w-50"
+                  >
+                    <b-input-group>
+                      <b-form-input
                         size="sm"
-                        button-only
-                        right
-                        show-decade-nav
-                        value-as-date
-                        :date-format-options="{
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                        }"
-                        :start-weekday="1"
-                        :ref="'date_' + control.property"
-                        :value="control.value"
-                        @input="(date) => {
-                          control.formattedDate = $moment(date).format(dateShowFormat);
-                          const time = control.time.split(':');
+                        type="text"
+                        placeholder="Введите время (HH:mm)"
+                        autocomplete="off"
+                        :value="control.time"
+                        @input="(t) => {
+                          control.time = t;
+                          let date = control.value;
+                          const time = t.split(':');
                           date.setHours(time[0]);
                           date.setMinutes(time[1]);
                           date.setSeconds(0, 0);
                           control.value = date;
                         }"
+                        :state="getValidationState(validationContext)"
                       />
-                    </b-input-group-append>
-                  </b-input-group>
-                  <b-form-timepicker
-                    placeholder="Выберите время"
-                    minutes-step="15"
-                    :ref="'time_' + control.property"
-                    hide-header
-                    :value="control.time"
-                    @input="(t) => {
-                      control.time = t;
-                      let date = control.value;
-                      const time = t.split(':');
-                      date.setHours(time[0]);
-                      date.setMinutes(time[1]);
-                      date.setSeconds(0, 0);
-                      control.value = date;
-                    }"
-                    :state="getValidationState(validationContext)"
-                    no-close-button
-                  />
+                      <b-input-group-append>
+                        <b-form-timepicker
+                          size="sm"
+                          button-only
+                          right
+                          minutes-step="15"
+                          :ref="'time_' + control.property"
+                          hide-header
+                          :value="control.time"
+                          @input="(t) => {
+                            const time = t.split(':');
+                            control.time = [time[0],time[1]].join(':');
+                            let date = control.value;
+                            date.setHours(time[0]);
+                            date.setMinutes(time[1]);
+                            date.setSeconds(0, 0);
+                            control.value = date;
+                          }"
+                          no-close-button
+                        />
+                      </b-input-group-append>
+                    </b-input-group>
+                  </validation-provider>
                 </b-input-group>
                 <b-form-invalid-feedback :id="'feedback_' + control.property">{{
                   validationContext.errors[0]

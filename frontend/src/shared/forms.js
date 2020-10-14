@@ -357,7 +357,8 @@ module.exports.EventForm = [
     validations: {
       required: true
     },
-    value: null
+    value: null,
+    time: null
   },
   {
     label: "Длительность",
