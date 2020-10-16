@@ -1,7 +1,7 @@
 const path = require('path');
 const CKEditorWebpackPlugin = require('@ckeditor/ckeditor5-dev-webpack-plugin');
 const { styles } = require('@ckeditor/ckeditor5-dev-utils');
-const portalConfig = require('./portal.config.json');
+
 
 module.exports = {
   outputDir: "../assets",
@@ -18,13 +18,16 @@ module.exports = {
   chainWebpack: config => {
     const svgRule = config.module.rule('svg');
     svgRule.exclude.add(path.join(__dirname, 'node_modules', '@ckeditor'));
-    if (portalConfig && portalConfig.title){
-      config
-        .plugin('html')
-        .tap(args => {
-          args[0].title = portalConfig.title
-          return args
-        })
+    if (require('fs').existsSync('./portal.config.json')){
+      const portalConfig = require('./portal.config.json');
+      if (portalConfig && portalConfig.title){
+        config
+          .plugin('html')
+          .tap(args => {
+            args[0].title = portalConfig.title
+            return args
+          })
+      }
     }
     config.module
       .rule('cke-svg')
