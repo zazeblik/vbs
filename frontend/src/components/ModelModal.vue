@@ -448,7 +448,8 @@ export default {
             c.value = c.value || null;
             break;
           case "date":
-            c.value = c.value || null;
+            c.value = null;
+            c.formattedDate = null;
             break;
           case "password":
             c.validations.required = true;
