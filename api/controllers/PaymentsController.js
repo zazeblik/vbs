@@ -1,4 +1,3 @@
-const GetMonthDateRange =  require('../utils/DateRangeHelper').GetMonthDateRange;
 const PaymentsService = require('../services/PaymentsService');
 
 module.exports = {
@@ -19,20 +18,30 @@ module.exports = {
     }
   },
   groupUnpayedEvents: async function (req, res){
+    if (!req.param("person")) return res.status(400).send("person не указан");
+    if (!req.param("group")) return res.status(400).send("group не указан");
+    if (!req.param("month")) return res.status(400).send("month не указан");
+    if (!req.param("year")) return res.status(400).send("year не указан");
+    const person = Number(req.param("person"));
+    const group = Number(req.param("group"));
+    const month = Number(req.param("month"));
+    const year = Number(req.param("year"));
     try {
-      if (!req.param("person")) return res.status(400).send("person не указан");
-      if (!req.param("group")) return res.status(400).send("group не указан");
-      if (!req.param("month")) return res.status(400).send("month не указан");
-      if (!req.param("year")) return res.status(400).send("year не указан");
-      const person = Number(req.param("person"));
-      const group = Number(req.param("group"));
-      const month = Number(req.param("month"));
-      const year = Number(req.param("year"));
-      const monthDateRange = GetMonthDateRange(year, month);
-      const events = await Events
-        .find({group: group, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
-        .populate("payments");
-      const result = events.filter(e => !e.payments.map(p => p.person).includes(person));
+      const result = await PaymentsService.getGroupUnpayedEvents(year, month, group, person);
+      return res.send(result);
+    } catch (error) {
+      return res.badRequest(error.message);
+    }
+  },
+  selfGroupUnpayedEvents: async function (req, res){
+    if (!req.param("group")) return res.status(400).send("group не указан");
+    if (!req.param("month")) return res.status(400).send("month не указан");
+    if (!req.param("year")) return res.status(400).send("year не указан");
+    const group = Number(req.param("group"));
+    const month = Number(req.param("month"));
+    const year = Number(req.param("year"));
+    try {
+      const result = await PaymentsService.getGroupUnpayedEvents(year, month, group, req.session.User.person);
       return res.send(result);
     } catch (error) {
       return res.badRequest(error.message);

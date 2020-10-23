@@ -44,6 +44,7 @@ module.exports.routes = {
   '/payments/create-all': 'PaymentsController.createAll',
   '/payments/self-create-all': 'PaymentsController.selfCreateAll',
   '/payments/group-unpayed-events': 'PaymentsController.groupUnpayedEvents',
+  '/payments/self-group-unpayed-events': 'PaymentsController.selfGroupUnpayedEvents',
   '/payments/self-settings': 'PaymentsController.selfSettings',
   '/payments/self-transactions': 'PaymentsController.selfTransactions',
   '/incomes/edit/:id': 'IncomesController.edit',

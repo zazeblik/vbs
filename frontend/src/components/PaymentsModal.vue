@@ -294,12 +294,15 @@ export default {
       const match = payment.month ? payment.month.split(" ") : null;
       if (!match) return;
       payment.event = null;
-      payment.monthEvents = await this.$getAsync(this.baseUrl + "/group-unpayed-events", {
-        person: this.payer,
+      let query = {
         group: payment.group,
         month: match[0],
         year: match[1]
-      });
+      };
+      if (this.isControlPanelShown){
+        query.person = this.payer
+      }
+      payment.monthEvents = await this.$getAsync(`${this.baseUrl}/${this.isControlPanelShown ? 'group-unpayed-events' : 'self-group-unpayed-events'}`, query);
       if (payment.monthEvents.length){
         const firstEvent = payment.monthEvents[0];
         payment.event = firstEvent ? firstEvent.id : null;

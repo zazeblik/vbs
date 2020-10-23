@@ -34,6 +34,7 @@ module.exports.policies = {
   },
   payments: {
     '*': ['authenticated', 'isControlPanelAvailable'],
+    selfGroupUnpayedEvents: ['authenticated', 'hasPerson'],
     selfSettings: ['authenticated', 'hasPerson'],
     selfTransactions: ['authenticated', 'hasPerson'],
     selfCreateAll: ['authenticated', 'hasPerson']

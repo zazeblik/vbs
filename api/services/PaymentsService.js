@@ -1,5 +1,6 @@
 const TransactionType = require('../../enums').TransactionType;
 const GroupType = require('../../enums').GroupType;
+const GetMonthDateRange =  require('../utils/DateRangeHelper').GetMonthDateRange;
 
 module.exports.getPaymentSettings = async function(person){
   let personsQuery = {};
@@ -70,4 +71,13 @@ module.exports.createAll = async function (payments){
     if (!isContainsDublicates) paymentsToCreate.push(payment);
   });
   await Payments.createEach(paymentsToCreate);
+}
+
+module.exports.getGroupUnpayedEvents = async function(year, month, group, person){
+  const monthDateRange = GetMonthDateRange(year, month);
+  const events = await Events
+    .find({group: group, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
+    .populate("payments");
+  const result = events.filter(e => !e.payments.map(p => p.person).includes(person));
+  return result
 }
