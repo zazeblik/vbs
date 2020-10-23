@@ -101,7 +101,17 @@ module.exports.GroupForm = [
     }
   },
   {
-    label: "Стоимость",
+    label: "Тип",
+    property: "type",
+    type: "enum",
+    options: [
+      { text: "общая", value: GroupType.General },
+      { text: "индивидуальная", value: GroupType.Personal }
+    ],
+    hidden: true,
+  },
+  {
+    label: "Стоимость (руб)",
     property: "cost",
     type: "number",
     validations: {
@@ -110,7 +120,7 @@ module.exports.GroupForm = [
     }
   },
   {
-    label: "Разовый платёж",
+    label: "Разовый платёж (руб)",
     property: "onceCost",
     type: "number",
     visibility: (form) => {
@@ -143,7 +153,7 @@ module.exports.GroupForm = [
     }
   },
   {
-    label: "Длительность",
+    label: "Длительность (мин)",
     property: "defaultDuration",
     type: "number",
     description: "В минутах",
@@ -151,16 +161,6 @@ module.exports.GroupForm = [
       min_value: 0,
       required: true
     }
-  },
-  {
-    label: "Тип",
-    property: "type",
-    type: "enum",
-    options: [
-      { text: "общая", value: GroupType.General },
-      { text: "индивидуальная", value: GroupType.Personal }
-    ],
-    hidden: true,
   },
   {
     label: "Расписание",

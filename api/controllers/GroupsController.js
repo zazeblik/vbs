@@ -6,7 +6,7 @@ const GetMonthDateRange =  require('../utils/DateRangeHelper').GetMonthDateRange
 module.exports = {
   settings: async function (req, res){
     try {
-      const persons = await Persons.find();
+      const persons = await Persons.find().sort('name ASC');
       const places = await Places.find();
       return res.send({ persons, places });
     } catch (error) {

@@ -4,7 +4,7 @@ const cyrillicToTranslit = require('cyrillic-to-translit-js');
 module.exports = {
   settings: async function (req, res){
     try {
-      const persons = await Persons.find();
+      const persons = await Persons.find().sort('name ASC');
       return res.send({ persons });
     } catch (err) {
       return res.badRequest(err.message);
