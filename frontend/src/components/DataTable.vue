@@ -112,7 +112,7 @@ export default {
   components: {
     ModelModal
   },
-  props: ["baseUrl", "fields", "itemForm", "filterPlaceHolder", "hideSearch", "additionalButton", "passwordShowButton"],
+  props: ["baseUrl", "fields", "itemForm", "filterPlaceHolder", "hideSearch", "additionalButton", "passwordShowButton", "creationErrorMessage"],
   data() {
     return {
       items: [],
@@ -187,7 +187,11 @@ export default {
       this.$refs.modelModal.showEdit(item, index, button);
     },
     showAddModal() {
-      this.$refs.modelModal.showAdd();
+      if (this.creationErrorMessage){
+        this.$error(this.creationErrorMessage); 
+      } else {
+        this.$refs.modelModal.showAdd();
+      }
     },
     async showDeleteConfirm() {
       const confirm = await this.$bvModal.msgBoxConfirm(

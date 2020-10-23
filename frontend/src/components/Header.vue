@@ -37,8 +37,8 @@
         <b-navbar-nav v-if="isControlPanelShown">
           <b-nav-item-dropdown text="База данных">
             <b-dropdown-item to="/cp/persons">Участники</b-dropdown-item>
-            <b-dropdown-item to="/cp/groups">Группы</b-dropdown-item>
             <b-dropdown-item to="/cp/places" v-if="$user.role == 2">Залы</b-dropdown-item>
+            <b-dropdown-item to="/cp/groups">Группы</b-dropdown-item>
             <b-dropdown-item to="/cp/archive">Архив</b-dropdown-item>
           </b-nav-item-dropdown>
           <b-nav-item-dropdown text="Журналы">

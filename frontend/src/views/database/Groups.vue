@@ -1,7 +1,13 @@
 <template>
   <b-container fluid class="py-2">
     <h5>Группы</h5>
-    <DataTable :baseUrl="baseUrl" :fields="fields" :itemForm="itemForm" filterPlaceHolder="Введите название..." />
+    <DataTable 
+      :baseUrl="baseUrl" 
+      :fields="fields" 
+      :itemForm="itemForm" 
+      filterPlaceHolder="Введите название..." 
+      :creationErrorMessage="creationErrorMessage"
+      ref="dataTable" />
   </b-container>
 </template>
 
@@ -13,6 +19,7 @@ export default {
     return {
       baseUrl: "/groups",
       itemForm: GroupForm,
+      creationErrorMessage: null,
       fields: [
         {
           key: "name",
@@ -49,11 +56,14 @@ export default {
   methods: {
     async fetchSettings() {
       const settings = await this.$getAsync(`${this.baseUrl}/settings`);
+      if (settings.persons.length == 0 || settings.places.length == 0) {
+        this.creationErrorMessage = "Для создания группы необходимо создать хотябы одного участника и хотябы один зал";
+      }
       this.itemForm.find(f => f.property == "defaultInstructor").models = settings.persons;
       this.itemForm.find(f => f.property == "defaultPlace").models = settings.places;
       this.itemForm.find(f => f.property == "hidden").hidden = false;
       this.itemForm.find(f => f.property == "type").hidden = false;
-    },
+    }
   }
 };
 </script>
