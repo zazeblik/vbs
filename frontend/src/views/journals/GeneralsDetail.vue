@@ -339,11 +339,11 @@ export default {
       }
     },
     async addPerson() {
-      this.addPersonShown = false;
       if (this.selectedPersons.length == 0){
         return;
       }
       await this.$postAsync(`/groups/add-persons/${this.$route.params.id}`, { persons: this.selectedPersons.map(x => x.id) });
+      this.resetAddPersonsForm();
       await this.fetchData();
     },
     async removePerson(person) {
