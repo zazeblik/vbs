@@ -18,16 +18,41 @@
       <b-form-select v-model="selectedMonth" :options="months" @change="fetchSheet()" />
       <b-form-select v-model="selectedYear" :options="years" @change="fetchSheet()" />
       <b-input-group-append>
-        <model-select v-model="selectedPerson" :options="availablePersons" :hidden="!addPersonShown" />
+        <multiselect
+          :value="selectedPersons"
+          @input="(value) => {
+            selectedPersons = value;
+            addPersonsPlaceholder = value.length > 0 ? `${value.length} участников выбрано` : 'Выберите участников' 
+          }"
+          :options="availablePersons"
+          :hidden="!addPersonShown"
+          :multiple="true"
+          :close-on-select="false" 
+          :clear-on-select="false" 
+          :preserve-search="true"
+          :placeholder="addPersonsPlaceholder"
+          :optionHeight="20"
+          selectLabel=""
+          selectedLabel=""
+          deselectLabel="" 
+          label="name"
+          name="name"
+          track-by="name"
+          :preselect-first="true">
+          <template slot="selection" slot-scope="{ values, isOpen }"><span v-if="isPlaceholderShown(values.length, isOpen)">{{ values.length }} участников выбрано</span></template>
+          <template slot="noResult"><span class="multiselect-option">Ничего не найдено</span></template>
+          <template slot="noOptions"><span class="multiselect-option">Нет вариантов</span></template>
+          <template slot="option" slot-scope="props"><span class="multiselect-option">{{ props.option.name }}</span></template>
+        </multiselect>
         <b-button variant="outline-success" :hidden="addPersonShown" @click="addPersonShown = true">
           <b-icon icon="person-plus-fill"></b-icon>
           &nbsp;
-          <span class="d-none d-md-inline-block">Добавить участника</span>
+          <span class="d-none d-md-inline-block">Добавить участника</span> 
         </b-button>
         <b-button variant="outline-success" :hidden="!addPersonShown" @click="addPerson()">
           <b-icon icon="check"></b-icon>
         </b-button>
-        <b-button variant="outline-danger" :hidden="!addPersonShown" @click="addPersonShown = false">
+        <b-button variant="outline-danger" :hidden="!addPersonShown" @click="resetAddPersonsForm()">
           <b-icon icon="x"></b-icon>
         </b-button>
         <b-button variant="outline-primary" @click="showEditGroupModal()">
@@ -135,21 +160,22 @@
 </template>
 <script>
 const GroupType = require("../../../../enums").GroupType;
-import { ModelSelect } from 'vue-search-select'
+import Multiselect from 'vue-multiselect'
 import ModelModal from "../../components/ModelModal";
 import { GroupForm, EventForm, PaymentForm } from "../../shared/forms";
 export default {
   components: {
-    ModelSelect,
+    Multiselect,
     ModelModal
   },
   data() {
     return {
       group: null,
       title: "",
+      addPersonsPlaceholder: "Выберите участников",
       isBusy: false,
       addPersonShown: false,
-      selectedPerson: null,
+      selectedPersons: [],
       persons: [],
       eventUrl: '/events',
       groupUrl: '/groups',
@@ -173,7 +199,8 @@ export default {
   },
   computed: {
     availablePersons() {
-      return this.persons.filter(p => p.value != this.group.defaultInstructor)
+      const result = this.persons.filter(p => p.value != this.group.defaultInstructor);
+      return result;
     }
   },
   methods: {
@@ -184,6 +211,15 @@ export default {
         }
       }
       return true;
+    },
+    isPlaceholderShown(count, isOpen){
+      return count && !isOpen;
+    },
+    resetAddPersonsForm(){
+      this.addPersonShown = false; 
+      this.selectedPersons = [];
+      this.addPersonsPlaceholder = "Выберите участников";
+
     },
     createEvent(){
       this.eventForm.find(f => f.property == "group").value = this.$route.params.id;
@@ -303,8 +339,11 @@ export default {
       }
     },
     async addPerson() {
-      await this.$postAsync(`/groups/add-person/${this.$route.params.id}`, { person: this.selectedPerson });
       this.addPersonShown = false;
+      if (this.selectedPersons.length == 0){
+        return;
+      }
+      await this.$postAsync(`/groups/add-persons/${this.$route.params.id}`, { persons: this.selectedPersons.map(x => x.id) });
       await this.fetchData();
     },
     async removePerson(person) {
@@ -363,7 +402,7 @@ export default {
     async fetchDetail() {
       const detail = await this.$getAsync(`/groups/detail/${this.$route.params.id}`);
       this.group = detail.group;
-      this.persons =  this.$modelsToOptions(detail.persons);
+      this.persons =  detail.persons;
       this.defaultInstructor = detail.group.defaultInstructor;
       this.eventForm.find(f => f.property == "instructor").models = detail.persons;
       this.eventForm.find(f => f.property == "place").models = detail.places;
@@ -372,7 +411,7 @@ export default {
       this.groupForm.find(f => f.property == "hidden").hidden = true;
       this.defaultPlace = detail.group.defaultPlace;
       this.defaultDuration = detail.group.defaultDuration;
-      this.selectedPerson = null;
+      this.selectedPersons = [];
       this.title = this.group.name;
     }
   }
@@ -384,7 +423,14 @@ export default {
   font-size: small;
 }
 
+.multiselect-option {
+  padding: 0 8px;
+  font-size: 0.875rem !important;
+}
+
 table input[type="checkbox"] {
   height: 20px;
 }
 </style>
+
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>

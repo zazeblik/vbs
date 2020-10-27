@@ -26,6 +26,19 @@ module.exports = {
       return res.badRequest();
     }
   },
+  addPersons: async function (req, res) {
+    if (!req.param("id")) return res.status(400).send("id не указан");
+    if (!req.param("persons")) return res.status(400).send("persons не указан");
+    try {
+      const id = Number(req.param("id"));
+      const persons = req.param("persons");
+      await Groups.addToCollection(id, "members").members(persons);
+      await Groups.update(id, { updater: req.session.User.id })
+      return res.ok();
+    } catch (error) {
+      return res.badRequest();
+    }
+  },
   removePerson: async function (req, res) {
     if (!req.param("id")) return res.status(400).send("id не указан");
     if (!req.param("person")) return res.status(400).send("person не указан");

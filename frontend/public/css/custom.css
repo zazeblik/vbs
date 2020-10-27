@@ -117,3 +117,53 @@ button.check-all {
   padding: 4px 5px !important;
 }
 
+.multiselect {
+  width: auto !important;
+  min-height: auto !important;
+}
+
+.multiselect__tags-wrap {
+  display: none !important;
+}
+
+.multiselect__tags {
+  font-size: 0.875rem  !important;
+  line-height: 1.5 !important;
+  min-height: auto !important;
+  border-radius: 0px !important;
+  border: 1px solid #ced4da !important;
+  padding: 0.25rem 1.75rem 0.25rem 0.5rem !important;
+}
+
+.multiselect__select { 
+  padding: 0 !important;
+  width: 1.75rem !important;
+  height: 1.75rem !important;
+}
+
+.multiselect__placeholder {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.multiselect__spinner {
+  width: auto !important;
+}
+
+.multiselect--active .multiselect__input {
+  font-size: 0.875rem  !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: fit-content !important;
+}
+
+.multiselect__option {
+  padding: 0 !important;
+  line-height: 1.5 !important;
+  min-height: auto !important;
+}
+
+.multiselect__option--highlight {
+  background-color: rgba(0, 0, 0, 0.075) !important;
+  color: black !important;
+}
