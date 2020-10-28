@@ -57,7 +57,7 @@ module.exports = {
     try {
       const id = Number(req.param("id"));
       const instructor = await Persons.findOne(id);
-      const persons = await Persons.find({select: ["id", "name"]});
+      const persons = await Persons.find({select: ["id", "name"]}).sort('name ASC');;
       const places = await Places.find();
       const groups = await Groups.find({ type: GroupType.Personal, defaultInstructor: id, hidden: false });
       return res.send({ instructor, places, persons, groups });
@@ -102,7 +102,7 @@ module.exports = {
       const id = Number(req.param("id"));
       const group = await Groups.findOne(id).populate("members");
       let existingIds = group.members.map(m => m.id);
-      const persons = await Persons.find({ where: { id: { "!=": existingIds } }, select: ["id", "name"]});
+      const persons = await Persons.find({ where: { id: { "!=": existingIds } }, select: ["id", "name"]}).sort('name ASC');;
       const places = await Places.find();
       return res.send({ group, persons, places });
     } catch (error) {
