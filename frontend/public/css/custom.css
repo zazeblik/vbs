@@ -167,3 +167,7 @@ button.check-all {
   background-color: rgba(0, 0, 0, 0.075) !important;
   color: black !important;
 }
+
+.multiselect__content-wrapper {
+  overflow-x: hidden !important;
+}
