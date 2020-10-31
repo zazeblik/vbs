@@ -61,6 +61,7 @@ export default {
       }
       this.itemForm.find(f => f.property == "defaultInstructor").models = settings.persons;
       this.itemForm.find(f => f.property == "defaultPlace").models = settings.places;
+      this.itemForm.find(f => f.property == "schedule").models = settings.places;
       this.itemForm.find(f => f.property == "hidden").hidden = false;
       this.itemForm.find(f => f.property == "type").hidden = false;
     }

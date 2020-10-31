@@ -165,6 +165,7 @@ module.exports.GroupForm = [
   {
     label: "Расписание",
     property: "schedule",
+    models: [],
     type: "schedule",
   },
   {

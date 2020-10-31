@@ -247,6 +247,8 @@
             >
               <FormSchedule
                 :value="itemForm.find((c) => c.type == 'schedule').value"
+                :places="itemForm.find((c) => c.type == 'schedule').models"
+                :defaultPlaceId="itemForm.find((c) => c.property == 'defaultPlace').value"
                 ref="formSchedule"
               />
             </b-form-group>

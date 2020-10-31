@@ -4,16 +4,24 @@
       <b-input-group-prepend is-text>
         <b-form-checkbox v-model="day.active" switch @change="changeActivation(day)">{{day.label}}</b-form-checkbox>
       </b-input-group-prepend>
-      <b-form-timepicker
-        v-for="(time, index) in day.times"
-        :key="index"
-        :disabled="!day.active"
-        size="sm"
-        minutes-step="15"
-        hide-header
-        :value="time"
-        v-model="day.times[index]"
-        no-close-button />
+        <div
+          v-for="(time, index) in day.times" 
+          :key="index"
+          class="schedule-unit">
+        <b-form-timepicker 
+          :disabled="!day.active"
+          size="sm"
+          minutes-step="15"
+          hide-header
+          :value="time"
+          v-model="day.times[index]"
+          no-close-button>
+        </b-form-timepicker>
+        <b-form-select
+          size="sm"
+          v-model="day.places[index]"
+          :options="$modelsToOptions(places)" />
+        </div>
       <b-input-group-append>
         <b-button :hidden="!day.active" :disabled="day.times.length == 1" variant="outline-danger" @click="removeTime(day)">
           <b-icon icon="slash-circle-fill" rotate="45" />
@@ -28,7 +36,7 @@
 
 <script>
 export default {
-  props: [ "value" ],
+  props: [ "value", "places", "defaultPlaceId" ],
   data() {
     let weekdays = this.$moment.weekdaysMin();
     let schedule = [];
@@ -37,6 +45,7 @@ export default {
         label: wd,
         cronValue: index,
         times: [],
+        places: [],
         active: false
       });
     });
@@ -53,16 +62,21 @@ export default {
       const raw = sr.split(" ");
       const day = Number(raw[0]);
       const time = raw[1];
+      const isPlaceAvailable = raw[2] && (this.places.map(x => x.id)).includes(Number(raw[2]));
+      const placeId = isPlaceAvailable ? Number(raw[2]) : this.defaultPlaceId; 
       this.schedule.find(r => r.cronValue == day).active = true;
       this.schedule.find(r => r.cronValue == day).times.push(time);
+      this.schedule.find(r => r.cronValue == day).places.push(placeId);
     });
   },
   methods: {
     addTime(day) {
       day.times.push("12:00:00");
+      day.places.push(this.defaultPlaceId || this.places[0].id);
     },
     removeTime(day) {
       day.times.pop();
+      day.places.pop();
     },
     changeActivation(day) {
       if (day.active){
@@ -75,11 +89,14 @@ export default {
     getValue() {
       const activeDays = this.schedule.filter(d => d.active);
       let scheduleRecords = [];
+      let usedTimes = [];
       activeDays.forEach(d => {
-        d.times.forEach(t => {
-          const result = `${d.cronValue} ${t}`;
-          if (scheduleRecords.includes(result))
+        d.times.forEach((t, index) => {
+          const result = `${d.cronValue} ${t} ${d.places[index]}`;
+          const usedTime = `${d.cronValue} ${t}`;
+          if (usedTimes.includes(usedTime))
             return;
+          usedTimes.push(usedTime);
           scheduleRecords.push(result);
         })
       })
@@ -88,3 +105,11 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.schedule-unit > div, .schedule-unit > select {
+    border: none;
+    outline: 1px solid #ccc;
+    border-radius: unset;
+}
+</style>

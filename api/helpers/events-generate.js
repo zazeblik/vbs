@@ -22,17 +22,21 @@ module.exports = {
           weekDayTimes.forEach(weekDayTime => {
             let weekDay = weekDayTime.split(" ")[0];
             let dayTime = weekDayTime.split(" ")[1];
-            schedule[weekDay] = dayTime;
+            let place = weekDayTime.split(" ")[2];
+            schedule[weekDay] = {
+              time: dayTime,
+              place: place ? Number(place) : group.defaultPlace
+            }
           });
           if (schedule[day] && group.defaultDuration) {
             let event = {
               group: group.id,
+              place: schedule[day].place,
               description: "Создано автоматически"
             };
-            if (group.defaultPlace) event.place = group.defaultPlace;
             if (group.defaultInstructor) event.instructor = group.defaultInstructor;
-            let hours = schedule[day].split(":")[0];
-            let minutes = schedule[day].split(":")[1];
+            let hours = schedule[day].time.split(":")[0];
+            let minutes = schedule[day].time.split(":")[1];
             let startsAt = new Date(
               currentMonthDate.getFullYear(),
               currentMonthDate.getMonth(),

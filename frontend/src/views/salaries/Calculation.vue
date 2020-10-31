@@ -130,7 +130,6 @@ export default {
         month: this.selectedMonth,
         year: this.selectedYear,
       });
-      console.log(this.calculations);
       this.total = this.calculations.sum(x => x.totalSum);
     },
     fillCalculationInfo(result, calculation){

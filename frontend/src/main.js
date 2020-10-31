@@ -52,8 +52,9 @@ Vue.prototype.$getScheduleView = function (value){
   let scheduleRecords = value.split(",");
   let result = [];
   scheduleRecords.forEach(sr => {
-    const dayIndex = Number(sr.substr(0, 1));
-    result.push(weekdays[dayIndex] + sr.substr(1, sr.length - 4));
+    const srUnits = sr.split(" ");
+    const dayIndex = Number(srUnits[0]);
+    result.push(`${weekdays[dayIndex]}  ${srUnits[1].substr(0, srUnits[1].length - 3)}`);
   });
   return result.join(", ")
 }
