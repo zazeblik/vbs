@@ -8,15 +8,32 @@
           v-for="(time, index) in day.times" 
           :key="index"
           class="schedule-unit">
-        <b-form-timepicker 
-          :disabled="!day.active"
-          size="sm"
-          minutes-step="15"
-          hide-header
-          :value="time"
-          v-model="day.times[index]"
-          no-close-button>
-        </b-form-timepicker>
+          <validation-provider
+            :rules="{ regex: /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/, required: true }"
+            v-slot="validationContext"
+          >
+            <b-input-group>
+              <b-form-input
+                size="sm"
+                type="text"
+                autocomplete="off"
+                :value="getShortTime(day.times[index])"
+                @input="(t) => { day.times[index] = `${t}:00` }"
+                :state="getValidationState(validationContext)"
+              />
+              <b-input-group-append>
+                <b-form-timepicker
+                  size="sm"
+                  button-only
+                  right
+                  minutes-step="15"
+                  hide-header
+                  v-model="day.times[index]"
+                  no-close-button
+                />
+              </b-input-group-append>
+            </b-input-group>
+        </validation-provider>
         <b-form-select
           size="sm"
           v-model="day.places[index]"
@@ -70,6 +87,12 @@ export default {
     });
   },
   methods: {
+    getShortTime(t) {
+      return t.substr(0, t.length - 3);
+    },
+    getValidationState({ dirty, validated, valid = null }) {
+      return dirty || validated ? valid : null;
+    },
     addTime(day) {
       day.times.push("12:00:00");
       day.places.push(this.defaultPlaceId || this.places[0].id);
@@ -108,8 +131,8 @@ export default {
 
 <style scoped>
 .schedule-unit > div, .schedule-unit > select {
-    border: none;
-    outline: 1px solid #ccc;
-    border-radius: unset;
+  border: none;
+  outline: 1px solid #ccc;
+  border-radius: unset;
 }
 </style>
