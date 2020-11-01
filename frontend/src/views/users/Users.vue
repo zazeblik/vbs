@@ -1,5 +1,5 @@
 <template>
-  <b-container fluid class="py-2">
+  <div class="py-2">
     <h5>Учётные записи</h5>
     <DataTable
       :baseUrl="baseUrl"
@@ -9,7 +9,7 @@
       :additionalButton="additionalButton"
       :passwordShowButton="passwordShowButton"
       ref="dataTable" />
-  </b-container>
+  </div>
 </template>
 
 <script>

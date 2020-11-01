@@ -1,8 +1,8 @@
 <template>
-  <b-container fluid class="py-2">
+  <div class="py-2">
     <h5>Файлы</h5>
     <DataTable :baseUrl="baseUrl" :fields="fields" :itemForm="itemForm" filterPlaceHolder="Введите название..." />
-  </b-container>
+  </div>
 </template>
 
 <script>

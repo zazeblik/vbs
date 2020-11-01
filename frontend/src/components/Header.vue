@@ -13,7 +13,7 @@
       </div>
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
       <b-collapse id="nav-collapse" is-nav>
-        <b-navbar-nav class="site-nav">
+        <b-navbar-nav class="site-nav"> 
           <b-nav-item-dropdown id="siteNavDropdown" class="site-nav-item" text="О клубе">
             <b-dropdown-item to="/club">Наш клуб</b-dropdown-item>
             <b-dropdown-item to="/boss">Руководители</b-dropdown-item>
@@ -34,29 +34,7 @@
       <b-navbar-brand :to="isControlPanelShown ? '/cp' : '/'">CRM</b-navbar-brand>
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
       <b-collapse id="nav-collapse" is-nav>
-        <b-navbar-nav v-if="isControlPanelShown">
-          <b-nav-item-dropdown text="База данных">
-            <b-dropdown-item to="/cp/persons">Участники</b-dropdown-item>
-            <b-dropdown-item to="/cp/places" v-if="$user.role == 2">Залы</b-dropdown-item>
-            <b-dropdown-item to="/cp/groups">Группы</b-dropdown-item>
-            <b-dropdown-item to="/cp/archive">Архив</b-dropdown-item>
-          </b-nav-item-dropdown>
-          <b-nav-item-dropdown text="Журналы">
-            <b-dropdown-item to="/cp/generals">Общие</b-dropdown-item>
-            <b-dropdown-item to="/cp/personals">Индивидуальные</b-dropdown-item>
-          </b-nav-item-dropdown>
-          <b-nav-item-dropdown text="Сайт" v-if="$user.role == 2">
-            <b-dropdown-item to="/cp/settings">Настройки</b-dropdown-item>
-            <b-dropdown-item to="/cp/materials">Материалы</b-dropdown-item>
-            <b-dropdown-item to="/cp/files">Файлы</b-dropdown-item>
-          </b-nav-item-dropdown>
-          <b-nav-item to="/cp/payments" v-if="$user.role == 2">Оплата</b-nav-item>
-          <b-nav-item-dropdown text="Зарплаты">
-            <b-dropdown-item to="/cp/rules">Правила расчёта</b-dropdown-item>
-            <b-dropdown-item to="/cp/calculation">Расчёт зарплат</b-dropdown-item>
-          </b-nav-item-dropdown>
-          <b-nav-item to="/cp/users" v-if="$user.role == 2">Учётные записи</b-nav-item>
-        </b-navbar-nav>
+        <ControlPanelNav v-if="isControlPanelShown" class="d-md-block d-lg-none" />
         <ProfileNav :isAuthShown="isAuthShown" :isSiteShown="isSiteShown" />
       </b-collapse>
     </b-navbar>
@@ -65,9 +43,11 @@
 
 <script>
 import ProfileNav from './ProfileNav'
+import ControlPanelNav from './ControlPanelNav'
 export default {
   components: {
-    ProfileNav
+    ProfileNav,
+    ControlPanelNav
   },
   props: ['isAuthShown', 'isControlPanelShown', 'settings'],
   computed: {

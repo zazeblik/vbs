@@ -1,8 +1,8 @@
 <template>
-  <b-container fluid class="py-2">
+  <div class="py-2">
     <h5>Правила рассчёта зарплат</h5>
     <DataTable :baseUrl="baseUrl" :fields="fields" :itemForm="itemForm" :hideSearch="true"  />
-  </b-container>
+  </div>
 </template>
 
 <script>

@@ -1,5 +1,5 @@
 <template>
-  <b-container fluid class="py-2">
+  <div class="py-2">
     <b-breadcrumb class="mt-1">
       <b-breadcrumb-item to="/cp/generals">Общие группы</b-breadcrumb-item>
       <b-breadcrumb-item active>{{title}}</b-breadcrumb-item>
@@ -156,7 +156,7 @@
     <ModelModal modalId="eventModal" :baseUrl="eventUrl" :itemForm="eventForm" ref="eventModal" @formSaved="fetchSheet" />
     <ModelModal modalId="paymentModal" :baseUrl="paymentUrl" :itemForm="paymentForm" ref="paymentModal" @formSaved="fetchSheet" />
     <ModelModal modalId="groupModal" :baseUrl="groupUrl" :itemForm="groupForm" ref="groupModal" @formSaved="fetchDetail" />
-  </b-container>
+  </div>
 </template>
 <script>
 const GroupType = require("../../../../enums").GroupType;

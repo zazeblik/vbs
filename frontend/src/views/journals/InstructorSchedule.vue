@@ -1,5 +1,5 @@
 <template>
-  <b-container fluid class="py-2">
+  <div class="py-2">
     <b-breadcrumb class="mt-1">
       <b-breadcrumb-item to="/cp/personals">Индивидуальные группы</b-breadcrumb-item>
       <b-breadcrumb-item active>{{title}}</b-breadcrumb-item>
@@ -82,7 +82,7 @@
       ref="eventModal"
       @formSaved="fetchData"
     />
-  </b-container>
+  </div>
 </template>
 <script>
 const GroupType = require("../../../../enums").GroupType;

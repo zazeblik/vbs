@@ -1,5 +1,5 @@
 <template>
-  <b-container fluid class="py-2">
+  <div class="py-2">
     <div class="alert alert-success py-2 px-3" v-if="birthdays.length">
       Сегодня день рождения отмечают:
       <ul class="mb-0">
@@ -118,7 +118,7 @@
         </b-table>
       </b-tab>
     </b-tabs>
-  </b-container>
+  </div>
 </template>
 
 <script>

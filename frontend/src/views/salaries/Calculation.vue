@@ -1,5 +1,5 @@
 <template>
-  <b-container fluid class="py-2">
+  <div class="py-2 calculation-table">
     <b-input-group size="sm" prepend="Месяц">
       <b-form-select v-model="selectedMonth" :options="months" @change="fetchInfo()" />
       <b-form-select v-model="selectedYear" :options="years" @change="fetchInfo()" />
@@ -65,7 +65,7 @@
         </b-tr>
       </b-tfoot>
     </b-table-simple>
-  </b-container>
+  </div>
 </template>
 
 <script>
@@ -174,3 +174,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.calculation-table {
+  font-size: small !important;
+}
+</style>

@@ -1,5 +1,5 @@
 <template>
-  <b-container fluid class="py-2">
+  <div class="py-2">
     <h5>Участники в архиве</h5>
     <DataTable 
       :baseUrl="baseUrl" 
@@ -7,7 +7,7 @@
       :itemForm="itemForm" 
       filterPlaceHolder="Введите имя..." 
       :creationErrorMessage="creationErrorMessage" /> 
-  </b-container>
+  </div>
 </template>
 
 <script>

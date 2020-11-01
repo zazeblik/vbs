@@ -1,5 +1,5 @@
 <template>
-  <b-container fluid class="py-2">
+  <div class="py-2">
     <h5>Группы</h5>
     <DataTable 
       :baseUrl="baseUrl" 
@@ -8,7 +8,7 @@
       filterPlaceHolder="Введите название..." 
       :creationErrorMessage="creationErrorMessage"
       ref="dataTable" />
-  </b-container>
+  </div>
 </template>
 
 <script>

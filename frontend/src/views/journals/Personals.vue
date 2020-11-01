@@ -1,5 +1,5 @@
 <template>
-  <b-container fluid class="py-2">
+  <div class="py-2">
     <b-breadcrumb class="mt-1">
       <b-breadcrumb-item active>Индивидуальные группы</b-breadcrumb-item>
     </b-breadcrumb>
@@ -46,7 +46,7 @@
       </b-col>
     </b-row>
     <ModelModal modalId="modalModel" :baseUrl="baseUrl" :itemForm="itemForm" ref="modelModal" @formSaved="fetchData" />
-  </b-container>
+  </div>
 </template>
 
 <script>

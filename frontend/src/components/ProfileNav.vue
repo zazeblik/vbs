@@ -3,7 +3,7 @@
     <b-nav-form v-if="!isAuthShown">
       <b-nav-item-dropdown v-if="$isAuthenticated" text="Профиль" right>
         <template slot="button-content">
-          <b-icon icon="people-circle" />
+          <b-icon icon="person-circle" />
           {{$user.login}}
         </template>
         <b-dropdown-item v-if="isSiteShown && $user.role != 0" href="/cp">Панель управления</b-dropdown-item>

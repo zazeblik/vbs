@@ -1,8 +1,8 @@
 <template>
-  <b-container fluid class="py-2">
+  <div class="py-2">
     <h5>История</h5>
     <PaymentsBlock :isControlPanelShown="true" />
-  </b-container>
+  </div>
 </template>
 
 <script>
