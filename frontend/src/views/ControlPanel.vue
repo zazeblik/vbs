@@ -1,7 +1,7 @@
 <template>
   <b-container fluid>
     <b-row class="cp-page">
-      <b-col lg="2" class="d-none d-lg-block bg-dark">
+      <b-col lg="2" class="d-none d-lg-block bg-dark px-0">
         <ControlPanelNav />
       </b-col>
       <b-col>

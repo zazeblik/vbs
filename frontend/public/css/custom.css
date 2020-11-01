@@ -78,6 +78,23 @@ button.check-all {
   margin-top: .75rem;
 }
 
+.dropdown-item.active, .dropdown-item:active {
+  background-color: var(--gray) !important;
+}
+
+.nav-tabs .nav-item a.nav-link {
+  color: var(--gray);
+}
+
+.nav-tabs .nav-item a.nav-link.active {
+  font-weight: bold;
+  color: var(--black);
+}
+
+.navbar-dark .navbar-nav .nav-item:hover {
+  background: var(--gray);
+}
+
 @media (min-width: 768px) {
   .col-md-6 {
     -ms-flex: 0 0 50% !important;
@@ -179,4 +196,13 @@ button.check-all {
 
 .custom-select {
   background: #fff url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5' viewBox='0 1 4 5'%3e%3cpath fill='%23343a40' d='M2 5L0 3h4z'/%3e%3c/svg%3e") no-repeat right 0.75rem center/8px 10px !important;
+}
+
+.pagination .page-item .page-link{
+  color: var(--gray);
+}
+
+.pagination .page-item.active .page-link {
+  background-color: var(--gray);
+  border-color: var(--gray);
 }

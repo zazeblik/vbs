@@ -322,6 +322,10 @@ export default {
       this.showSpinner = false;
       this.itemForm[index].value =
         result && result.default ? result.default : this.itemForm[index];
+      let name = this.itemForm.find((c) => c.property == 'name');
+      if (!name.value && result && result.default){
+        name.value = result.default.substr(result.default.lastIndexOf('/') + 1);
+      }
     },
     uploadAdapterPlugin(editor) {
       editor.plugins.get("FileRepository").createUploadAdapter = (loader) => {
