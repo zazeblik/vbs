@@ -1,5 +1,5 @@
 <template>
-  <b-container class="py-2">
+  <div class="py-2">
     <h5>Настройки сайта</h5>
     <validation-observer ref="observer">
       <b-form>
@@ -95,7 +95,7 @@
           updateUrl="/site/update" />
       </b-form>
     </validation-observer>
-  </b-container>
+  </div>
 </template>
 
 <script>

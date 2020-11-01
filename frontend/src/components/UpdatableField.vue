@@ -1,7 +1,7 @@
 <template>
   <validation-provider :name="label" :rules="validations" v-slot="validationContext">
     <b-overlay :show="showSpinner" rounded="sm">
-      <b-form-group label-cols-sm="3" label-size="sm" :label="label" class="mb-1">
+      <b-form-group label-cols-sm="2" label-size="sm" :label="label" class="mb-1">
         <b-form-datepicker
           v-if="type == 'date'"
           size="sm"
