@@ -1,3 +1,5 @@
+const PersonCustomValues = require("./PersonCustomValues");
+
 module.exports = {
   attributes: {
     updater: {
@@ -27,42 +29,6 @@ module.exports = {
       collection: 'incomes',
       via: 'person'
     },
-    bookNumber: {
-      type: 'string',
-      allowNull: true
-    },
-    danceClass: {
-      type: 'string',
-      allowNull: true
-    },
-    danceClassApproveDate: {
-      type: 'number',
-      allowNull: true
-    },
-    rank: {
-      type: 'string',
-      allowNull: true
-    },
-    rankMinsport: {
-      type: 'string',
-      allowNull: true
-    },
-    rankEnds: {
-      type: 'number',
-      allowNull: true
-    },
-    rankBookExists: {
-      type: 'boolean',
-      defaultsTo: false
-    },
-    phone: {
-      type: 'string',
-      allowNull: true
-    },
-    address: {
-      type: 'string',
-      allowNull: true
-    },
     balance: {
       type: 'number',
       defaultsTo: 0
@@ -75,9 +41,10 @@ module.exports = {
   },
   afterDestroy: async function(value, next){
     try {
-      await ArchivePersons.destroy({person: value.id}).fetch();
-      await Payments.destroy({person: value.id}).fetch();  
-      await Incomes.destroy({person: value.id}).fetch();  
+      await ArchivePersons.destroy({person: value.id})
+      await Payments.destroy({person: value.id})
+      await Incomes.destroy({person: value.id})
+      await PersonCustomValues.destroy({person: value.id})
       next();
     } catch (error) {
       return next(JSON.stringify([ error ]));

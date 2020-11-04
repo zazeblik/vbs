@@ -17,11 +17,12 @@
             <b-icon icon="trash"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Удалить</span>
           </b-button>
           <b-button
-            v-if="additionalButton"
-            variant="outline-primary"
+            v-for="(additionalButton, key) in additionalButtons"
+            :key="key"
+            :variant="`outline-${additionalButton.variant || 'primary'}`"
             @click="additionalButton.action"
           >
-            <b-icon icon="caret-right"></b-icon>&nbsp;<span class="d-none d-md-inline-block">{{additionalButton.name}}</span>
+            <b-icon :icon="additionalButton.icon || 'caret-right'"></b-icon>&nbsp;<span class="d-none d-md-inline-block">{{additionalButton.name || 'Кнопка'}}</span>
           </b-button>
         </b-button-group>
       </b-input-group>
@@ -112,7 +113,17 @@ export default {
   components: {
     ModelModal
   },
-  props: ["baseUrl", "fields", "itemForm", "filterPlaceHolder", "hideSearch", "additionalButton", "passwordShowButton", "creationErrorMessage"],
+  props: [
+    "baseUrl", 
+    "fields", 
+    "itemForm", 
+    "filterPlaceHolder", 
+    "hideSearch", 
+    "additionalButtons", 
+    "passwordShowButton", 
+    "creationErrorMessage",
+    "hasCustomFields"
+  ],
   data() {
     return {
       items: [],
@@ -133,6 +144,7 @@ export default {
   },
   methods: {
     async fetchTable() {
+      if (this.hasCustomFields) await this.updateCustomFields();
       this.selectAll = false;
       this.isBusy = true;
       const result = await this.$getAsync(this.baseUrl + "/list", {
@@ -148,6 +160,20 @@ export default {
       this.total = result.total;
       this.isBusy = false;
     },
+    async updateCustomFields() {
+      const customFields = await this.$getAsync(`${this.baseUrl}/fields`);
+      for (let index = this.itemForm.length - 1; index >= 0; index--) {
+        if (this.itemForm[index].isCustom) this.itemForm.splice(index, 1); 
+      }
+      customFields.forEach(field => {
+        this.itemForm.push({
+          label: field.label,
+          property: field.name,
+          type: "string",
+          isCustom: true
+        })
+      });
+    },
     async togglePassword(item) {
       if ( item.isPasswordShowed ) {
         item.isPasswordShowed = false;
@@ -159,7 +185,7 @@ export default {
     },
     getItemFormValue(item){
       const allowed = this.itemForm.filter(f => !f.hidden && f.type != "content").map(f => f.property);
-      return Object.keys(item)
+      let result = Object.keys(item)
         .filter(key => allowed.includes(key))
         .reduce((obj, key) => {
           let value = item[key];
@@ -182,14 +208,17 @@ export default {
           obj[key] = value;
           return obj;
         }, {});
+        return result;
     },
-    showEditModal(item, index, button) {
+    async showEditModal(item, index, button) {
+      if (this.hasCustomFields) await this.updateCustomFields();
       this.$refs.modelModal.showEdit(item, index, button);
     },
-    showAddModal() {
+    async showAddModal() {
       if (this.creationErrorMessage){
         this.$error(this.creationErrorMessage); 
       } else {
+        if (this.hasCustomFields) await this.updateCustomFields();
         this.$refs.modelModal.showAdd();
       }
     },
@@ -212,7 +241,10 @@ export default {
     },
     getName(property) {
       const item = this.itemForm.find(f => f.property == property);
-      return item ? item.label : property;
+      if (item) {
+        return item.label;
+      }
+      return property;
     },
     onRowSelected(items) {
       this.selected = items;

@@ -391,59 +391,6 @@ module.exports.PersonForm = [
     value: null
   },
   {
-    label: "Номер книжки",
-    property: "bookNumber",
-    type: "string",
-  },
-  {
-    label: "Класс",
-    property: "danceClass",
-    type: "string",
-  },
-  {
-    label: "Дата присвоения",
-    property: "danceClassApproveDate",
-    type: "date",
-    validations: {
-      regex: /^([0-2][0-9]|(3)[0-1])(\.)(((0)[0-9])|((1)[0-2]))(\.)\d{4}$/i
-    },
-    value: null
-  },
-  {
-    label: "Разряд",
-    property: "rank",
-    type: "string",
-  },
-  {
-    label: "Разряд Мин.Спорта",
-    property: "rankMinsport",
-    type: "string",
-  },
-  {
-    label: "Действие разряда",
-    property: "rankEnds",
-    type: "date",
-    validations: {
-      regex: /^([0-2][0-9]|(3)[0-1])(\.)(((0)[0-9])|((1)[0-2]))(\.)\d{4}$/i
-    },
-    value: null
-  },
-  {
-    label: "Разрядная книжка",
-    property: "rankBookExists",
-    type: "checkbox",
-  },
-  {
-    label: "Телефон",
-    property: "phone",
-    type: "string",
-  },
-  {
-    label: "Адрес",
-    property: "address",
-    type: "string",
-  },
-  {
     label: "Описание",
     property: "content",
     type: "content"

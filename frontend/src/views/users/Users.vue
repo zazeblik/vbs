@@ -6,7 +6,7 @@
       :fields="fields"
       :itemForm="itemForm"
       filterPlaceHolder="Введите логин..."
-      :additionalButton="additionalButton"
+      :additionalButtons="additionalButtons"
       :passwordShowButton="passwordShowButton"
       ref="dataTable" />
   </div>
@@ -20,7 +20,7 @@ export default {
     return {
       baseUrl: "/users",
       itemForm: UserForm,
-      additionalButton: null,
+      additionalButtons: null,
       passwordShowButton: null,
       fields: [
         {
@@ -60,7 +60,7 @@ export default {
     DataTable
   },
   async mounted(){
-    this.additionalButton = { name: 'Сгенерировать', action: this.syncAccounts };
+    this.additionalButtons = [{ name: 'Сгенерировать', action: this.syncAccounts }];
     this.passwordShowButton = { getPassword: this.getPassword };
     await this.fetchSettings();
   },

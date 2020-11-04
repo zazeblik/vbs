@@ -31,7 +31,7 @@
       </b-collapse>
     </b-navbar>
     <b-navbar v-else toggleable="lg" type="dark" variant="dark">
-      <b-navbar-brand :to="isControlPanelShown ? '/cp' : '/'">CRM</b-navbar-brand>
+      <b-navbar-brand :to="isControlPanelShown ? '/cp' : '/'">ERP</b-navbar-brand>
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
       <b-collapse id="nav-collapse" is-nav>
         <ControlPanelNav v-if="isControlPanelShown" class="d-md-block d-lg-none" />

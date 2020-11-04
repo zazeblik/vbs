@@ -526,7 +526,7 @@ export default {
     resetForm() {
       this.title = "";
       this.id = null;
-      this.itemForm.forEach((c) => {
+      this.itemForm.forEach((c, index) => {
         c.value = c.type == "content" ? "" : null;
         delete c.onChange;
       });

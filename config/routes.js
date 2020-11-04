@@ -20,6 +20,7 @@ module.exports.routes = {
   '/service-rules': '/?route=service-rules',
   '/payment-methods': '/?route=payment-methods',
   '/persons/edit/:id': 'PersonsController.edit',
+  '/persons/set-fields': 'PersonsController.setFields',
   '/archivepersons/edit/:id': 'ArchivePersonsController.edit',
   '/archivepersons/delete/:id': 'ArchivePersonsController.delete',
   '/salaryrules/edit/:id': 'SalaryRulesController.edit',
