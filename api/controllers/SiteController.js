@@ -2,7 +2,8 @@ const path = require('path');
 const fs = require('fs');
 const GroupType = require('../../enums').GroupType;
 const DateRangeHelper =  require('../utils/DateRangeHelper');
-const { exec } = require('child_process')
+const { exec } = require('child_process');
+const PersonsController = require('./PersonsController');
 
 module.exports = {
   publicSchedule: async function (req, res) {
@@ -75,8 +76,8 @@ module.exports = {
   },
   profilePerson: async function (req, res) {
     try {
-      await Persons.update(req.session.User.person, req.body);
-      return res.ok();
+      req.body.id = req.session.User.person;
+      return await PersonsController.edit(req, res);
     } catch (err) {
       return res.badRequest(err.message);
     }
