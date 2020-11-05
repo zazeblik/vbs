@@ -72,8 +72,8 @@ export default {
   },
   async mounted() {
     this.additionalButtons = [
-      // { name: 'Импорт', action: this.import, icon: 'file-earmark-arrow-up' }, 
-      // { name: 'Экспорт', action: this.export, icon: 'file-earmark-arrow-down' }
+      { name: 'Импорт', action: this.import, icon: 'file-earmark-arrow-up' }, 
+      { name: 'Экспорт', action: this.export, icon: 'file-earmark-arrow-down' }
     ];
   },
   methods: {

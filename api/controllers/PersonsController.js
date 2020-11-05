@@ -46,33 +46,25 @@ module.exports = {
       req.body.id = id;
       const valuesToCreate = [];
       const valuesToUpdate = [];
-      const idsToDestroy = [];
       const fields = await PersonCustomFields.find();
       const currentValues = await PersonCustomValues.find({person: id});
       fields.forEach(x => {
         const currentValue = currentValues.find(cv => cv.field == x.id);
-        if (req.body[x.name]) {
-          if (currentValue){
-            valuesToUpdate.push({
-              id: currentValue.id,
-              value: req.body[x.name]
-            })
-          } else {
-            valuesToCreate.push({
-              field: x.id,
-              person: id,
-              value: req.body[x.name]
-            })
-          }
+        if (currentValue){
+          valuesToUpdate.push({
+            id: currentValue.id,
+            value: req.body[x.name]
+          })
         } else {
-          if (currentValue){
-            idsToDestroy.push(currentValue.id);
-          }
+          valuesToCreate.push({
+            field: x.id,
+            person: id,
+            value: req.body[x.name]
+          })
         }
       });
       await Persons.update(id, req.body);
       await PersonCustomValues.createEach(valuesToCreate);
-      if (idsToDestroy.length) await PersonCustomValues.destroy(idsToDestroy);
       valuesToUpdate.forEach(async x => {
         await PersonCustomValues.update({id: x.id}).set({value: x.value})
       });

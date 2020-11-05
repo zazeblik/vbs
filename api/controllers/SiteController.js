@@ -2,7 +2,6 @@ const path = require('path');
 const fs = require('fs');
 const GroupType = require('../../enums').GroupType;
 const DateRangeHelper =  require('../utils/DateRangeHelper');
-const { exec } = require('child_process');
 const PersonsController = require('./PersonsController');
 
 module.exports = {
@@ -70,6 +69,20 @@ module.exports = {
       delete req.body.person;
       await Users.update(req.session.User.id, req.body);
       return res.ok();
+    } catch (err) {
+      return res.badRequest(err.message);
+    }
+  },
+  person: async function (req, res){
+    try {
+      const person = await Persons.findOne({id: req.session.User.person});
+      const fields = await PersonCustomFields.find();
+      const fieldValues = await PersonCustomValues.find({person: req.session.User.person});
+      fields.forEach(field => {
+        const value = fieldValues.find(x => x.field == field.id)
+        if (value) person[field.name] = value.value; 
+      });
+      return res.send(person);
     } catch (err) {
       return res.badRequest(err.message);
     }

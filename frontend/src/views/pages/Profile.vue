@@ -20,6 +20,13 @@
                 :fieldValue="person.birthday"
                 field="birthday"
                 updateUrl="/site/profile-person" />
+              <UpdatableField
+                v-for="(field, index) in customFields"
+                :key="index"
+                :label="field.label"
+                :fieldValue="person[field.name]"
+                :field="field.name"
+                updateUrl="/site/profile-person" />
             </div>
             <hr />
             <UpdatableField 
@@ -53,14 +60,16 @@ export default {
   },
   async mounted(){
     if (this.$user.person){
-      this.person = await this.$getAsync('/persons/'+this.$user.person);
+      this.person = await this.$getAsync('/site/person');
       this.isLoaded = true;
+      this.customFields = await this.$getAsync('/persons/fields');
     }
   },
   data() {
     return {
       password: null,
       person: null,
+      customFields: [],
       isLoaded: false
     };
   }
