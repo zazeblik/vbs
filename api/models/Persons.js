@@ -1,5 +1,3 @@
-const PersonCustomValues = require("./PersonCustomValues");
-
 module.exports = {
   attributes: {
     updater: {
@@ -7,7 +5,8 @@ module.exports = {
     },
     name: {
       type: 'string',
-      required: true
+      required: true,
+      unique: true
     },
     birthday: {
       type: 'number',

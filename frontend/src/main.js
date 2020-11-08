@@ -77,11 +77,24 @@ Vue.prototype.$getYears = function() {
   return years;
 }
 
-Vue.prototype.$getAsync = async function (url, query) {
+Vue.prototype.$getAsync = async function (url, query, isExcel) {
   try {
-    const response = await axios.get(url, {
+    const config = {
       params: query
-    });
+    };
+    if (isExcel) {
+      config.responseType = 'blob';
+    }
+    const response = await axios.get(url, config);
+    if (isExcel) {
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'export.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      return;
+    }
     return response.data;
   } catch (error) {
     if (error.response) {
@@ -91,9 +104,9 @@ Vue.prototype.$getAsync = async function (url, query) {
   }
 }
 
-Vue.prototype.$postAsync = async function(url, body, handleError) {
+Vue.prototype.$postAsync = async function(url, body, handleError, options = {}) {
   try {
-    const response = await axios.post(url, body);
+    const response = await axios.post(url, body, options);
     return response.data;
   } catch (error) {
     if (error.response) {
@@ -121,6 +134,7 @@ Vue.prototype.$document = document;
 axios.get('/site/settings')
   .then((response) => {
     Vue.prototype.$settings = response.data;
+    document.title = response.data.name;
     return axios.get('/users/authenticated')
   })  
   .then((response) => {

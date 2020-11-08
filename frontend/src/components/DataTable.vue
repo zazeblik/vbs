@@ -25,6 +25,7 @@
             <b-icon :icon="additionalButton.icon || 'caret-right'"></b-icon>&nbsp;<span class="d-none d-md-inline-block">{{additionalButton.name || 'Кнопка'}}</span>
           </b-button>
         </b-button-group>
+        <b-form-file v-show="false" accept=".xlsx" v-model="importedFile" ref="fileInput" @change="importFile"></b-form-file>
       </b-input-group>
       
       <b-input-group size="sm" v-if="!hideSearch">
@@ -127,6 +128,7 @@ export default {
   data() {
     return {
       items: [],
+      importedFile: [], 
       currentPage: 1,
       perPage: 10,
       total: 0,
@@ -209,6 +211,19 @@ export default {
           return obj;
         }, {});
         return result;
+    },
+    async importFile(event){
+      if (!event.target.files.length) return;
+      const files = event.target.files;
+      const data = new FormData();
+      data.append('file', files[0]);
+      this.importedFile = [];
+      await this.$postAsync(`${this.baseUrl}/import`, data, null, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      await this.fetchTable();
     },
     async showEditModal(item, index, button) {
       if (this.hasCustomFields) await this.updateCustomFields();

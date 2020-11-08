@@ -84,10 +84,10 @@ export default {
       this.$refs.customFieldsModal.show();
     },
     import(){
-      console.log("import");
+      this.$refs.dataTable.$refs.fileInput.$el.childNodes[0].click();
     },
-    export(){
-      console.log("export");
+    async export(){
+      await this.$getAsync(`${this.baseUrl}/export`, {}, true);
     }
   }
 };
