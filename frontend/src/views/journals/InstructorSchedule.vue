@@ -218,6 +218,12 @@ export default {
             event.payments.splice(event.payments.findIndex(ep => ep.id == p), 1);
           }); 
         }
+        if (result.updatedPayments && result.updatedPayments.length){
+          result.updatedPayments.forEach(p => {
+            event.payments.splice(event.payments.findIndex(ep => ep.id == p.id), 1);
+            event.payments.push(p);
+          }); 
+        }
         this.updateMemberBalances(result.personBalances);
         return;
       }
@@ -272,7 +278,11 @@ export default {
       const isPayed = !!event.payments.find(p => p.person == member.id);
       if (isPayed) return 'success';
       const group = this.groups.find(g => g.id == event.group);
-      if (member.balance >= group.cost) return 'primary';
+      const visitors = event.members.filter(x => x.isVisitor);
+      const isVisitorMemeber = visitors.map(x => x.id).includes(member.id);
+      const visiorsCount = isVisitorMemeber ? visitors.length : (visitors.length + 1);
+      const memberCost = group.cost / visiorsCount; // 1 если надо платить всем
+      if (member.balance >= memberCost) return 'primary';
       return 'danger';
     },
     getMemberFirstName(member) {

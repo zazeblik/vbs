@@ -44,7 +44,7 @@ module.exports = {
   },
   delete: async function (req, res) {
     try {
-      await SalaryRules.destroy(req.body)
+      await SalaryRules.destroy(req.body).fetch();
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);

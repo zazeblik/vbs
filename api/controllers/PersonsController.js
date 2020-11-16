@@ -91,7 +91,7 @@ module.exports = {
       const idsToUpdate = currentFieldsIds.filter(x => newFieldsIds.includes(x));
       const fieldsToUpdate = newFields.filter(x => idsToUpdate.includes(x.id));
       await PersonCustomFields.createEach(fieldsToCreate);
-      if (idsToDelete.length) await PersonCustomFields.destroy(idsToDelete);
+      if (idsToDelete.length) await PersonCustomFields.destroy(idsToDelete).fetch();
       fieldsToUpdate.forEach(async x => {
         await PersonCustomFields.update({id: x.id}).set({label: x.label, name: x.name})
       });

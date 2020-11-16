@@ -1,5 +1,4 @@
 const moment = require('moment');
-const Users = require('../models/Users');
 const GroupType = require('../../enums').GroupType;
 
 module.exports = {
@@ -40,38 +39,55 @@ module.exports = {
       success: false
     });
     try {
-      const id = Number(req.param("id"));
-      const visitors = req.param("visitors");
-      const persons = await Persons.find({ id: visitors });
-      const event = await Events.findOne(id).populate("payments");
+      const event_id = Number(req.param("id"));
+      let visitors = req.param("visitors");
+      let event = await Events.findOne(event_id)
+        .populate("payments")
+        .populate("visitors");
       const group = await Groups.findOne(event.group);
       let createdPayments = [];
+      let updatedPayments = [];
+      let updatedPersonIds = [];
       let personBalances = {};
-      await Events.addToCollection(id, "visitors").members(visitors);
-      if (group.type == GroupType.Personal){
-        const eventPaymentsPersons = event.payments.map(p => p.person);
-        const cost = group.cost;
-        const payments = persons
-          .filter(p => !eventPaymentsPersons.includes(p.id) && p.balance >= cost)
-          .map(p => {
-            return {
-              updater: req.session.User.id,
-              person: p.id,
-              events: [event.id],
-              group: group.id,
-              sum: cost,
-              description: `Посещение ${group.name} ${moment(event.startsAt).format("DD.MM")}`
-            }
-          });
-        createdPayments = await Payments.createEach(payments).fetch();
-        const updatedPersons = await Persons.find({id: payments.map(p => p.person)});
-        updatedPersons.forEach(p => { 
-          personBalances[p.id] = p.balance;
+      await Events.addToCollection(event_id, "visitors").members(visitors);
+      if (group.type == GroupType.Personal) {
+        const persons = await Persons.find({id: visitors}).sort('balance DESC');
+        const eventPayments = event.payments;
+        const eventVisitorIds = event.visitors.map(x => x.id);
+        const eventPaymentsPersons = eventPayments.map(p => p.person);
+        const uniquePersons = [...new Set(eventVisitorIds.concat(visitors))];
+        const memberCost = group.cost / uniquePersons.length;
+        const visiorsToCreatePayments = visitors
+          .filter(v => !eventPaymentsPersons.includes(v) && persons.find(p => p.id == v).balance >= memberCost);
+        const paymentsToCreate = visiorsToCreatePayments.map(v => {
+          return {
+            updater: req.session.User.id,
+            person: v,
+            events: [event.id],
+            group: group.id,
+            sum: memberCost,
+            description: `Посещение ${group.name} ${moment(event.startsAt).format("DD.MM")}`
+          }
         });
+        createdPayments = await Payments.createEach(paymentsToCreate).fetch();
+        updatedPersonIds = updatedPersonIds.concat(visiorsToCreatePayments);
+        const personsToUpdatePayments = eventPaymentsPersons.filter(p => !visiorsToCreatePayments.includes(p));
+        for (let i = 0; i < personsToUpdatePayments.length; i++) {
+          const p = eventPayments.find(x => x.person == personsToUpdatePayments[i]);
+          const updatedPayment = await Payments.updateOne({id: p.id}, {id: p.id, sum: memberCost});
+          updatedPersonIds.push(p.person);
+          updatedPayments.push(updatedPayment);
+        }
+      }
+      const updatedPersons = await Persons.find({id: updatedPersonIds});
+      for (let i = 0; i < updatedPersons.length; i++) {
+        const p = updatedPersons[i];
+        personBalances[p.id] = p.balance;
       }
       return res.send({
         success: true,
         createdPayments,
+        updatedPayments,
         personBalances
       });
     } catch (error) {
@@ -88,28 +104,47 @@ module.exports = {
       success: false
     });
     try {
-      const id = Number(req.param("id"));
+      const event_id = Number(req.param("id"));
       const visitors = req.param("visitors");
-      const event = await Events.findOne(id).populate("payments");
+      let event = await Events.findOne(event_id)
+        .populate("payments")
+        .populate("visitors");
       const group = await Groups.findOne(event.group);
       let removedPayments = [];
+      let updatedPayments = [];
+      let updatedPersonIds = [];
       let personBalances = {};
-      if (group.type == GroupType.Personal){
-        const payments = event.payments
-          .filter(p => visitors.includes(p.person));
-        if (payments.length){
-          await Payments.destroy({ id: payments.map(p => p.id) }).fetch();
-          removedPayments = payments.map(p => p.id);
-          const updatedPersons = await Persons.find({id: payments.map(p => p.person)});
-          updatedPersons.forEach(p => { 
-            personBalances[p.id] = p.balance;
-          });
-        }
+      await Events.removeFromCollection(event_id, "visitors").members(visitors);
+      if (group.type == GroupType.Personal) {
+        const eventPayments = event.payments;
+        const eventVisitorIds = event.visitors.map(x => x.id);
+        const eventPaymentsPersons = eventPayments.map(p => p.person);
+        const remainingPersons = eventVisitorIds.filter(x => !visitors.includes(x));
+        const memberCost = group.cost / remainingPersons.length;
+        const visiorsToDeletePayments = eventPaymentsPersons.filter(x => visitors.includes(x));
+        const paymentIdsToDelete = eventPayments
+          .filter(p => visiorsToDeletePayments.includes(p.person))
+          .map(p => p.id);
+        await Payments.destroy({ id: paymentIdsToDelete }).fetch();;
+        removedPayments = removedPayments.concat(paymentIdsToDelete);
+        updatedPersonIds = updatedPersonIds.concat(visiorsToDeletePayments);
+        const otherEventPayments = eventPayments.filter(p => !paymentIdsToDelete.includes(p.id));
+        for (let j = 0; j < otherEventPayments.length; j++) {
+          const p = otherEventPayments[j];
+          const updatedPayment = await Payments.updateOne({id: p.id}, {id: p.id, sum: memberCost});
+          updatedPersonIds.push(p.person);
+          updatedPayments.push(updatedPayment);
+        };
       }
-      await Events.removeFromCollection(id, "visitors").members(visitors);
+      const updatedPersons = await Persons.find({id: updatedPersonIds});
+      for (let i = 0; i < updatedPersons.length; i++) {
+        const p = updatedPersons[i];
+        personBalances[p.id] = p.balance;
+      }
       return res.send({
         success: true,
         removedPayments,
+        updatedPayments,
         personBalances
       });
     } catch (error) {
