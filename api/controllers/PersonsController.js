@@ -2,9 +2,10 @@ const cyrillicToTranslit = require('cyrillic-to-translit-js');
 const Excel = require('exceljs');
 const moment = require('moment');
 
+const customValuesResolver =  require('../services/PersonCustomValuesResolver');
+
 module.exports = {
   import: async function(req, res) {
-    
       if (!req.file('file')){
         return res.badRequest('file not found');
       }
@@ -93,7 +94,7 @@ module.exports = {
       await PersonCustomFields.createEach(fieldsToCreate);
       if (idsToDelete.length) await PersonCustomFields.destroy(idsToDelete).fetch();
       fieldsToUpdate.forEach(async x => {
-        await PersonCustomFields.update({id: x.id}).set({label: x.label, name: x.name})
+        await PersonCustomFields.update({id: x.id}).set({id: x.id, label: x.label, name: x.name})
       });
       return res.ok();
     } catch (err) {
@@ -105,30 +106,9 @@ module.exports = {
       req.body.updater = req.session.User.id;
       const id = req.param("id");
       req.body.id = id;
-      const valuesToCreate = [];
-      const valuesToUpdate = [];
-      const fields = await PersonCustomFields.find();
-      const currentValues = await PersonCustomValues.find({person: id});
-      fields.forEach(x => {
-        const currentValue = currentValues.find(cv => cv.field == x.id);
-        if (currentValue){
-          valuesToUpdate.push({
-            id: currentValue.id,
-            value: req.body[x.name]
-          })
-        } else {
-          valuesToCreate.push({
-            field: x.id,
-            person: id,
-            value: req.body[x.name]
-          })
-        }
-      });
+      const personToResolve = { ...req.body };
       await Persons.update(id, req.body);
-      await PersonCustomValues.createEach(valuesToCreate);
-      valuesToUpdate.forEach(async x => {
-        await PersonCustomValues.update({id: x.id}).set({value: x.value})
-      });
+      await customValuesResolver.resolve(personToResolve);
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
@@ -137,23 +117,13 @@ module.exports = {
   create: async function (req, res){
     try {
       req.body.updater = req.session.User.id;
-      const fields = await PersonCustomFields.find();
-      const customValues = [];
-      var data = req.body;
-      fields.forEach(field => {
-        if (data[field.name]) {
-          customValues.push({
-            field: field.id,
-            value: data[field.name]
-          });
-          delete data[field.name];
-        }
-      });
-      const person = await Persons.create(data).fetch();
-      await PersonCustomValues.createEach(customValues.map(x => {return { field: x.field, value: x.value, person: person.id}}));
+      const personToResolve = { ...req.body };
+      const person = await Persons.create(req.body).fetch();
+      personToResolve.id = person.id;
+      await customValuesResolver.resolve(personToResolve);
       return res.ok();
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   delete: async function (req, res) {
@@ -163,7 +133,7 @@ module.exports = {
       await Persons.destroy(req.body).fetch();
       return res.ok();
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   list: async function (req, res) {
@@ -200,7 +170,7 @@ module.exports = {
         data: data
       })
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   }
 };

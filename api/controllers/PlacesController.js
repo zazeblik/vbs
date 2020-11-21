@@ -6,7 +6,7 @@ module.exports = {
       await Places.update(req.param("id"), req.body)
       return res.ok();
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   create: async function (req, res) {
@@ -14,7 +14,7 @@ module.exports = {
       await Places.create(req.body)
       return res.ok();
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   delete: async function (req, res) {
@@ -26,7 +26,7 @@ module.exports = {
       await Places.destroy(req.body).fetch();
       return res.ok();
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   materials: async function (req, res) {
@@ -34,7 +34,7 @@ module.exports = {
       let places = await Places.find().populate("groups", { type: GroupType.General, hidden: false, schedule: { '!=': '' } });
       return res.ok(places);
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   list: async function (req, res) {
@@ -63,7 +63,7 @@ module.exports = {
         data: data
       })
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   }
 };

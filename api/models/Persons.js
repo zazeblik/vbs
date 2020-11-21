@@ -38,6 +38,23 @@ module.exports = {
       allowNull: true
     }
   },
+  beforeDestroy: async function(value, next){
+    try {
+      if (value.where && value.where.id && value.where.id.in){
+        const groupsOfInstructors = await Groups.find({defaultInstructor: value.where.id.in});
+        if (groupsOfInstructors.length){
+          return next(`Сначала необходимо поменять тренера в группах (${groupsOfInstructors.map(x => x.name)})`);
+        }
+        const eventsOfInstructors = await Events.find({instructor: value.where.id.in});
+        if (eventsOfInstructors.length){
+          return next(`Сначала необходимо удалить занятия, где учасник является тренером`);
+        }
+      }
+      return next();
+    } catch (error) {
+      return next(JSON.stringify([ error ]));
+    }
+  },
   afterDestroy: async function(value, next){
     try {
       await ArchivePersons.destroy({person: value.id})
