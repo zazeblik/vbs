@@ -12,7 +12,7 @@
         v-model="incomeSum"
         :hidden="!addIncomeShown" />
       <b-input-group-append>
-        <b-button variant="outline-success" v-if="incomeAvailable" :hidden="addIncomeShown" @click="addIncomeShown = true">
+        <b-button variant="outline-success" v-if="incomeAvailable" :hidden="addIncomeShown" @click="showAddIncomeForm">
           <b-iconstack>
             <b-icon stacked icon="plus-circle-fill" shift-h="4" shift-v="-2" scale="0.6"></b-icon>
             <b-icon stacked icon="credit-card"></b-icon>
@@ -85,6 +85,12 @@
       :baseUrl="incomeUrl" 
       :itemForm="incomeForm" 
       ref="editIncomeModal" 
+      @formSaved="fetchPage" />
+    <ModelModal 
+      modalId="addIncomeModal" 
+      :baseUrl="incomeUrl" 
+      :itemForm="incomeForm" 
+      ref="addIncomeModal" 
       @formSaved="fetchPage" />
     <PaymentsModal 
       modalId="paymentsModal"
@@ -190,22 +196,22 @@ export default {
       this.balance = this.persons.find(p => p.id == this.payer).balance;
       this.personalUnpayedEvents = this.unpayedEvents[this.payer];
     },
+    showAddIncomeForm() {
+      if (this.isControlPanelShown){
+        this.incomeForm.find(f => f.property == 'person').value = this.payer;
+        this.incomeForm.find(f => f.property == 'description').value = 'Пополнение баланса вручную';
+        this.$refs.addIncomeModal.showAdd();
+      } else {
+        this.addIncomeShown = true;
+      }
+    },
     async addIncome(){
       if (!this.payer) return;
-      if (this.isControlPanelShown){
-        await this.$postAsync(`${this.incomeUrl}/create`, {
-          sum: this.incomeSum,
-          person: this.payer
-        });
-        this.resetIncomeForm();
-      } else {
-        const paymentUrl = await this.$postAsync(`${this.orderUrl}/register`, {
-          sum: this.incomeSum,
-          origin: this.$url
-        });
-        this.$location.href = paymentUrl;
-      }
-      await this.fetchPage();
+      const paymentUrl = await this.$postAsync(`${this.orderUrl}/register`, {
+        sum: this.incomeSum,
+        origin: this.$url
+      });
+      this.$location.href = paymentUrl;
     },
     async showRemoveTransactionConfirm(transaction) {
       try {
