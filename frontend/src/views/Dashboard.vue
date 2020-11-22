@@ -10,7 +10,7 @@
       <b-form-select v-model="selectedMonth" :options="months" @change="fetchInfo()" />
       <b-form-select v-model="selectedYear" :options="years" @change="fetchInfo()" />
       <b-input-group-append>
-        <b-button variant="outline-success" @click="createMonthEvents()">
+        <b-button variant="outline-success" v-if="tabIndex == 0" @click="createMonthEvents()">
           <b-iconstack>
             <b-icon stacked icon="plus-circle-fill" shift-h="-4" shift-v="3" scale="0.6"></b-icon>
             <b-icon stacked icon="calendar" shift-h="0"></b-icon>
@@ -18,9 +18,12 @@
           &nbsp;
           <span class="d-none d-md-inline-block">Создать занятия на месяц</span>
         </b-button>
+        <b-button v-else variant="outline-success" @click="exportData">
+          <b-icon icon="file-earmark-arrow-down"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Экспорт</span>
+        </b-button>
       </b-input-group-append>
     </b-input-group>
-    <b-tabs fill small class="pt-2" lazy>
+    <b-tabs v-model="tabIndex" fill small class="pt-2" lazy>
       <b-tab title="Расписание">
         <FullCalendar 
           defaultView="dayGridMonth" 
@@ -45,7 +48,7 @@
           </b-col>
         </b-row>
         <div 
-          v-for="(visit, index) in getVisits()"
+          v-for="(visit, index) in visits"
           :key="'visit'+index" class="row mb-1">
           <div class="col-sm-2"><small>{{ visit.name }}:</small></div>
           <div class="col-sm-10 pt-1">
@@ -71,7 +74,7 @@
           </b-col>
         </b-row>
         <div 
-          v-for="(instructor, index) in getInstructors()"
+          v-for="(instructor, index) in instructors"
           :key="'instructor'+index" class="row mb-1">
           <div class="col-sm-2"><small>{{ instructor.name }}:</small></div>
           <div class="col-sm-10 pt-1">
@@ -91,7 +94,7 @@
           <b-col class="text-center"><b-icon icon="square-fill" variant="warning" /><br/><small>платежи</small></b-col>
         </b-row>
         <div 
-          v-for="(transactionSum, index) in getTransactionSums()"
+          v-for="(transactionSum, index) in transactionSums"
           :key="'transactionSum'+index" class="row mb-1">
           <div class="col-sm-2"><small>{{ transactionSum.name }}:</small></div>
           <div class="col-sm-10 pt-1">
@@ -133,10 +136,13 @@ export default {
   data() {
     return {
       baseUrl: '/dashboard',
+      visits: [],
+      instructors: [],
+      transactionSums: [],
+      totals: [],
       events: [],
-      payments: [],
-      incomes: [],
       birthdays: [],
+      tabIndex: 0,
       selectedYear: new Date().getFullYear(),
       years: this.$getYears(),
       selectedMonth: new Date().getMonth(),
@@ -185,61 +191,32 @@ export default {
       })
     },
     maxVisitsCount() {
-      const visits = this.getVisits();
       let maxTotalCount = 0;
-      visits.forEach(v => {
+      this.visits.forEach(v => {
         maxTotalCount  = maxTotalCount > v.total ? maxTotalCount : v.total;
       });
       return maxTotalCount;
     },
     maxInstructorsCount() {
-      const instructors = this.getInstructors();
       let maxTotalCount = 0;
-      instructors.forEach(i => {
+      this.instructors.forEach(i => {
         maxTotalCount  = maxTotalCount > i.total ? maxTotalCount : i.total;
       });
       return maxTotalCount;
     },
     maxIncomesSum() {
-      const transactionSums = this.getTransactionSums();
       let maxIncomesSum = 0;
-      transactionSums.forEach(i => {
+      this.transactionSums.forEach(i => {
         maxIncomesSum  = maxIncomesSum > i.incomesSum ? maxIncomesSum : i.incomesSum;
       });
       return maxIncomesSum;
     },
     maxPaymentsSum() {
-      const transactionSums = this.getTransactionSums();
       let maxPaymentsSum = 0;
-      transactionSums.forEach(i => {
+      this.transactionSums.forEach(i => {
         maxPaymentsSum  = maxPaymentsSum > i.paymentsSum ? maxPaymentsSum : i.paymentsSum;
       });
       return maxPaymentsSum;
-    },
-    totals() {
-      let groups = [...new Set(this.events.map(e => e.group.name))];
-      let totals = groups.map(g => { 
-        return {
-          group: g, 
-          eventsTotal: 0, 
-          visitsTotal: 0, 
-          paymentIds: [], 
-          paymentsTotal: 0, 
-          paymentsTotalSum: 0
-        }
-      });
-      this.events.forEach(e => {
-        let total = totals.find(t => t.group == e.group.name); 
-        total.eventsTotal++;
-        total.visitsTotal += e.visitors.length;
-        e.payments.forEach(p => {
-          if (total.paymentIds.includes(p.id)) return;
-          total.paymentIds.push(p.id);
-          total.paymentsTotal++;
-          total.paymentsTotalSum += p.sum;
-        });
-      });
-      return totals; 
     },
     totalVisitsCount() {
       let result = 0;
@@ -286,12 +263,44 @@ export default {
         month: this.selectedMonth,
         year: this.selectedYear,
       });
+      this.visits = info.visits;
+      this.instructors = info.instructors;
+      this.transactionSums = info.transactionSums;
       this.events = info.events;
-      this.payments = info.payments;
-      this.incomes = info.incomes;
+      this.totals = info.totals;
       if (!this.$refs.fullCalendar) return;
       let calendarApi = this.$refs.fullCalendar.getApi();
       calendarApi.gotoDate(new Date(this.selectedYear, this.selectedMonth));
+    },
+    async exportData(){
+      switch (this.tabIndex) {
+        case 1:
+          await this.$getAsync(`${this.baseUrl}/export-visits`, {
+            month: this.selectedMonth,
+            year: this.selectedYear,
+          }, true);
+          break;
+        case 2:
+          await this.$getAsync(`${this.baseUrl}/export-instructors`, {
+            month: this.selectedMonth,
+            year: this.selectedYear,
+          }, true);
+          break;
+        case 3:
+          await this.$getAsync(`${this.baseUrl}/export-payments`, {
+            month: this.selectedMonth,
+            year: this.selectedYear,
+          }, true);
+          break;
+        case 4:
+          await this.$getAsync(`${this.baseUrl}/export-totals`, {
+            month: this.selectedMonth,
+            year: this.selectedYear,
+          }, true);
+          break;
+        default:
+          break;
+      }
     },
     getAge(birthday) {
       var today = new Date();
@@ -300,76 +309,6 @@ export default {
       var m = today.getMonth() - birthDate.getMonth();
       if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
       return age;
-    },
-    getInstructors(){
-      let results = [];
-      this.events.forEach(e => {
-        let instructor = e.instructor;
-        let finded = results.find(r => r.name == instructor.name);
-        if (!finded) {
-          results.push({name: instructor.name, generalsCount: 0, personalsCount: 0, total: 0});
-          finded = results.find(r => r.name == instructor.name);
-        }
-        if (e.group.type == GroupType.General) {
-          finded.generalsCount++;
-        } else {
-          finded.personalsCount++;
-        }
-        finded.total++;
-      });
-      return results.sort(this.sortByTotal);
-    },
-    getVisits(){
-      let visits = [];
-      this.events.forEach(e => {
-        let visitors = e.visitors;
-        visitors.forEach(v => {
-          let finded = visits.find(visit => visit.name == v.name);
-          if (!finded) {
-            visits.push({name: v.name, generalsCount: 0, personalsCount: 0, total: 0});
-            finded = visits.find(visit => visit.name == v.name);
-          }
-          if (e.group.type == GroupType.General) {
-            finded.generalsCount++;
-          } else {
-            finded.personalsCount++;
-          }
-          finded.total++;
-        })
-      });
-      return visits.sort(this.sortByTotal);
-    },
-    getTransactionSums() {
-      let results = [];
-      this.payments.forEach(x => {
-        const person = x.person;
-        let finded = results.find(r => r.name == person.name);
-        if (!finded) {
-          results.push({name: person.name, incomesSum: 0, paymentsSum: 0});
-          finded = results.find(r => r.name == person.name);
-        }
-        finded.paymentsSum += x.sum;
-      });
-      this.incomes.forEach(x => {
-        const person = x.person;
-        let finded = results.find(r => r.name == person.name);
-        if (!finded) {
-          results.push({name: person.name, incomesSum: 0, paymentsSum: 0});
-          finded = results.find(r => r.name == person.name);
-        }
-        finded.incomesSum += x.sum;
-      });
-      return results.sort(this.sortByIncomesSum);
-    },
-    sortByTotal(a, b) {
-      if (a.total > b.total) return -1;
-      if (a.total < b.total) return 1;
-      return 0;
-    },
-    sortByIncomesSum(a, b) {
-      if (a.incomesSum > b.incomesSum) return -1;
-      if (a.incomesSum < b.incomesSum) return 1;
-      return 0;
     },
     async createMonthEvents(){
       await this.$postAsync(`${this.baseUrl}/create-month-events`, {
