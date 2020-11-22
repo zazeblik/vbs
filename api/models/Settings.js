@@ -1,5 +1,4 @@
 const fs = require('fs');
-const { exec } = require('child_process');
 
 module.exports = {
   attributes: {
@@ -56,7 +55,9 @@ module.exports = {
     try {
       if (value.name){
         fs.writeFileSync('frontend/portal.config.json', JSON.stringify({title: value.name}, null, 2));
-        exec('cd frontend && npm run build');	
+        let htmlString = fs.readFileSync('assets/index.html', 'utf-8');
+        htmlString = htmlString.replace(/<title>.+<\/title>/i, `<title>${value.name}</title>`);
+        fs.writeFileSync('assets/index.html', htmlString, 'utf-8');
       }
       return next();
     } catch (error) {
@@ -67,7 +68,9 @@ module.exports = {
     try {
       if (value.name){
         fs.writeFileSync('frontend/portal.config.json', JSON.stringify({title: value.name}, null, 2));
-        exec('cd frontend && npm run build');
+        let htmlString = fs.readFileSync('assets/index.html', 'utf-8');
+        htmlString = htmlString.replace(/<title>.+<\/title>/i, `<title>${value.name}</title>`);
+        fs.writeFileSync('assets/index.html', htmlString, 'utf-8');
       }
       return next();
     } catch (error) {
