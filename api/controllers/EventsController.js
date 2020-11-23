@@ -69,7 +69,11 @@ module.exports = {
             description: `Посещение ${group.name} ${moment(event.startsAt).format("DD.MM")}`
           }
         });
-        createdPayments = await Payments.createEach(paymentsToCreate).fetch();
+        for (let i = 0; i < paymentsToCreate.length; i++) {
+          const p = paymentsToCreate[i];
+          const createdPayment = await Payments.create(p).fetch();
+          createdPayments.push(createdPayment);
+        }
         updatedPersonIds = updatedPersonIds.concat(visiorsToCreatePayments);
         const personsToUpdatePayments = eventPaymentsPersons.filter(p => !visiorsToCreatePayments.includes(p));
         for (let i = 0; i < personsToUpdatePayments.length; i++) {

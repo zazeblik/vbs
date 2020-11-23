@@ -7,7 +7,8 @@ module.exports = {
       model: 'users'
     },
     person: {
-      model: 'persons'
+      model: 'persons',
+      required: true
     },
     events: {
       collection: 'events',

@@ -1,5 +1,3 @@
-const { register } = require("../api/controllers/OrdersController");
-
 module.exports.policies = {
   users: {
     '*': ['authenticated', 'isAdmin'],

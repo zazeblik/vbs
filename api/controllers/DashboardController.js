@@ -20,7 +20,7 @@ module.exports = {
         .sort("startsAt ASC")
         .populate("visitors")
         .populate("group");
-      let visits = await DashboardService.getVisits(events);
+      let visits = DashboardService.getVisits(events);
       visits.forEach((v, i) => {
         sheet.getCell(`A${i+2}`).value = v.name;
         sheet.getCell(`B${i+2}`).value = v.generalsCount;
@@ -51,13 +51,14 @@ module.exports = {
         .sort("startsAt ASC")
         .populate("instructor")
         .populate("group");
-      let results = await DashboardService.getInstructors(events);
-      results.forEach((r, i) => {
+      let results = DashboardService.getInstructors(events);
+      for (let i = 0; i < results.length; i++) {
+        const r = results[i];
         sheet.getCell(`A${i+2}`).value = r.name;
         sheet.getCell(`B${i+2}`).value = r.generalsCount;
         sheet.getCell(`C${i+2}`).value = r.personalsCount;
         sheet.getCell(`D${i+2}`).value = r.total;
-      });
+      }
       const wbbuf = await workbook.xlsx.writeBuffer();
       res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
       return res.end( wbbuf );
@@ -92,7 +93,7 @@ module.exports = {
       const incomes = await Incomes
         .find({ updatedAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() }})
         .populate('person');
-      let results = await DashboardService.getTransactionSums(payments, incomes);
+      let results = DashboardService.getTransactionSums(payments, incomes);
       results.forEach((r, i) => {
         sheet.getCell(`A${i+2}`).value = r.name;
         sheet.getCell(`B${i+2}`).value = r.paymentsSum;
@@ -123,7 +124,7 @@ module.exports = {
         .populate("visitors")
         .populate("payments")
         .populate("group");
-      let results = await DashboardService.getTotals(events);
+      let results = DashboardService.getTotals(events);
       results.forEach((r, i) => {
         sheet.getCell(`A${i+2}`).value = r.group;
         sheet.getCell(`B${i+2}`).value = r.eventsTotal;
@@ -131,6 +132,15 @@ module.exports = {
         sheet.getCell(`D${i+2}`).value = r.paymentsTotal;
         sheet.getCell(`E${i+2}`).value = r.paymentsTotalSum;
       });
+      sheet.getCell(`A${results.length+2}`).value = {'richText': [{'font': {'bold': true}, 'text': 'Итого:'}]};
+      sheet.getCell(`B${results.length+2}`).value = {'richText': [{'font': {'bold': true}, 'text': results.map(x => x.eventsTotal).reduce((a, b) => a + b, 0)}]};
+      sheet.getCell(`C${results.length+2}`).value = {'richText': [{'font': {'bold': true}, 'text': results.map(x => x.visitsTotal).reduce((a, b) => a + b, 0)}]};
+      sheet.getCell(`D${results.length+2}`).value = {'richText': [{'font': {'bold': true}, 'text': results.map(x => x.paymentsTotal).reduce((a, b) => a + b, 0)}]};
+      sheet.getCell(`E${results.length+2}`).value = {'richText': [{'font': {'bold': true}, 'text': results.map(x => x.paymentsTotalSum).reduce((a, b) => a + b, 0)}]};
+      sheet.getCell(`B${results.length+2}`).alignment = { horizontal: 'right' };
+      sheet.getCell(`C${results.length+2}`).alignment = { horizontal: 'right' };
+      sheet.getCell(`D${results.length+2}`).alignment = { horizontal: 'right' };
+      sheet.getCell(`E${results.length+2}`).alignment = { horizontal: 'right' };
       const wbbuf = await workbook.xlsx.writeBuffer();
       res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
       return res.end( wbbuf );
@@ -179,10 +189,10 @@ module.exports = {
       const incomes = await Incomes
         .find({ updatedAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() }})
         .populate('person');
-      const visits = await DashboardService.getVisits(events);
-      const instructors = await DashboardService.getInstructors(events);
-      const transactionSums = await DashboardService.getTransactionSums(payments, incomes);
-      let totals = await DashboardService.getTotals(events);
+      const visits = DashboardService.getVisits(events);
+      const instructors = DashboardService.getInstructors(events);
+      const transactionSums = DashboardService.getTransactionSums(payments, incomes);
+      const totals = DashboardService.getTotals(events);
       return res.send({ visits, instructors, transactionSums, totals, events });
     } catch (err) {
       return res.badRequest(err.message);

@@ -104,5 +104,23 @@ module.exports.calculateSalaries = async function(dateRange){
     return result;
 }
 
-// группы общие и индивидуальные
-// правила - в месяц, процент от занятия, фикса от занятия. для типа групп общей или индивид
+
+module.exports.getRule = function (group){
+    const rule = group.rule;
+    let adding = "";
+    switch (rule.type) {
+      case SalaryRuleType.Precentage:
+        adding = "% от всех платежей"
+        break;
+      case SalaryRuleType.FixPerEvent:
+        adding = " за каждое занятие с человека"
+        break;
+      case SalaryRuleType.FixMonthly:
+        adding = " за месяц занятий в группе"
+        break;
+      default:
+        console.log("Непонятное правило");
+        break;
+    }
+    return `${rule.value}${adding}`;
+}

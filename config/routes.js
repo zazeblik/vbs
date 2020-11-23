@@ -23,6 +23,7 @@ module.exports.routes = {
   '/persons/set-fields': 'PersonsController.setFields',
   '/archivepersons/edit/:id': 'ArchivePersonsController.edit',
   '/archivepersons/delete/:id': 'ArchivePersonsController.delete',
+  '/salaryrules/export-data': 'SalaryRulesController.exportData',
   '/salaryrules/edit/:id': 'SalaryRulesController.edit',
   '/salaryrules/delete/:id': 'SalaryRulesController.delete',
   '/groups/general-default-instructors': 'GroupsController.generalDefaultInstructors',

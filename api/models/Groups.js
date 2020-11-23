@@ -1,3 +1,5 @@
+const { SalaryRuleType } = require('../../enums');
+
 const GroupType = require('../../enums').GroupType
 
 module.exports = {
@@ -56,6 +58,7 @@ module.exports = {
   afterDestroy: async function(value, next){
     try {
       await ArchivePersons.destroy({group: value.id}).fetch();
+      await SalaryRules.destroy({group: value.id}).fetch();
       await Events.destroy({group: value.id}).fetch();  
       return next();
     } catch (error) {

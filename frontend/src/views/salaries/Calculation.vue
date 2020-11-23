@@ -3,6 +3,11 @@
     <b-input-group size="sm" prepend="Месяц">
       <b-form-select v-model="selectedMonth" :options="months" @change="fetchInfo()" />
       <b-form-select v-model="selectedYear" :options="years" @change="fetchInfo()" />
+      <b-input-group-append>
+        <b-button variant="outline-success" @click="exportData">
+          <b-icon icon="file-earmark-arrow-down"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Экспорт</span>
+        </b-button>
+      </b-input-group-append>
     </b-input-group>
     <b-table-simple class="py-2" small bordered responsive >
       <colgroup><col></colgroup>
@@ -131,6 +136,12 @@ export default {
         year: this.selectedYear,
       });
       this.total = this.calculations.sum(x => x.totalSum);
+    },
+    async exportData() {
+      await this.$getAsync(`${this.baseUrl}/export-data`, {
+        month: this.selectedMonth,
+        year: this.selectedYear,
+      }, true);
     },
     fillCalculationInfo(result, calculation){
       result.instructor = calculation.instructor;

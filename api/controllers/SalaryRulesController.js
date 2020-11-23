@@ -1,5 +1,7 @@
 const DateRangeHelper =  require('../utils/DateRangeHelper');
 const SalaryCalculationService = require('../services/SalaryCalculationService');
+const GroupType = require('../../enums').GroupType;
+const Excel = require('exceljs');
 
 module.exports = {
   settings: async function (req, res) {
@@ -87,6 +89,57 @@ module.exports = {
       const monthDateRange = DateRangeHelper.GetMonthDateRange(year, month);
       const serviceResult = await SalaryCalculationService.calculateSalaries(monthDateRange);
       return res.ok(serviceResult);
+    } catch (err) {
+      return res.badRequest(err.message);
+    }
+  },
+  exportData: async function(req, res) {
+    if (!req.param("year")) return res.status(400).send("year не указан");
+    if (!req.param("month")) return res.status(400).send("month не указан");
+    try {
+      const workbook = new Excel.Workbook();
+      await workbook.xlsx.readFile('api/templates/salaries.xlsx');
+      const year = Number(req.param("year"));
+      const month = Number(req.param("month"));
+      const monthDateRange = DateRangeHelper.GetMonthDateRange(year, month);
+      let sheet = workbook.worksheets[0];
+      const serviceResults = await SalaryCalculationService.calculateSalaries(monthDateRange);
+      const results = [];
+      let totalSum = 0;
+      serviceResults.forEach(r => {
+        r.types.forEach((t, ti) => {
+          t.groups.forEach((g, gi) => {
+            results.push({
+              name: r.instructor,
+              type: t.groupType == GroupType.General ? "Общие" : "Индивидуальные",
+              group: g.name,
+              eventsCount: g.eventsCount,
+              rule: SalaryCalculationService.getRule(g),
+              groupSum: g.sum,
+              typeSum: gi == 0 ? t.totalSum : null,
+              totalSum: ti == 0 && gi == 0 ? r.totalSum : null
+            })
+          })
+        })
+        totalSum += r.totalSum;
+      });
+      results.forEach((r, i) => {
+        sheet.getCell(`A${i+3}`).value = r.name;
+        sheet.getCell(`B${i+3}`).value = r.type;
+        sheet.getCell(`C${i+3}`).value = r.group;
+        sheet.getCell(`D${i+3}`).value = r.eventsCount;
+        sheet.getCell(`E${i+3}`).value = r.rule;
+        sheet.getCell(`F${i+3}`).value = r.groupSum;
+        sheet.getCell(`G${i+3}`).value = r.typeSum;
+        sheet.getCell(`H${i+3}`).value = r.totalSum;
+      })
+      sheet.getCell(`H${results.length+3}`).value = {
+        'richText': [{'font': {'bold': true}, 'text': 'Итого: '+totalSum}]
+      };
+      sheet.getCell(`H${results.length+3}`).alignment = { horizontal: 'right' };
+      const wbbuf = await workbook.xlsx.writeBuffer();
+      res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
+      return res.end( wbbuf );
     } catch (err) {
       return res.badRequest(err.message);
     }

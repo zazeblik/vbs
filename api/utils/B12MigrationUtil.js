@@ -96,7 +96,9 @@ async function resolveGroups(personMappings){
   const groupsToCreate = groups
     .filter(x => !currentGroupsNames.includes(x.label))
     .map(x => {
-      const schedule = x.schedule.split(',').map(x => `${x}:00 ${place.id}`).join(',');
+      const schedule = x.schedule 
+        ? x.schedule.split(',').map(x => `${x}:00 ${place.id}`).join(',')
+        : '';
       return {
         name: x.label,
         defaultPlace: place.id,

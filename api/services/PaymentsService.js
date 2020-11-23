@@ -27,12 +27,8 @@ module.exports.getPaymentSettings = async function(person){
     })
   });
   const generals = groups.filter(g => g.type == GroupType.General);
-  generals.forEach(group => {
-    group.members = group.members.map(m => m.id);  
-  });
-  personals.forEach(group => {
-    group.members = group.members.map(m => m.id);  
-  }); 
+  generals.forEach(group => { group.members = group.members.map(m => m.id) });
+  personals.forEach(group => { group.members = group.members.map(m => m.id) }); 
   return { persons, generals, personals, unpayedEvents };
 }
 
@@ -70,7 +66,10 @@ module.exports.createAll = async function (payments){
     }
     if (!isContainsDublicates) paymentsToCreate.push(payment);
   });
-  await Payments.createEach(paymentsToCreate);
+  for (let i = 0; i < paymentsToCreate.length; i++) {
+    const p = paymentsToCreate[i];
+    await Payments.create(p).fetch();
+  }
 }
 
 module.exports.getGroupUnpayedEvents = async function(year, month, group, person){
