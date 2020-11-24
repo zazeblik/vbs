@@ -22,10 +22,7 @@ module.exports = {
         .populate("group");
       let visits = DashboardService.getVisits(events);
       visits.forEach((v, i) => {
-        sheet.getCell(`A${i+2}`).value = v.name;
-        sheet.getCell(`B${i+2}`).value = v.generalsCount;
-        sheet.getCell(`C${i+2}`).value = v.personalsCount;
-        sheet.getCell(`D${i+2}`).value = v.total;
+        sheet.getRow(i+2).values = [v.name, v.generalsCount, v.personalsCount, v.total];
       });
       const wbbuf = await workbook.xlsx.writeBuffer();
       res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
@@ -54,10 +51,7 @@ module.exports = {
       let results = DashboardService.getInstructors(events);
       for (let i = 0; i < results.length; i++) {
         const r = results[i];
-        sheet.getCell(`A${i+2}`).value = r.name;
-        sheet.getCell(`B${i+2}`).value = r.generalsCount;
-        sheet.getCell(`C${i+2}`).value = r.personalsCount;
-        sheet.getCell(`D${i+2}`).value = r.total;
+        sheet.getRow(i+2).values = [r.name, r.generalsCount, r.personalsCount, r.total];
       }
       const wbbuf = await workbook.xlsx.writeBuffer();
       res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
@@ -95,9 +89,7 @@ module.exports = {
         .populate('person');
       let results = DashboardService.getTransactionSums(payments, incomes);
       results.forEach((r, i) => {
-        sheet.getCell(`A${i+2}`).value = r.name;
-        sheet.getCell(`B${i+2}`).value = r.paymentsSum;
-        sheet.getCell(`C${i+2}`).value = r.incomesSum;
+        sheet.getRow(i+2).values = [r.name, r.paymentsSum, r.incomesSum];
       });
       const wbbuf = await workbook.xlsx.writeBuffer();
       res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
@@ -126,21 +118,14 @@ module.exports = {
         .populate("group");
       let results = DashboardService.getTotals(events);
       results.forEach((r, i) => {
-        sheet.getCell(`A${i+2}`).value = r.group;
-        sheet.getCell(`B${i+2}`).value = r.eventsTotal;
-        sheet.getCell(`C${i+2}`).value = r.visitsTotal;
-        sheet.getCell(`D${i+2}`).value = r.paymentsTotal;
-        sheet.getCell(`E${i+2}`).value = r.paymentsTotalSum;
+        sheet.getRow(i+2).values = [r.group, r.eventsTotal, r.visitsTotal, r.paymentsTotal, r.paymentsTotalSum];
       });
-      sheet.getCell(`A${results.length+2}`).value = {'richText': [{'font': {'bold': true}, 'text': 'Итого:'}]};
-      sheet.getCell(`B${results.length+2}`).value = {'richText': [{'font': {'bold': true}, 'text': results.map(x => x.eventsTotal).reduce((a, b) => a + b, 0)}]};
-      sheet.getCell(`C${results.length+2}`).value = {'richText': [{'font': {'bold': true}, 'text': results.map(x => x.visitsTotal).reduce((a, b) => a + b, 0)}]};
-      sheet.getCell(`D${results.length+2}`).value = {'richText': [{'font': {'bold': true}, 'text': results.map(x => x.paymentsTotal).reduce((a, b) => a + b, 0)}]};
-      sheet.getCell(`E${results.length+2}`).value = {'richText': [{'font': {'bold': true}, 'text': results.map(x => x.paymentsTotalSum).reduce((a, b) => a + b, 0)}]};
-      sheet.getCell(`B${results.length+2}`).alignment = { horizontal: 'right' };
-      sheet.getCell(`C${results.length+2}`).alignment = { horizontal: 'right' };
-      sheet.getCell(`D${results.length+2}`).alignment = { horizontal: 'right' };
-      sheet.getCell(`E${results.length+2}`).alignment = { horizontal: 'right' };
+      const totalRow = sheet.getRow(results.length+2);
+      totalRow.values = ["","","","",""];
+      totalRow.eachCell(function(cell, colNumber) {
+        cell.value = {'richText': [{'font': {'bold': true}, 'text': DashboardService.resolveTotalSum(results, colNumber)}]};
+        cell.alignment = { horizontal: 'right' };
+      })
       const wbbuf = await workbook.xlsx.writeBuffer();
       res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
       return res.end( wbbuf );

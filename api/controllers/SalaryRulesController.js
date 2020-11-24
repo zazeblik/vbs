@@ -124,19 +124,11 @@ module.exports = {
         totalSum += r.totalSum;
       });
       results.forEach((r, i) => {
-        sheet.getCell(`A${i+3}`).value = r.name;
-        sheet.getCell(`B${i+3}`).value = r.type;
-        sheet.getCell(`C${i+3}`).value = r.group;
-        sheet.getCell(`D${i+3}`).value = r.eventsCount;
-        sheet.getCell(`E${i+3}`).value = r.rule;
-        sheet.getCell(`F${i+3}`).value = r.groupSum;
-        sheet.getCell(`G${i+3}`).value = r.typeSum;
-        sheet.getCell(`H${i+3}`).value = r.totalSum;
+        sheet.getRow(i+3).values = [r.name, r.type, r.group, r.eventsCount, r.rule, r.groupSum, r.typeSum, r.totalSum];
       })
-      sheet.getCell(`H${results.length+3}`).value = {
-        'richText': [{'font': {'bold': true}, 'text': 'Итого: '+totalSum}]
-      };
-      sheet.getCell(`H${results.length+3}`).alignment = { horizontal: 'right' };
+      var totalCell =sheet.getCell(`H${results.length+3}`); 
+      totalCell.value = { 'richText': [{'font': {'bold': true}, 'text': 'Итого: '+totalSum}]};
+      totalCell.alignment = { horizontal: 'right' };
       const wbbuf = await workbook.xlsx.writeBuffer();
       res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
       return res.end( wbbuf );

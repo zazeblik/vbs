@@ -1,6 +1,7 @@
 const TransactionType = require('../../enums').TransactionType;
 const GroupType = require('../../enums').GroupType;
 const GetMonthDateRange =  require('../utils/DateRangeHelper').GetMonthDateRange;
+const moment = require('moment');
 
 module.exports.getPaymentSettings = async function(person){
   let personsQuery = {};
@@ -9,14 +10,23 @@ module.exports.getPaymentSettings = async function(person){
   }
   const persons = await Persons.find(personsQuery).sort('name ASC');
   const groups = await Groups.find().populate("members", {select: ["id"]});
-  const personals = groups.filter(g => g.type == GroupType.Personal); 
+  const personals = groups.filter(g => g.type == GroupType.Personal);
+  const generals = groups.filter(g => g.type == GroupType.General);
+  const personalGroupIds = personals.map(p => p.id);
+  const generalGroupIds = generals.map(p => p.id);
   const events = await Events
-    .find({group: personals.map(p => p.id)})
+    .find()
     .populate("visitors")
     .populate("payments");
   const unpayedEvents = {};
-  persons.forEach(p => unpayedEvents[p.id] = []);
-  events.forEach(event => {
+  const unapyedGroupMonths = {};
+  persons.forEach(p => {
+    unpayedEvents[p.id] = [];
+    unapyedGroupMonths[p.id] = [];
+  });
+  const personalEvents = events.filter(x => personalGroupIds.includes(x.group));
+  const generalEvents = events.filter(x => generalGroupIds.includes(x.group));
+  personalEvents.forEach(event => {
     const visitors = event.visitors;
     let paymentPersons = event.payments.map(p => p.person);
     if (person) paymentPersons = [person];
@@ -26,10 +36,29 @@ module.exports.getPaymentSettings = async function(person){
       unpayedEvents[p.id].push(event); 
     })
   });
-  const generals = groups.filter(g => g.type == GroupType.General);
+  generalEvents.forEach(event => {
+    const visitors = event.visitors;
+    let paymentPersons = event.payments.map(p => p.person);
+    if (person) paymentPersons = [person];
+    visitors.forEach(p => {
+      if (paymentPersons.includes(p.id)) return;
+      if (person && p.id != person) return;
+      const unpayedGroup = {
+        group: event.group,
+        month: moment(event.startsAt).month(),
+        year: moment(event.startsAt).year()
+      };
+      if (
+        unapyedGroupMonths[p.id]
+        .map(x => `${x.group}${x.month}${x.year}`)
+        .includes(`${unpayedGroup.group}${unpayedGroup.month}${unpayedGroup.year}`)
+        ) return;
+      unapyedGroupMonths[p.id].push(unpayedGroup); 
+    })
+  });
   generals.forEach(group => { group.members = group.members.map(m => m.id) });
   personals.forEach(group => { group.members = group.members.map(m => m.id) }); 
-  return { persons, generals, personals, unpayedEvents };
+  return { persons, generals, personals, unpayedEvents, unapyedGroupMonths };
 }
 
 module.exports.getTransactions = async function(person, limit){

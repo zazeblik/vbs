@@ -111,7 +111,7 @@ export default {
               groupName: group.name,
               eventsCount: group.eventsCount,
               sum: group.sum,
-              rule: this.getRule(group)
+              rule: group.rule.title
             };
             if (j == 0 && k == 0){
               result = this.fillCalculationInfo(result, calculation);
@@ -162,25 +162,6 @@ export default {
         rowspan += type.groups.length == 0 ? 1 : type.groups.length;
       }
       return rowspan;
-    },
-    getRule(group){
-      const rule = group.rule;
-      let adding = "";
-      switch (rule.type) {
-        case SalaryRuleType.Precentage:
-          adding = "% от всех платежей"
-          break;
-        case SalaryRuleType.FixPerEvent:
-          adding = " за каждое занятие с человека"
-          break;
-        case SalaryRuleType.FixMonthly:
-          adding = " за месяц занятий в группе"
-          break;
-        default:
-          console.log("Непонятное правило");
-          break;
-      }
-      return `${rule.value}${adding}`;
     }
   }
 }

@@ -64,6 +64,17 @@ module.exports.getTransactionSums = function(payments, incomes) {
   return results.sort(sortByIncomesSum);
 }
 
+module.exports.resolveTotalSum = function(results, colNumber){
+  switch (colNumber) {
+    case 1: return 'Итого:';
+    case 2: return results.map(x => x.eventsTotal).reduce((a, b) => a + b, 0);
+    case 3: return results.map(x => x.visitsTotal).reduce((a, b) => a + b, 0);
+    case 4: return results.map(x => x.paymentsTotal).reduce((a, b) => a + b, 0);
+    case 5: return results.map(x => x.paymentsTotalSum).reduce((a, b) => a + b, 0);
+    default: return ''
+  }
+}
+
 module.exports.getTotals = function(events){
   let groups = [...new Set(events.map(e => e.group.name))];
   let totals = groups.map(g => { 

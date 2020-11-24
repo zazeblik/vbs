@@ -87,6 +87,7 @@ module.exports.calculateSalaries = async function(dateRange){
                     salaryInfo.sum += payment.sum * (rule.value / 100) // тут уточнить 0.5 или 50 процентов будет(вид какой)
                 } )
             }
+            salaryInfo.rule.title = this.getRule(salaryInfo);
             if (group.type == GroupType.General) {
                 generalSalary.groups.push(salaryInfo);
                 generalSalary.totalSum += salaryInfo.sum

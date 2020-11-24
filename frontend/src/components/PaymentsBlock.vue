@@ -99,6 +99,7 @@
       :generals="generals"
       :personals="personals"
       :unpayedEvents="personalUnpayedEvents"
+      :unapyedGroupMonths="personalUnapyedGroupMonths"
       :payer="payer" 
       @formSaved="fetchPage" />
   </div>
@@ -127,7 +128,9 @@ export default {
       generals: [],
       personals: [],
       unpayedEvents: {},
+      unapyedGroupMonths: {},
       personalUnpayedEvents: [],
+      personalUnapyedGroupMonths: [],
       personForm: PersonForm,
       paymentForm: PaymentForm,
       incomeForm: IncomeForm,
@@ -176,6 +179,7 @@ export default {
       this.generals = settings.generals;
       this.personals = settings.personals;
       this.unpayedEvents = settings.unpayedEvents;
+      this.unapyedGroupMonths = settings.unapyedGroupMonths;
       if (!this.persons.length) return;
       if (!this.payer) this.payer = this.persons[0].id;
       this.updatePayer();
@@ -195,6 +199,7 @@ export default {
     updatePayer() {
       this.balance = this.persons.find(p => p.id == this.payer).balance;
       this.personalUnpayedEvents = this.unpayedEvents[this.payer];
+      this.personalUnapyedGroupMonths = this.unapyedGroupMonths[this.payer];
     },
     showAddIncomeForm() {
       if (this.isControlPanelShown){

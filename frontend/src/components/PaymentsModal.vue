@@ -151,7 +151,7 @@ export default {
   components: {
     ModelSelect
   },
-  props: [ "modalId", "payer", "generals", "personals", "unpayedEvents", "isControlPanelShown" ],
+  props: [ "modalId", "payer", "generals", "personals", "unpayedEvents", "unapyedGroupMonths", "isControlPanelShown" ],
   data() {
     return {
       baseUrl: "/payments",
@@ -353,11 +353,18 @@ export default {
       });
       return resultPayments;
     },
+    tryAddTemplate(template) {
+      if (
+        this.paymentTemplates
+        .map(x => `${x.type}${x.group}${x.month}`)
+        .includes(`${template.type}${template.group}${template.month}`)) return;
+      this.paymentTemplates.push(template);
+    },
     fillTemplates(){
       this.paymentTemplates = [];
       this.generals.forEach(g => {
         if (!g.members.includes(this.payer)) return;
-        this.paymentTemplates.push({
+        this.tryAddTemplate({
           type: GroupType.General,
           month: this.getNextMonth(),
           groups: this.getPaymentGroups(GroupType.General),
@@ -365,11 +372,20 @@ export default {
           sum: g.cost
         })
       })
+      this.unapyedGroupMonths.forEach(g => {
+        this.tryAddTemplate({
+          type: GroupType.General,
+          month: `${g.month} ${g.year}`,
+          groups: this.getPaymentGroups(GroupType.General),
+          group: g.group,
+          sum: this.generals.find(x => x.id == g.group).cost
+        })
+      })
       const personals = this.getPaymentGroups(GroupType.Personal);
       this.unpayedEvents.forEach(e => {
         const group = personals.find( g => g.id == e.group);
         if (!group.members.includes(this.payer)) return;
-        this.paymentTemplates.push({
+        this.tryAddTemplate({
           type: GroupType.Personal,
           month: null,
           groups: personals,
