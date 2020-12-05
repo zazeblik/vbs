@@ -1,62 +1,35 @@
 const cyrillicToTranslit = require('cyrillic-to-translit-js');
-const Excel = require('exceljs');
-const moment = require('moment');
-
-const customValuesResolver =  require('../services/PersonCustomValuesResolver');
+const customValuesResolver =  require('../services/PersonCustomValuesResolver'); 
+const ExcelService = require('../services/ExcelService');
 
 module.exports = {
   import: async function(req, res) {
-      if (!req.file('file')){
-        return res.badRequest('file not found');
+    if (!req.file('file')){
+      return res.badRequest('file not found');
+    }
+    req.file('file').upload({
+      saveAs: 'import.xlsx',
+      dirname: require('path').resolve(sails.config.appPath, 'uploads')
+    }, 
+    async function (err, uploadedFiles) {
+      if (err) {
+        return res.negotiate(err);
       }
-      req.file('file').upload({
-        saveAs: 'import.xlsx',
-        dirname: require('path').resolve(sails.config.appPath, 'uploads')}, async function (err, uploadedFiles) {
-        try {
-          if (err) {
-            return res.negotiate(err);
-          }
-          if (uploadedFiles.length === 0) {
-            return res.badRequest('No file was uploaded');
-          }
-          const workbook = new Excel.Workbook();
-          await workbook.xlsx.readFile(uploadedFiles[0].fd);
-          let sheet = workbook.worksheets[0];
-          let lastRowNumber = sheet.getColumn(1).values.length;
-          let persons = [];
-          for (let i = 2; i < lastRowNumber; i++) {
-            const row = sheet.getRow(i);
-            const name = row.getCell(1).value; 
-            const birthday = moment(row.getCell(2).value, 'DD.MM.YYYY').valueOf();
-            const person = { 
-              name: name,
-              updater: req.session.User.id
-            };
-            if (birthday) person.birthday = birthday;
-            persons.push(person);
-          }
-          await Persons.createEach(persons);
-          return res.ok();
-        } catch (err) {
-          return res.badRequest(err.message);
-        }
-      })
+      if (uploadedFiles.length === 0) {
+        return res.badRequest('No file was uploaded');
+      }
+      try {
+        const persons = await ExcelService.parsePersons(uploadedFiles[0].fd, req.session.User.id)
+        await Persons.createEach(persons);
+        return res.ok();
+      } catch (err) {
+        return res.badRequest(err.message);
+      }
+    })
   },
   export: async function(req, res) {
     try {
-      const workbook = new Excel.Workbook();
-      await workbook.xlsx.readFile('api/templates/persons.xlsx');
-      let sheet = workbook.worksheets[0];
-      const persons = await Persons.find();
-      persons.forEach((p, i) => {
-        const ncell = sheet.getCell(`A${i+2}`);
-        ncell.value = p.name;
-        if (p.birthday) {
-          const bcell = sheet.getCell(`B${i+2}`);
-          bcell.value = moment(p.birthday).format('DD.MM.YYYY');
-        }
-      });
-      const wbbuf = await workbook.xlsx.writeBuffer();
+      const wbbuf = await ExcelService.getPersons();
       res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
       return res.end( wbbuf );
     } catch (err) {

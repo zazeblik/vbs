@@ -1,8 +1,7 @@
-const Excel = require('exceljs');
 const GroupType = require('../../enums').GroupType
 const GetMonthDateRange =  require('../utils/DateRangeHelper').GetMonthDateRange;
 const GroupsService = require('../services/GroupsService');
-const moment = require('moment');
+const ExcelService = require('../services/ExcelService');
 
 module.exports = {
   exportGenerals: async function (req, res){
@@ -10,51 +9,10 @@ module.exports = {
     if (!req.param("month")) return res.status(400).send("month не указан");
     if (!req.param("group")) return res.status(400).send("group не указан");
     try {
-      const workbook = new Excel.Workbook();
-      await workbook.xlsx.readFile('api/templates/generals.xlsx');
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));
       const group = Number(req.param("group"));
-      const monthDateRange = GetMonthDateRange(year, month);
-      let sheet = workbook.worksheets[0];
-      const sheetData = await GroupsService.getSheet(group, monthDateRange);
-      const headers = sheetData.fields.map(x => x.label);
-      sheet.getRow(1).values = headers;
-      sheet.getRow(1).eachCell((cell, colNum) => {
-        cell.value = {'richText': [{'font': {'bold': true}, 'text': headers[colNum-1]}]};
-        if (colNum != 1) cell.alignment = { horizontal: 'center' };
-      });
-      sheetData.rows.forEach((x, i) => {
-        sheetData.fields.forEach((y, j) => {
-          const row = sheet.getRow(i+2);
-          const cell = row.getCell(j+1);
-          if (y.key == 'person'){
-            cell.value = x[y.key].name;
-          } else if (y.key == 'visits' || y.key == 'payments') {
-            cell.value = x[y.key];
-            cell.alignment = { horizontal: 'center' };
-            sheet.getColumn(j+1).width = 12;
-          } else {
-            cell.value = x[y.key].visited ? '+' : 'н';
-            if (x[y.key].payed) cell.fill = {
-              type: 'pattern',
-              pattern:'solid',
-              fgColor: { argb: "FFC3E6CB" },
-              bgColor: { argb: "FF000000" }
-            };
-            cell.alignment = { horizontal: 'center' };
-          }
-        })
-      });
-      const totalsRow = sheet.getRow(sheetData.rows.length+2);
-      sheetData.fields.forEach((x, i) => {
-        const cell = totalsRow.getCell(i+1);
-        cell.value = {'richText': [{'font': {'bold': true}, 'text': sheetData.totals[x.key]}]};
-        if (x.key != 'person'){
-          cell.alignment = { horizontal: 'center' };
-        }
-      })
-      const wbbuf = await workbook.xlsx.writeBuffer();
+      const wbbuf = await ExcelService.getGenerals(year, month, group);
       res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
       return res.end( wbbuf );
     } catch (err) {
@@ -66,72 +24,10 @@ module.exports = {
     if (!req.param("month")) return res.status(400).send("month не указан");
     if (!req.param("instructor")) return res.status(400).send("instructor не указан");
     try {
-      const workbook = new Excel.Workbook();
-      await workbook.xlsx.readFile('api/templates/personals.xlsx');
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));
       const instructor = Number(req.param("instructor"));
-      const monthDateRange = GetMonthDateRange(year, month);
-      let sheet = workbook.worksheets[0];
-      const events = await GroupsService.getInstructorScheduleEvents(instructor, monthDateRange);
-      const fields = GroupsService.getInstructorScheduleFields(events);
-      const rows = GroupsService.getInstructorScheduleRows(year, month, events, fields);
-      const shownFields = fields.filter(x => x.isShown);
-      const shownFieldLabels = shownFields.map(x => x.label);
-      const shownFieldKeys = shownFields.map(x => x.key);
-      let maxColumnLength = [];
-      sheet.getRow(1).values = shownFieldLabels;
-      sheet.getRow(1).eachCell((cell, colNum) => {
-        cell.value = {'richText': [{'font': {'bold': true}, 'text': shownFieldLabels[colNum-1]}]};
-        cell.alignment = { horizontal: 'center' };
-        maxColumnLength[colNum-1] = shownFieldLabels[colNum-1].length;
-      });
-      rows.forEach((x, i) => {
-        const row = sheet.getRow(i+2);
-        const rowValues = [];
-        let maxEventsCount = 0;
-        for (const key in x) {
-          if (shownFieldKeys.includes(key)){
-            let cellValue = x[key].date.getDate() + ' \r\n';
-            const cellEvents =  x[key].events;
-            let maxCellLength = 0;
-            if (cellEvents.length > maxEventsCount) maxEventsCount = cellEvents.length;
-            for (let j = 0; j < cellEvents.length; j++) {
-              const cellEvent = cellEvents[j];
-              const cellEventMembers = cellEvent.members;
-              const cellEventMemberNames = cellEventMembers
-                .map(y => `${y.name.split(" ")[0]}(${y.isVisitor ? '✓' : '×'}, ${
-                  !!cellEvent.payments.find(p => p.person == y.id) 
-                    ? cellEvent.payments.find(p => p.person == y.id).sum
-                    : '-'})`)
-                .join(' - ');
-              const eventCellValue = `${moment(cellEvent.startsAt).format("HH:mm")} ${cellEventMemberNames} \r\n`;
-              maxCellLength = eventCellValue.length > maxCellLength ? eventCellValue.length : maxCellLength;
-              cellValue += eventCellValue;
-            }
-            rowValues.push(cellValue);
-            maxColumnLength[rowValues.length - 1] = maxColumnLength[rowValues.length - 1] > maxCellLength ? maxColumnLength[rowValues.length - 1] : maxCellLength;
-          }
-        }
-        if (shownFieldKeys.includes("0")) {
-          rowValues.push(rowValues.shift());
-        }
-        row.height = (maxEventsCount + 1) * 15;
-        rowValues.forEach((y, j) => {
-          const cell = row.getCell(j+1);
-          sheet.getColumn(j+1).style = { alignment: { wrapText: true } };
-          sheet.getColumn(j+1).width = maxColumnLength[j] * 0.8;
-          cell.value = y;
-          cell.alignment = { vertical: 'top', horizontal: 'left', wrapText: true };
-        });
-      });
-      if (shownFieldKeys.includes("0")) {
-        maxColumnLength.push(maxColumnLength.shift());
-      }
-      sheet.columns.forEach((c, i) => {
-        c.width = maxColumnLength[i]*0.85;
-      })
-      const wbbuf = await workbook.xlsx.writeBuffer();
+      const wbbuf = await ExcelService.getPersonals(year, month, instructor);
       res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
       return res.end( wbbuf );
     } catch (err) {
@@ -211,7 +107,7 @@ module.exports = {
       const events = await GroupsService.getInstructorScheduleEvents(id, monthDateRange);
       const fields = GroupsService.getInstructorScheduleFields(events);
       const rows = GroupsService.getInstructorScheduleRows(year, month, events, fields);
-      return res.send({ events, fields, rows });
+      return res.send({ fields, rows });
     } catch (error) {
       return res.badRequest(error.message);
     }

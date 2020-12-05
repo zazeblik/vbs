@@ -63,9 +63,9 @@ module.exports = {
       await Payments.destroy({person: value.id})
       await Incomes.destroy({person: value.id})
       await PersonCustomValues.destroy({person: value.id})
-      await SalaryRules.destroy({person: value.id});
+      await SalaryRules.destroy({instructor: value.id});
       await Users.destroy({person: value.id, role: Role.User});
-      await User.update({person: value.id}, {person: null});
+      await Users.update({person: value.id}, {person: null});
       next();
     } catch (error) {
       return next(JSON.stringify([ error ]));

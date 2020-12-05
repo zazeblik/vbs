@@ -147,7 +147,6 @@ export default {
         const field = calendar.fields[i];
         if (!field.isShown) field.class = 'd-none';
       }
-      this.events = calendar.events;
       this.scheduleFields = calendar.fields;
       this.scheduleRows = calendar.rows;
       this.isBusy = false;
@@ -242,11 +241,17 @@ export default {
     updateMemberBalances(personBalances){
       if (!personBalances) return;
       for (const personId in personBalances) {
-        this.events.forEach(e => {
-          const member = e.members.find(m => m.id == personId);
-          if (!member) return;
-          member.balance = personBalances[personId];
-        })
+        for (let i = 0; i < this.scheduleRows.length; i++) {
+          const row = this.scheduleRows[i];
+          for (const key in row) {
+            const cellEvents = row[key].events;
+            cellEvents.forEach(e => {
+              const member = e.members.find(m => m.id == personId);
+              if (!member) return;
+              member.balance = personBalances[personId];
+            })
+          }
+        }
       }
     },
     getMemberPaymentColor(member, event){
