@@ -294,6 +294,7 @@ export default {
         this.rows.filter(r => lostIds.includes(r[field.key].visitorId)).forEach(row => {
           row[field.key].visited = !allChecked;
         });
+        this.updateTotals();
         return;
       }
     },
@@ -379,8 +380,10 @@ export default {
         `/events/${cell.visited ? 'add' : 'remove' }-visitor/${cell.eventId}`, 
         { visitors: [cell.visitorId] },
         true );
-      if (result.success)
+      if (result.success) {
+        this.updateTotals();
         return;
+      }
       
       cell.visited = !cell.visited;
     },
@@ -410,6 +413,21 @@ export default {
       this.defaultDuration = detail.group.defaultDuration;
       this.selectedPersons = [];
       this.title = this.group.name;
+    },
+    updateTotals() {
+      for (const key in this.totals) {
+        if (!isNaN(key) || key == 'visits') this.totals[key] = 0;
+      }
+      this.rows.forEach(r => {
+        r.visits = 0;
+        for (const key in r) {
+          if (r[key].visited) {
+            r.visits++;
+            this.totals[key]++;
+            this.totals.visits++;
+          }
+        }
+      })
     }
   }
 };
