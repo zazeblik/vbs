@@ -71,6 +71,9 @@
           &nbsp;
           <span class="d-none d-md-inline-block">Удалить группу</span>
         </b-button>
+        <b-button variant="outline-success" @click="exportData">
+          <b-icon icon="file-earmark-arrow-down"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Экспорт</span>
+        </b-button>
       </b-input-group-append>
     </b-input-group>
     <b-table
@@ -85,6 +88,8 @@
       :busy="isBusy"
       empty-text="Записей не найдено"
       empty-filtered-text="Записей не найдено"
+      foot-clone
+      foot-variant="light"
     >
       <template v-slot:head(person)="data">
         {{ data.label }}
@@ -130,12 +135,12 @@
         </b-dropdown>
       </template>
 
-      <template v-slot:cell(payments)="row">
-        {{ getRowTotalPayments(row) }}
+      <template v-slot:cell(payments)="data">
+        {{ data.value }}
       </template>
 
-      <template v-slot:cell(visits)="row">
-        {{ getRowTotalVisits(row) }}
+      <template v-slot:cell(visits)="data">
+        {{ data.value }}
       </template>
 
       <template v-slot:cell()="data">
@@ -151,6 +156,9 @@
           <b-spinner small class="align-middle"></b-spinner>
           <strong>Загрузка...</strong>
         </div>
+      </template>
+      <template v-slot:foot()="data">
+        <b>{{totals[data.column]}}</b>
       </template>
     </b-table>
     <ModelModal modalId="eventModal" :baseUrl="eventUrl" :itemForm="eventForm" ref="eventModal" @formSaved="fetchSheet" />
@@ -186,6 +194,7 @@ export default {
       months: this.$moment.months().map((m, i) => { return { value: i, text: m } }),
       fields: [],
       rows: [],
+      totals: [],
       defaultInstructor: null,
       defaultPlace: null,
       defaultDuration: null,
@@ -214,6 +223,13 @@ export default {
     },
     isPlaceholderShown(count, isOpen){
       return count && !isOpen;
+    },
+    async exportData() {
+      await this.$getAsync(`${this.groupUrl}/export-generals`, {
+        month: this.selectedMonth,
+        year: this.selectedYear,
+        group: this.group.id
+      }, true);
     },
     resetAddPersonsForm(){
       this.addPersonShown = false; 
@@ -368,26 +384,6 @@ export default {
       
       cell.visited = !cell.visited;
     },
-    getRowTotalVisits(row){
-      let totalVisits = 0;
-      for (const key in row.item) {
-        if (!isNaN(key) && row.item[key].visited){
-          totalVisits++
-        }
-      }
-      return totalVisits;
-    },
-    getRowTotalPayments(row){
-      let totalPayments = 0;
-      let payIds = [];
-      for (const key in row.item) {
-        if (!isNaN(key) && row.item[key].payed && !payIds.includes(row.item[key].payment.id)){
-          totalPayments += row.item[key].payment.sum;
-          payIds.push(row.item[key].payment.id);
-        }
-      }
-      return totalPayments;
-    },
     async fetchData(){
       await this.fetchDetail();
       await this.fetchSheet();
@@ -397,6 +393,7 @@ export default {
       const sheet = await this.$getAsync(`/groups/sheet/${this.$route.params.id}`, { year: this.selectedYear, month: this.selectedMonth });
       this.rows = sheet.rows;
       this.fields = sheet.fields;
+      this.totals = sheet.totals;
       this.isBusy = false;
     },
     async fetchDetail() {

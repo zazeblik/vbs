@@ -1,16 +1,150 @@
+const Excel = require('exceljs');
 const GroupType = require('../../enums').GroupType
+const GetMonthDateRange =  require('../utils/DateRangeHelper').GetMonthDateRange;
+const GroupsService = require('../services/GroupsService');
 const moment = require('moment');
 
-const GetMonthDateRange =  require('../utils/DateRangeHelper').GetMonthDateRange;
-
 module.exports = {
+  exportGenerals: async function (req, res){
+    if (!req.param("year")) return res.status(400).send("year не указан");
+    if (!req.param("month")) return res.status(400).send("month не указан");
+    if (!req.param("group")) return res.status(400).send("group не указан");
+    try {
+      const workbook = new Excel.Workbook();
+      await workbook.xlsx.readFile('api/templates/generals.xlsx');
+      const year = Number(req.param("year"));
+      const month = Number(req.param("month"));
+      const group = Number(req.param("group"));
+      const monthDateRange = GetMonthDateRange(year, month);
+      let sheet = workbook.worksheets[0];
+      const sheetData = await GroupsService.getSheet(group, monthDateRange);
+      const headers = sheetData.fields.map(x => x.label);
+      sheet.getRow(1).values = headers;
+      sheet.getRow(1).eachCell((cell, colNum) => {
+        cell.value = {'richText': [{'font': {'bold': true}, 'text': headers[colNum-1]}]};
+        if (colNum != 1) cell.alignment = { horizontal: 'center' };
+      });
+      sheetData.rows.forEach((x, i) => {
+        sheetData.fields.forEach((y, j) => {
+          const row = sheet.getRow(i+2);
+          const cell = row.getCell(j+1);
+          if (y.key == 'person'){
+            cell.value = x[y.key].name;
+          } else if (y.key == 'visits' || y.key == 'payments') {
+            cell.value = x[y.key];
+            cell.alignment = { horizontal: 'center' };
+            sheet.getColumn(j+1).width = 12;
+          } else {
+            cell.value = x[y.key].visited ? '+' : 'н';
+            if (x[y.key].payed) cell.fill = {
+              type: 'pattern',
+              pattern:'solid',
+              fgColor: { argb: "FFC3E6CB" },
+              bgColor: { argb: "FF000000" }
+            };
+            cell.alignment = { horizontal: 'center' };
+          }
+        })
+      });
+      const totalsRow = sheet.getRow(sheetData.rows.length+2);
+      sheetData.fields.forEach((x, i) => {
+        const cell = totalsRow.getCell(i+1);
+        cell.value = {'richText': [{'font': {'bold': true}, 'text': sheetData.totals[x.key]}]};
+        if (x.key != 'person'){
+          cell.alignment = { horizontal: 'center' };
+        }
+      })
+      const wbbuf = await workbook.xlsx.writeBuffer();
+      res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
+      return res.end( wbbuf );
+    } catch (err) {
+      return res.badRequest(err.message);
+    }
+  },
+  exportPersonals: async function (req, res){
+    if (!req.param("year")) return res.status(400).send("year не указан");
+    if (!req.param("month")) return res.status(400).send("month не указан");
+    if (!req.param("instructor")) return res.status(400).send("instructor не указан");
+    try {
+      const workbook = new Excel.Workbook();
+      await workbook.xlsx.readFile('api/templates/personals.xlsx');
+      const year = Number(req.param("year"));
+      const month = Number(req.param("month"));
+      const instructor = Number(req.param("instructor"));
+      const monthDateRange = GetMonthDateRange(year, month);
+      let sheet = workbook.worksheets[0];
+      const events = await GroupsService.getInstructorScheduleEvents(instructor, monthDateRange);
+      const fields = GroupsService.getInstructorScheduleFields(events);
+      const rows = GroupsService.getInstructorScheduleRows(year, month, events, fields);
+      const shownFields = fields.filter(x => x.isShown);
+      const shownFieldLabels = shownFields.map(x => x.label);
+      const shownFieldKeys = shownFields.map(x => x.key);
+      let maxColumnLength = [];
+      sheet.getRow(1).values = shownFieldLabels;
+      sheet.getRow(1).eachCell((cell, colNum) => {
+        cell.value = {'richText': [{'font': {'bold': true}, 'text': shownFieldLabels[colNum-1]}]};
+        cell.alignment = { horizontal: 'center' };
+        maxColumnLength[colNum-1] = shownFieldLabels[colNum-1].length;
+      });
+      rows.forEach((x, i) => {
+        const row = sheet.getRow(i+2);
+        const rowValues = [];
+        let maxEventsCount = 0;
+        for (const key in x) {
+          if (shownFieldKeys.includes(key)){
+            let cellValue = x[key].date.getDate() + ' \r\n';
+            const cellEvents =  x[key].events;
+            let maxCellLength = 0;
+            if (cellEvents.length > maxEventsCount) maxEventsCount = cellEvents.length;
+            for (let j = 0; j < cellEvents.length; j++) {
+              const cellEvent = cellEvents[j];
+              const cellEventMembers = cellEvent.members;
+              const cellEventMemberNames = cellEventMembers
+                .map(y => `${y.name.split(" ")[0]}(${y.isVisitor ? '✓' : '×'}, ${
+                  !!cellEvent.payments.find(p => p.person == y.id) 
+                    ? cellEvent.payments.find(p => p.person == y.id).sum
+                    : '-'})`)
+                .join(' - ');
+              const eventCellValue = `${moment(cellEvent.startsAt).format("HH:mm")} ${cellEventMemberNames} \r\n`;
+              maxCellLength = eventCellValue.length > maxCellLength ? eventCellValue.length : maxCellLength;
+              cellValue += eventCellValue;
+            }
+            rowValues.push(cellValue);
+            maxColumnLength[rowValues.length - 1] = maxColumnLength[rowValues.length - 1] > maxCellLength ? maxColumnLength[rowValues.length - 1] : maxCellLength;
+          }
+        }
+        if (shownFieldKeys.includes("0")) {
+          rowValues.push(rowValues.shift());
+        }
+        row.height = (maxEventsCount + 1) * 15;
+        rowValues.forEach((y, j) => {
+          const cell = row.getCell(j+1);
+          sheet.getColumn(j+1).style = { alignment: { wrapText: true } };
+          sheet.getColumn(j+1).width = maxColumnLength[j] * 0.8;
+          cell.value = y;
+          cell.alignment = { vertical: 'top', horizontal: 'left', wrapText: true };
+        });
+      });
+      if (shownFieldKeys.includes("0")) {
+        maxColumnLength.push(maxColumnLength.shift());
+      }
+      sheet.columns.forEach((c, i) => {
+        c.width = maxColumnLength[i]*0.85;
+      })
+      const wbbuf = await workbook.xlsx.writeBuffer();
+      res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
+      return res.end( wbbuf );
+    } catch (err) {
+      return res.badRequest(err.message);
+    }
+  },
   settings: async function (req, res){
     try {
       const persons = await Persons.find().sort('name ASC');
       const places = await Places.find();
       return res.send({ persons, places });
     } catch (error) {
-      return res.badRequest();
+      return res.badRequest(error.message);
     }
   },
   addPerson: async function (req, res) {
@@ -23,7 +157,7 @@ module.exports = {
       await Groups.update(id, { updater: req.session.User.id })
       return res.ok();
     } catch (error) {
-      return res.badRequest();
+      return res.badRequest(error.message);
     }
   },
   addPersons: async function (req, res) {
@@ -36,7 +170,7 @@ module.exports = {
       await Groups.update(id, { updater: req.session.User.id })
       return res.ok();
     } catch (error) {
-      return res.badRequest();
+      return res.badRequest(error.message);
     }
   },
   removePerson: async function (req, res) {
@@ -49,7 +183,7 @@ module.exports = {
       await Groups.update(id, { updater: req.session.User.id })
       return res.ok();
     } catch (error) {
-      return res.badRequest();
+      return res.badRequest(error.message);
     }
   },
   instructorDetail: async function (req, res){
@@ -62,10 +196,10 @@ module.exports = {
       const groups = await Groups.find({ type: GroupType.Personal, defaultInstructor: id, hidden: false });
       return res.send({ instructor, places, persons, groups });
     } catch (error) {
-      return res.badRequest();
+      return res.badRequest(error.message);
     }
   },
-  instructorScheduleEvents: async function (req, res){
+  instructorScheduleCalendar: async function (req, res){
     if (!req.param("id")) return res.status(400).send("id не указан");
     if (!req.param("year")) return res.status(400).send("year не указан");
     if (!req.param("month")) return res.status(400).send("month не указан");
@@ -74,26 +208,12 @@ module.exports = {
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));
       const monthDateRange = GetMonthDateRange(year, month);
-      
-      const groups = await Groups
-        .find({ type: GroupType.Personal, hidden: false })
-        .populate("members", {select: ["id", "name", "balance"]});
-      const archivePersons = await ArchivePersons.find({ group: groups.map(g => g.id) });
-      const groupIds = groups.map(g => g.id);
-      let events = await Events
-        .find({ instructor: id, group: groupIds, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
-        .sort("startsAt ASC")
-        .populate("visitors", {select: ["id", "name"]})
-        .populate("payments", {select: ["id", "person", "sum"]});
-      events.forEach(e => {
-        e.members = groups
-          .find(g => g.id == e.group)
-          .members
-          .filter(m => archivePersons.filter(ap => ap.group == e.group && ap.person == m.id).length == 0);
-      })
-      return res.send(events);
+      const events = await GroupsService.getInstructorScheduleEvents(id, monthDateRange);
+      const fields = GroupsService.getInstructorScheduleFields(events);
+      const rows = GroupsService.getInstructorScheduleRows(year, month, events, fields);
+      return res.send({ events, fields, rows });
     } catch (error) {
-      return res.badRequest();
+      return res.badRequest(error.message);
     }
   },
   detail: async function (req, res){
@@ -106,7 +226,7 @@ module.exports = {
       const places = await Places.find();
       return res.send({ group, persons, places });
     } catch (error) {
-      return res.badRequest();
+      return res.badRequest(error.message);
     }
   },
   sheet: async function (req, res) {
@@ -118,56 +238,10 @@ module.exports = {
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));
       const monthDateRange = GetMonthDateRange(year, month);
-      const archivePersons = await ArchivePersons.find({ group: id });
-      const group = await Groups.findOne(id)
-        .populate("members", { 
-          where: { id: { '!=' : archivePersons.map(ap => ap.person) } }, 
-          sort: "name ASC" 
-        });
-      const groupMembers = group.members;
-      const events = await Events
-        .find({ group: id, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
-        .sort("startsAt ASC")
-        .populate("visitors", {select: ["id"]})
-        .populate("payments", {select: ["id", "person", "sum"]});
-      let fields = [{ key: "person", label: "Фамилия Имя" }];
-      let rows = groupMembers.map(gm => {
-        let row = {
-          person: gm,
-          _cellVariants: {}
-        };
-        events.forEach(e => {
-          const visits = e.visitors.map( v => v.id );
-          const eventPersonPayment = e.payments.find(p => p.person == gm.id);
-          row[e.id] = {
-            visited: visits.includes(gm.id),
-            payed: !!eventPersonPayment,
-            eventId: e.id,
-            visitorId: gm.id,
-            payment: eventPersonPayment
-          };
-          if (row[e.id].payed){
-            row._cellVariants[e.id] = 'success'
-          }
-          const fieldKeys = fields.map(f => f.key);
-          if (fieldKeys.includes(e.id.toString()))
-            return;
-          
-          fields.push({
-            key: e.id.toString(),
-            label: moment(e.startsAt).format("DD"),
-            class: "text-center",
-            eventId: e.id,
-            event: e
-          });
-        });
-        return row;
-      });
-      fields.push({ key: "payments", label: "Оплата", class: "text-center" });
-      fields.push({ key: "visits", label: "Посещения", class: "text-center" });
-      return res.send({ rows, fields });
+      const sheet = await GroupsService.getSheet(id, monthDateRange);
+      return res.send(sheet);
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   general: async function (req, res) {
@@ -195,7 +269,7 @@ module.exports = {
       });
       return res.send({ places, persons, instructors });
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   personal: async function (req, res) {
@@ -218,7 +292,7 @@ module.exports = {
       });
       return res.send({ places, persons, instructors });
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   instructorGroups: async function (req, res){
@@ -247,7 +321,7 @@ module.exports = {
       })
       return res.send(groups);
     } catch (error) {
-      return res.badRequest();
+      return res.badRequest(error.message);
     }
   },
   generalDefaultInstructors: async function (req, res) {
@@ -260,7 +334,7 @@ module.exports = {
       })
       return res.ok(instructors);
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   delete: async function (req, res) {
@@ -268,7 +342,7 @@ module.exports = {
       await Groups.destroy(req.param("id")).fetch();
       return res.ok();
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   edit: async function (req, res) {
@@ -278,7 +352,7 @@ module.exports = {
       await Groups.update(req.param("id"), req.body)
       return res.ok();
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   create: async function (req, res) {
@@ -287,7 +361,7 @@ module.exports = {
       await Groups.create(req.body)
       return res.ok();
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   },
   list: async function (req, res) {
@@ -319,7 +393,7 @@ module.exports = {
         data: data
       })
     } catch (err) {
-      return res.badRequest();
+      return res.badRequest(err.message);
     }
   }
 };

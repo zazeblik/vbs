@@ -16,12 +16,19 @@
       </b-input-group-prepend>
       <b-form-select v-model="selectedMonth" :options="months" @change="fetchData()" />
       <b-form-select v-model="selectedYear" :options="years" @change="fetchData()" />
+      <b-input-group-append>
+        <b-button variant="outline-success" @click="exportData">
+          <b-icon icon="file-earmark-arrow-down"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Экспорт</span>
+        </b-button>
+      </b-input-group-append>
     </b-input-group>
     <b-table
-      :items="correctedRows"
+      :items="scheduleRows"
       :fields="scheduleFields"
       ref="schedule"
       class="my-2"
+      small
+      thead-tr-class="text-center"
       bordered
       stacked="lg"
       :busy="isBusy"
@@ -96,6 +103,7 @@ export default {
     return {
       isBusy: false,
       title: "",
+      groupUrl: "/groups",
       eventUrl: "/events",
       paymentUrl: "/payments",
       selectedYear: new Date().getFullYear(),
@@ -118,43 +126,6 @@ export default {
   async mounted() {
     await this.fetchData();
   },
-  computed: {
-    correctedRows() {
-      let result = [];
-      let appendWeek={
-        "1": { isShown: false, events: [] },
-        "2": { isShown: false, events: [] },
-        "3": { isShown: false, events: [] },
-        "4": { isShown: false, events: [] },
-        "5": { isShown: false, events: [] },
-        "6": { isShown: false, events: [] }
-      };
-      this.scheduleRows.forEach((week, index) => {
-        for (const day in week) {
-          if (day == "0"){
-            if (!result[index-1]) {
-              if (week[day].isShown) appendWeek["0"] = week[day];
-            } else {
-              result[index-1]["0"] =  week[day];
-            }
-          } else {
-            if (!result[index]) result[index] = {};
-            result[index][day] = week[day];  
-          }
-        }
-      });
-      result = appendWeek["0"] ? [appendWeek, ...result] : result;
-      result = result.filter(w => this.weekContainsEvents(w));
-      result.forEach((w, index) => {
-        if (!result[index]["0"]) {
-          let sundayDate = new Date(result[index]["6"].date);
-          sundayDate.setDate(sundayDate.getDate() + 1);
-          result[index]["0"] = { isShown: true, date: sundayDate, events: [] };
-        }
-      })
-      return result;
-    }
-  },
   methods: {
     async fetchData() {
       await this.fetchDetail();
@@ -162,17 +133,27 @@ export default {
     },
     async fetchCalendar() {
       this.isBusy = true;
-      const events = await this.$getAsync(
-        `/groups/instructor-schedule-events/${this.$route.params.id}`,
+      const calendar = await this.$getAsync(
+        `${this.groupUrl}/instructor-schedule-calendar/${this.$route.params.id}`,
         { year: this.selectedYear, month: this.selectedMonth }
       );
-      this.events = this.fillMemberVisits(events);
-      this.scheduleFields = this.getFields();
-      this.scheduleRows = this.getRows();
+      for (let i = 0; i < calendar.rows.length; i++) {
+        const row = calendar.rows[i];
+        for (const key in row) {
+          row[key].date = new Date(row[key].date);
+        }
+      }
+      for (let i = 0; i < calendar.fields.length; i++) {
+        const field = calendar.fields[i];
+        if (!field.isShown) field.class = 'd-none';
+      }
+      this.events = calendar.events;
+      this.scheduleFields = calendar.fields;
+      this.scheduleRows = calendar.rows;
       this.isBusy = false;
     },
     async fetchDetail() {
-      const detail = await this.$getAsync(`/groups/instructor-detail/${this.$route.params.id}`);
+      const detail = await this.$getAsync(`${this.groupUrl}/instructor-detail/${this.$route.params.id}`);
       this.instructor = detail.instructor;
       this.title = this.instructor.name;
       this.groups = detail.groups;
@@ -180,6 +161,13 @@ export default {
       this.eventForm.find(f => f.property == "instructor").models = detail.persons;
       this.eventForm.find(f => f.property == "instructor").value = detail.instructor.id;
       this.eventForm.find(f => f.property == "place").models = detail.places;
+    },
+    async exportData() {
+      await this.$getAsync(`${this.groupUrl}/export-personals`, {
+        month: this.selectedMonth,
+        year: this.selectedYear,
+        instructor: this.$route.params.id
+      }, true);
     },
     async showRemoveEventConfirm(event) {
       try {
@@ -201,12 +189,12 @@ export default {
       }
     },
     async removeEvent(event){
-      await this.$postAsync(`/events/delete/${event}`);
+      await this.$postAsync(`${this.eventUrl}/delete/${event}`);
       await this.fetchCalendar();
     },
     async changeVisitorState(member, event){
       const result = await this.$postAsync(
-        `/events/${member.isVisitor ? 'remove' : 'add' }-visitor/${event.id}`, 
+        `${this.eventUrl}/${member.isVisitor ? 'remove' : 'add' }-visitor/${event.id}`, 
         { visitors: [member.id] },
         true );
       if (result.success){
@@ -227,14 +215,13 @@ export default {
         this.updateMemberBalances(result.personBalances);
         return;
       }
-      
       member.isVisitor = !member.isVisitor;
     },
     async checkAll(event){
       const allChecked = event.members.every(m => m.isVisitor);
       const lostIds = event.members.filter(m => allChecked ? m.isVisitor : !m.isVisitor ).map(m => m.id)
       const result = await this.$postAsync(
-        `/events/${!allChecked ? 'add' : 'remove' }-visitor/${event.id}`, 
+        `${this.eventUrl}/${!allChecked ? 'add' : 'remove' }-visitor/${event.id}`, 
         { visitors: lostIds },
         true );
       if (result.success){
@@ -261,18 +248,6 @@ export default {
           member.balance = personBalances[personId];
         })
       }
-    }, 
-    fillMemberVisits(events){
-      events.forEach(e => {
-        e.members.forEach(m => {
-          m.isVisitor = this.isEventVisitor(m, e);
-        })
-        delete e.visitors;
-      })
-      return events;
-    },
-    isEventVisitor(member, event){
-      return !!event.visitors.find(v => v.id == member.id);
     },
     getMemberPaymentColor(member, event){
       const isPayed = !!event.payments.find(p => p.person == member.id);
@@ -291,12 +266,6 @@ export default {
     getMemberSecondName(member) {
       return member.name.split(" ")[1];
     },
-    weekContainsEvents(week){
-      for (const day in week) {
-        if (week[day].events.length) return true;
-      }
-      return false;
-    },
     createEvent() {
       this.eventForm.find(f => f.property == "group").hidden = false;
       this.eventForm.find(f => f.property == "instructor").value = this.$route.params.id;
@@ -314,56 +283,6 @@ export default {
     },
     getEventEnd(event) {
        return this.$moment(event.startsAt).add('minutes', event.duration).format("HH:mm");
-    },
-    getFields(){
-      let weekdays = this.$moment.weekdays();
-      let fields = [];
-      weekdays.forEach((wd, index) => {
-        fields.push({
-          label: wd,
-          key: index.toString(),
-          thClass: 'text-center p-1',
-          tdClass:'p-1',
-          class: this.events.every(e => new Date(e.startsAt).getDay() != index ) ? 'd-none' : ''
-        });
-      });
-      fields.push(fields.shift());
-      return fields;
-    },
-    getRows(){
-      let month = [];
-      const weekNumbers = [...new Set(this.events.map(e => this.getWeekNumber(e.startsAt)))];
-      for (let i = 0; i < weekNumbers.length; i++) {
-        let week = {}; 
-        this.scheduleFields.map(sf => {
-          const day = sf.key; 
-          const date = this.getWeekDayDate(weekNumbers[i], day); 
-          const isShown = date.getFullYear() == this.selectedYear && date.getMonth() == this.selectedMonth;  
-          week[day] = { date, isShown, events: this.getWeekDayEvents(date) };
-        });
-        
-        month.push(week);
-      }
-      return month
-    },
-    getWeekNumber(startsAt){
-      const date = new Date(startsAt);
-      let startOfMonthDate = new Date(startsAt);
-      startOfMonthDate.setDate(1);
-      const startOfMonthDay = startOfMonthDate.getDay() - 1;
-      const weekdayNumber = Math.floor((date.getDate() + startOfMonthDay) / 7);
-      return weekdayNumber;
-    },
-    getWeekDayEvents(date){
-      const startOfDate = this.$moment([date.getFullYear(), date.getMonth(), date.getDate()]);
-      const endOfDate = this.$moment(startOfDate).endOf('day');
-      return this.events.filter(e => e.startsAt >= startOfDate.valueOf() && e.startsAt <= endOfDate.valueOf());
-    },
-    getWeekDayDate(week, day){
-      let date = new Date(this.selectedYear, this.selectedMonth);
-      const dayOffset = day - date.getDay();
-      date.setDate(date.getDate() + week * 7 + dayOffset);
-      return date;
     }
   }
 };
@@ -373,6 +292,12 @@ export default {
 table {
   font-size: small;
 }
+
+table thead th{
+  text-align: center;
+  padding: .25rem !important;
+}
+
 .card-header-icon{
   height: 20px;
 }
