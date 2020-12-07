@@ -107,7 +107,10 @@ module.exports = {
       const events = await GroupsService.getInstructorScheduleEvents(id, monthDateRange);
       const fields = GroupsService.getInstructorScheduleFields(events);
       const rows = GroupsService.getInstructorScheduleRows(year, month, events, fields);
-      return res.send({ fields, rows });
+      const paymentsSum = GroupsService.getInstructorSchedulePaymentsSum(events);
+      const hoursSum = GroupsService.getInstructorScheduleHoursSum(events);
+      const totals = {hoursSum, paymentsSum}
+      return res.send({ fields, rows, totals });
     } catch (error) {
       return res.badRequest(error.message);
     }

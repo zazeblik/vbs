@@ -114,6 +114,37 @@ module.exports.getInstructorScheduleFields = function(events) {
   return fields;
 }
 
+module.exports.getInstructorSchedulePaymentsSum = function(events){
+  let paymentsSum = 0;
+  let uniquePaymentIds = [];
+  for (let i = 0; i < events.length; i++) {
+    const event = events[i];
+    for (let j = 0; j < event.payments.length; j++) {
+      const payment = event.payments[j];
+      if (!uniquePaymentIds.includes(payment.id)){
+        paymentsSum += payment.sum;
+        uniquePaymentIds.push(payment.id);
+      }
+    }
+  }
+  return paymentsSum;
+}
+
+module.exports.getInstructorScheduleHoursSum = function(events){
+  let hoursSum = 0;
+  let uniqueStartsAt = [];
+  for (let i = 0; i < events.length; i++) {
+    const event = events[i];
+    const visitors = event.members.filter(x => x.isVisitor);
+    if (!visitors.length) continue;
+    if (!uniqueStartsAt.includes(event.startsAt)){
+      hoursSum += event.duration / 60;
+      uniqueStartsAt.push(event.startsAt);
+    }
+  }
+  return hoursSum;
+}
+
 module.exports.getInstructorScheduleRows = function(year, month, events, fields) {
   let rows = [];
   const weekNumbers = [...new Set(events.map(e => getWeekNumber(e.startsAt)))];

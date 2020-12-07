@@ -146,18 +146,26 @@ module.exports.getPersonals = async function(year, month, instructor){
   const events = await GroupsService.getInstructorScheduleEvents(instructor, monthDateRange);
   const fields = GroupsService.getInstructorScheduleFields(events);
   const rows = GroupsService.getInstructorScheduleRows(year, month, events, fields);
+  const paymentsSum = GroupsService.getInstructorSchedulePaymentsSum(events);
+  const hoursSum = GroupsService.getInstructorScheduleHoursSum(events);
   const shownFields = fields.filter(x => x.isShown);
   const shownFieldLabels = shownFields.map(x => x.label);
   const shownFieldKeys = shownFields.map(x => x.key);
   let maxColumnLength = [];
-  sheet.getRow(1).values = shownFieldLabels;
+  const totals = [`Всего часов: ${hoursSum}`, `Сумма оплат: ${paymentsSum}`]
+  sheet.getRow(1).values = totals;
   sheet.getRow(1).eachCell((cell, colNum) => {
+    cell.value = {'richText': [{'font': {'bold': true}, 'text': totals[colNum-1]}]};
+    cell.alignment = { horizontal: 'center' };
+  });
+  sheet.getRow(2).values = shownFieldLabels;
+  sheet.getRow(2).eachCell((cell, colNum) => {
     cell.value = {'richText': [{'font': {'bold': true}, 'text': shownFieldLabels[colNum-1]}]};
     cell.alignment = { horizontal: 'center' };
     maxColumnLength[colNum-1] = shownFieldLabels[colNum-1].length;
   });
   rows.forEach((x, i) => {
-    const row = sheet.getRow(i+2);
+    const row = sheet.getRow(i+3);
     const rowValues = [];
     let maxEventsCount = 0;
     for (const key in x) {

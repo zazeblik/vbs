@@ -17,6 +17,8 @@
       <b-form-select v-model="selectedMonth" :options="months" @change="fetchData()" />
       <b-form-select v-model="selectedYear" :options="years" @change="fetchData()" />
       <b-input-group-append>
+        <b-input-group-text >Всего часов: {{hoursSum}}</b-input-group-text>
+        <b-input-group-text >Сумма оплат: {{paymentsSum}}</b-input-group-text>
         <b-button variant="outline-success" @click="exportData">
           <b-icon icon="file-earmark-arrow-down"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Экспорт</span>
         </b-button>
@@ -118,6 +120,8 @@ export default {
       persons: [],
       places: [],
       events: [],
+      hoursSum: 0,
+      paymentsSum: 0,
       scheduleFields: [],
       scheduleRows: [],
       defaultDuration: 60
@@ -149,6 +153,8 @@ export default {
       }
       this.scheduleFields = calendar.fields;
       this.scheduleRows = calendar.rows;
+      this.paymentsSum = calendar.totals.paymentsSum;
+      this.hoursSum = calendar.totals.hoursSum;
       this.isBusy = false;
     },
     async fetchDetail() {
@@ -197,21 +203,7 @@ export default {
         { visitors: [member.id] },
         true );
       if (result.success){
-        if (result.createdPayments && result.createdPayments.length){
-          result.createdPayments.forEach(p => event.payments.push(p)); 
-        }
-        if (result.removedPayments && result.removedPayments.length){
-          result.removedPayments.forEach(p => {
-            event.payments.splice(event.payments.findIndex(ep => ep.id == p), 1);
-          }); 
-        }
-        if (result.updatedPayments && result.updatedPayments.length){
-          result.updatedPayments.forEach(p => {
-            event.payments.splice(event.payments.findIndex(ep => ep.id == p.id), 1);
-            event.payments.push(p);
-          }); 
-        }
-        this.updateMemberBalances(result.personBalances);
+        this.updateEvents(result, event);
         return;
       }
       member.isVisitor = !member.isVisitor;
@@ -227,16 +219,26 @@ export default {
         event.members.filter(m => lostIds.includes(m.id)).forEach(m => {
           m.isVisitor = !allChecked;
         });
-        if (result.createdPayments && result.createdPayments.length){
-          result.createdPayments.forEach(p => event.payments.push(p)); 
-        }
-        if (result.removedPayments && result.removedPayments.length){
-          result.removedPayments.forEach(p => {
-            event.payments.splice(event.payments.findIndex(ep => ep.id == p), 1);
-          }); 
-        }
-        this.updateMemberBalances(result.personBalances);
+        this.updateEvents(result, event);
       }
+    },
+    updateEvents(result, event) {
+      if (result.createdPayments && result.createdPayments.length){
+        result.createdPayments.forEach(p => event.payments.push(p)); 
+      }
+      if (result.removedPayments && result.removedPayments.length){
+        result.removedPayments.forEach(p => {
+          event.payments.splice(event.payments.findIndex(ep => ep.id == p), 1);
+        }); 
+      }
+      if (result.updatedPayments && result.updatedPayments.length){
+        result.updatedPayments.forEach(p => {
+          event.payments.splice(event.payments.findIndex(ep => ep.id == p.id), 1);
+          event.payments.push(p);
+        }); 
+      }
+      this.updateMemberBalances(result.personBalances);
+      this.updateTotals();
     },
     updateMemberBalances(personBalances){
       if (!personBalances) return;
@@ -251,6 +253,36 @@ export default {
               member.balance = personBalances[personId];
             })
           }
+        }
+      }
+    },
+    updateTotals() {
+      let events = [];
+      for (let i = 0; i < this.scheduleRows.length; i++) {
+        const r = this.scheduleRows[i];
+        for (const key in r) {
+          if (!r[key].events) continue;
+          events = events.concat(r[key].events)
+        } 
+      }
+      this.paymentsSum = 0;
+      this.hoursSum = 0;
+      let uniquePaymentIds = [];
+      let uniqueStartsAt = [];
+      for (let i = 0; i < events.length; i++) {
+        const event = events[i];
+        const visitors = event.members.filter(x => x.isVisitor);
+        for (let j = 0; j < event.payments.length; j++) {
+          const payment = event.payments[j];
+          if (!uniquePaymentIds.includes(payment.id)){
+            this.paymentsSum += payment.sum;
+            uniquePaymentIds.push(payment.id);
+          }
+        }
+        if (!visitors.length) continue;
+        if (!uniqueStartsAt.includes(event.startsAt)){
+          this.hoursSum += event.duration / 60;
+          uniqueStartsAt.push(event.startsAt);
         }
       }
     },
