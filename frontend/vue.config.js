@@ -25,7 +25,9 @@ module.exports = {
           .plugin('html')
           .tap(args => {
             if (portalConfig.title) args[0].title = portalConfig.title;
-            let meta = [];
+            if (portalConfig.headHtml) args[0].headHtml = portalConfig.headHtml;
+            if (portalConfig.bottomHtml) args[0].bottomHtml = portalConfig.bottomHtml;
+            let meta = {};
             if (portalConfig.description) meta.description = portalConfig.description;
             if (portalConfig.keywords) meta.keywords = portalConfig.keywords;
             args[0].meta = meta;

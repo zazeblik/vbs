@@ -105,6 +105,20 @@
           :fieldValue="$settings.sberPassword"
           field="sberPassword"
           updateUrl="/site/update" />
+        <UpdatableField 
+          label="Произвольный HTML (в теге head)"
+          type="textarea"
+          :validations="{ min: 3 }"
+          :fieldValue="$settings.headHtml"
+          field="headHtml"
+          updateUrl="/site/update" />
+        <UpdatableField 
+          label="Произвольный HTML (в конце body)"
+          type="textarea"
+          :validations="{ min: 3 }"
+          :fieldValue="$settings.bottomHtml"
+          field="bottomHtml"
+          updateUrl="/site/update" />
       </b-form>
     </validation-observer>
   </div>

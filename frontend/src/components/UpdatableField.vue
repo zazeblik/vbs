@@ -43,6 +43,16 @@
           drop-placeholder="Перетащите файл сюда..."
           browse-text="Выбрать..."
         />
+        <b-form-textarea
+          v-else-if="type == 'textarea'"
+          size="sm"
+          rows="3"
+          max-rows="6"
+          v-model="model"
+          :placeholder="placeholder"
+          @change="save(validationContext)"
+          :state="getValidationState(validationContext)"
+        />
         <b-form-input
           v-else
           :type="type"
