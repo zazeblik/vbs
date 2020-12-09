@@ -22,6 +22,18 @@
           field="icon"
           updateUrl="/site/update" />
         <UpdatableField 
+          label="Описание"
+          :validations="{ min: 3 }"
+          :fieldValue="$settings.description"
+          field="description"
+          updateUrl="/site/update" />
+        <UpdatableField 
+          label="Ключевые слова (через запятую)"
+          :validations="{ min: 3 }"
+          :fieldValue="$settings.keywords"
+          field="keywords"
+          updateUrl="/site/update" />
+        <UpdatableField 
           label="Логотип сайта"
           type="image"
           :fieldValue="$settings.logo"

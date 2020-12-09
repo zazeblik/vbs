@@ -20,11 +20,15 @@ module.exports = {
     svgRule.exclude.add(path.join(__dirname, 'node_modules', '@ckeditor'));
     if (require('fs').existsSync('./portal.config.json')){
       const portalConfig = require('./portal.config.json');
-      if (portalConfig && portalConfig.title){
+      if (portalConfig){
         config
           .plugin('html')
           .tap(args => {
-            args[0].title = portalConfig.title
+            if (portalConfig.title) args[0].title = portalConfig.title;
+            let meta = [];
+            if (portalConfig.description) meta.description = portalConfig.description;
+            if (portalConfig.keywords) meta.keywords = portalConfig.keywords;
+            args[0].meta = meta;
             return args
           })
       }
