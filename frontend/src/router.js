@@ -88,6 +88,11 @@ export default new Router({
       component: () => import('./views/pages/DataTransport.vue')
     },
     {
+      path: '/privacy',
+      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
+      component: () => import('./views/pages/Privacy.vue')
+    },
+    {
       path: '/articles/:id',
       beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
       component: () => import('./views/pages/Article.vue')

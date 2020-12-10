@@ -108,7 +108,7 @@
         </div>
       </b-tab>
       <b-tab title="Сводка">
-        <b-table class="totals-table" striped hover :items="totals" :fields="totalsFields">
+        <b-table class="totals-table" responsive="sm" striped hover :items="totals" :fields="totalsFields">
           <template v-slot:custom-foot>
             <b-tr>
               <b-th>Итого</b-th>

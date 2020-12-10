@@ -60,8 +60,8 @@
         <div class="col-sm-7 d-flex justify-content-center">
           <div class="px-1">
             <p class="text-center">
-              <b-link class="text-white" to="/payment-methods">Способы оплаты</b-link>
-              <br />
+              <b-link v-if="$settings.sberUsername && $settings.sberPassword" class="text-white" to="/payment-methods">Способы оплаты</b-link>
+              <br v-if="$settings.sberUsername && $settings.sberPassword" />
               <b-link class="text-white" to="/service-rules">Предоставление услуг</b-link>
               <br />
               <b-link class="text-white" to="/contacts">Контакты</b-link>
@@ -69,11 +69,11 @@
           </div>
           <div class="px-1">
             <p class="text-center">
-              <a class="text-white" href="privacy.html" target="_blank">Политика конфиденциальности</a>
+              <b-link class="text-white" to="/privacy">Политика конфиденциальности</b-link>
               <br />
-              <a class="text-white" href="privacy.html#terms_of_use" target="_blank">Пользовательское соглашение</a>
-              <br />
-              <b-link class="text-white" to="/data-transport">Передача данных</b-link>
+              <b-link class="text-white" to="/privacy#terms_of_use">Пользовательское соглашение</b-link>
+              <br v-if="$settings.sberUsername && $settings.sberPassword" />
+              <b-link v-if="$settings.sberUsername && $settings.sberPassword" class="text-white" to="/data-transport">Передача данных</b-link>
             </p>
           </div>
         </div>
