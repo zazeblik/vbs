@@ -85,17 +85,18 @@ async function resolveGroups(personMappings){
     qs: { populate: 'members,archived,trener', in_archive: false }, 
     json: true
   });
+  const places = await resolvePlaces(groups);
   groups.forEach(x => { 
     x.label = x.label.trim();
     x.trener.name = x.trener.name.trim();
     x.members.forEach(y => { y.name = y.name.trim() });
   });
-  const place = (await Places.find({}).limit(1))[0];
   const currentGroups = await Groups.find();
   const currentGroupsNames = currentGroups.map(x => x.name);
   const groupsToCreate = groups
     .filter(x => !currentGroupsNames.includes(x.label))
     .map(x => {
+      const place = places.find(y => y.name == x.hall);
       const schedule = x.schedule 
         ? x.schedule.split(',').map(x => `${x}:00 ${place.id}`).join(',')
         : '';
@@ -118,6 +119,7 @@ async function resolveGroups(personMappings){
     const schedule = group.schedule.split(',').map(x => `${x}:00 ${currentGroup.defaultPlace}`).join(',');
     await Groups.update({id: groupId}, {
       id: groupId, 
+      defaultPlace: places.find(y => y.name == group.hall).id,
       defaultInstructor: personMappings.find(y => y.remoteId == group.trener.id).localId,
       defaultDuration: group.duration,
       type: group.type == 'индивидуальная' ? GroupType.Personal : GroupType.General,
@@ -136,4 +138,26 @@ async function resolveGroups(personMappings){
       .map(x => personMappings.find(y => y.remoteId == x.id).localId)
     await Groups.replaceCollection(groupId, 'members').members(memberIds)
   });
+}
+
+async function resolvePlaces(groups) {
+  const placeNames = [...new Set(groups.map(x => x.hall))];
+  for (let i = 0; i < placeNames.length; i++) {
+    const placeName = placeNames[i];
+    const place = await Places.findOne({name: placeName});
+    if (!place) {
+      await Places.create({name: placeName, color: resolveColor(placeName)})
+    }
+  }
+  return await Places.find();
+}
+
+function resolveColor(name) {
+  switch(name) {
+    case 'серый': return '#cccccc';
+    case 'дргуой': return '#e83e8c';
+    case 'фиолетовый': return '#6f42c1';
+    case 'тренажерный': return '#fd7e14';
+    default: return '#00e1ff'
+  }
 }

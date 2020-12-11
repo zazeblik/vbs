@@ -59,6 +59,7 @@ module.exports = {
     try {
       await ArchivePersons.destroy({group: value.id}).fetch();
       await SalaryRules.destroy({group: value.id}).fetch();
+      await Payments.destroy({group: value.id}).fetch();
       await Events.destroy({group: value.id}).fetch();  
       return next();
     } catch (error) {

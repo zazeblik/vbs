@@ -3,7 +3,8 @@ module.exports = {
     name: {
       type: 'string',
       isNotEmptyString: true,
-      required: true
+      required: true,
+      unique: true
     },
     color: {
       type: 'string',

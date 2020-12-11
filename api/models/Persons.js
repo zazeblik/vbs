@@ -59,12 +59,15 @@ module.exports = {
   },
   afterDestroy: async function(value, next){
     try {
-      await ArchivePersons.destroy({person: value.id})
-      await Payments.destroy({person: value.id})
-      await Incomes.destroy({person: value.id})
-      await PersonCustomValues.destroy({person: value.id})
-      await SalaryRules.destroy({instructor: value.id});
-      await Users.destroy({person: value.id, role: Role.User});
+      await ArchivePersons.destroy({person: value.id}).fetch();
+      await Payments.destroy({person: value.id}).fetch();
+      await Incomes.destroy({person: value.id}).fetch();
+      await Orders.destroy({person: value.id}).fetch();
+      await PersonCustomValues.destroy({person: value.id}).fetch();
+      await SalaryRules.destroy({instructor: value.id}).fetch();
+      await Users.destroy({person: value.id, role: Role.User}).fetch();
+      await Payments.destroy({person: value.id}).fetch();
+      await PersonCustomValues.destroy({person: value.id}).fetch();
       await Users.update({person: value.id}, {person: null});
       next();
     } catch (error) {
