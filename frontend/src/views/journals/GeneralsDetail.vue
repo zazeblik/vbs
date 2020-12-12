@@ -47,7 +47,7 @@
         <b-button variant="outline-success" :hidden="addPersonShown" @click="addPersonShown = true">
           <b-icon icon="person-plus-fill"></b-icon>
           &nbsp;
-          <span class="d-none d-md-inline-block">Добавить участника</span> 
+          <span class="d-none d-md-inline-block">Добавить участников</span> 
         </b-button>
         <b-button variant="outline-success" :hidden="!addPersonShown" @click="addPerson()">
           <b-icon icon="check"></b-icon>

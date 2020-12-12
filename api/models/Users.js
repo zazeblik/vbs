@@ -25,6 +25,21 @@ module.exports = {
       model: 'persons'
     }
   },
+  beforeDestroy: async function(value, next){
+    try {
+      const actualAdminsCount = await Users.count({role: Role.LocalAdmin});
+      if (value.where && value.where.id && value.where.id.in){
+        const usersToDelete = await Users.find(value);
+        const adminsToDeleteCount = usersToDelete.filter(x => x.role == Role.LocalAdmin).length;
+        if (adminsToDeleteCount >= actualAdminsCount){
+          return next('Должен остаться хотябы 1 администратор');
+        }
+      }
+      return next();
+    } catch (error) {
+      return next(JSON.stringify([ error ]));
+    }
+  },
   customToJSON: function() {
     return _.omit(this, ['createdAt', 'updatedAt', 'password'])
   }
