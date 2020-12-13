@@ -124,7 +124,7 @@
       </template>
 
       <template v-slot:cell(person)="data">
-        <b>{{ data.value.name }}</b>
+        <b>{{ data.index + 1 }}. {{ data.value.name }}</b>
         <b-dropdown size="sm" dropleft class="dropdown-actions" variant="link" toggle-class="text-decoration-none" no-caret>
           <template v-slot:button-content>
             <b-icon icon="three-dots-vertical"/><span class="sr-only">Actions</span>

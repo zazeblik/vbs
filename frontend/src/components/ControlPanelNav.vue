@@ -7,8 +7,8 @@
         </template>
         <b-dropdown-item to="/cp/persons">Участники</b-dropdown-item>
         <b-dropdown-item to="/cp/places" v-if="$user.role == 2">Залы</b-dropdown-item>
-        <b-dropdown-item to="/cp/groups">Группы</b-dropdown-item>
-        <b-dropdown-item to="/cp/archive">Архив</b-dropdown-item>
+        <b-dropdown-item to="/cp/groups" v-if="$user.role == 2">Группы</b-dropdown-item>
+        <b-dropdown-item to="/cp/archive" v-if="$user.role == 2">Архив</b-dropdown-item>
       </b-nav-item-dropdown>
       <b-nav-item-dropdown class="border-top border-secondary px-2">
         <template slot="button-content">
@@ -28,7 +28,7 @@
       <b-nav-item class="border-top border-secondary px-2" to="/cp/payments" v-if="$user.role == 2">
         <b-icon icon="credit-card"></b-icon>&nbsp;Оплата
       </b-nav-item>
-      <b-nav-item-dropdown class="border-top border-secondary px-2">
+      <b-nav-item-dropdown class="border-top border-secondary px-2" v-if="$user.role == 2">
         <template slot="button-content">
           <b-icon icon="wallet2"></b-icon>&nbsp;Зарплаты
         </template>

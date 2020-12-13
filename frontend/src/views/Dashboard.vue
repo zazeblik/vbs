@@ -62,7 +62,7 @@
           </div>
         </div>
       </b-tab>
-      <b-tab title="Тренеры">
+      <b-tab title="Тренеры" v-if="$user.role == 2">
         <b-row>
           <b-col class="text-center"><b-icon icon="square-fill" variant="success" /><br/><small>всего</small></b-col>
           <b-col class="text-center"><b-icon icon="square-fill" variant="info" /><br/><small>общие</small></b-col>
@@ -88,7 +88,7 @@
           </div>
         </div>
       </b-tab>
-      <b-tab title="Оплата">
+      <b-tab title="Оплата" v-if="$user.role == 2">
         <b-row>
           <b-col class="text-center"><b-icon icon="square-fill" variant="success" /><br/><small>пополнения</small></b-col>
           <b-col class="text-center"><b-icon icon="square-fill" variant="warning" /><br/><small>платежи</small></b-col>
@@ -107,7 +107,7 @@
           </div>
         </div>
       </b-tab>
-      <b-tab title="Сводка">
+      <b-tab title="Сводка" v-if="$user.role == 2">
         <b-table class="totals-table" responsive="sm" striped hover :items="totals" :fields="totalsFields">
           <template v-slot:custom-foot>
             <b-tr>
