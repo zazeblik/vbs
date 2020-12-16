@@ -26,6 +26,29 @@ module.exports = {
       return res.badRequest(err.message);
     }
   },
+  selfSchedule: async function (req, res) {
+    if (!req.param("year")) return res.status(400).send("year не указан");
+    if (!req.param("month")) return res.status(400).send("month не указан");
+    try {
+      const year = Number(req.param("year"));
+      const month = Number(req.param("month"));
+      const monthDateRange = DateRangeHelper.GetMonthDateRange(year, month);
+      const groups = await Groups.find({ hidden: false }).populate('members');
+      const archive = await ArchivePersons.find({person: req.session.User.person});
+      const archivedInGroups = archive.map(x => x.group);
+      const groupIds = groups.filter(x => (x.members.map(y => y.id)).includes(req.session.User.person) && !archivedInGroups.includes(x.id) ).map(g => g.id);
+      const events = await Events
+        .find({ group: groupIds, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
+        .sort("startsAt ASC")
+        .populate("instructor")
+        .populate("group")
+        .populate("place");
+      
+      return res.send(events);
+    } catch (err) {
+      return res.badRequest(err.message);
+    }
+  },
   icon: async function (req, res) {
     fs.copyFile('frontend/public/favicon.ico', 'assets/favicon.ico', (err) => {
       if (err) res.badRequest(err.message);

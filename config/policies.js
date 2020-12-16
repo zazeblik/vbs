@@ -59,6 +59,7 @@ module.exports.policies = {
     '*': ['authenticated', 'isAdmin'],
     profile: 'authenticated',
     profilePerson: ['authenticated', 'hasPerson'],
+    selfSchedule: ['authenticated', 'hasPerson'],
     person: ['authenticated', 'hasPerson'],
     uploads: true,
     publicSchedule: true,

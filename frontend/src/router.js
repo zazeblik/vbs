@@ -93,6 +93,16 @@ export default new Router({
       component: () => import('./views/pages/Privacy.vue')
     },
     {
+      path: '/self-schedule',
+      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
+      component: () => import('./views/pages/SelfSchedule.vue')
+    },
+    {
+      path: '/self-payments',
+      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
+      component: () => import('./views/pages/SelfPayments.vue')
+    },
+    {
       path: '/articles/:id',
       beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
       component: () => import('./views/pages/Article.vue')

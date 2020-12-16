@@ -1,8 +1,8 @@
 <template>
-  <div class="py-2">
+  <div>
     <b-container fluid>
+      <h4>Расписание на {{$moment(new Date()).format("MMMM YYYY")}}</h4>
       <FullCalendar
-        class="pt-2"
         :defaultView="$isMobile() ? 'dayGridWeek' : 'dayGridMonth'"
         :plugins="calendarPlugins" 
         ref="fullCalendar"

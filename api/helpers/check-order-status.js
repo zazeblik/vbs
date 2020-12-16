@@ -2,8 +2,8 @@ const request = require("request-promise");
 
 module.exports = {
   inputs: {
-    id: {
-      type: 'number',
+    orderNumber: {
+      type: 'string',
       required: true
     },
     externalId: {
@@ -27,7 +27,7 @@ module.exports = {
           userName: settings.sberUsername,
           password: settings.sberPassword,
           orderId: inputs.externalId,
-          orderNumber: inputs.id
+          orderNumber: inputs.orderNumber
         },
         json: true
       });

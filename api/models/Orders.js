@@ -12,6 +12,10 @@ module.exports = {
     person: {
       model: "persons"
     },
+    orderNumber: {
+      type: "string",
+      allowNull: true
+    },
     externalId: {
       type: "string",
       allowNull: true

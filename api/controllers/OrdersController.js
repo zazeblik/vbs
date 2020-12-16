@@ -1,12 +1,13 @@
 const request = require("request-promise");
+const { v4: uuidv4 } = require('uuid');
 
 module.exports = {
   confirm: async function (req, res) {
     try {
-      const orderId = Number(req.param("orderId"));
-      if (!orderId) return res.status(400).send('Необходимо указать orderId');
-      const order = await Orders.findOne({ id: orderId });
-      const status = await sails.helpers.checkOrderStatus(order.id, order.externalId);
+      const orderNumber = req.param("orderNumber");
+      if (!orderNumber) return res.status(400).send('Необходимо указать orderNumber');
+      const order = await Orders.findOne({ orderNumber });
+      const status = await sails.helpers.checkOrderStatus(orderNumber, order.externalId);
       if (status == null) return res.status(400).send('Ошибка запроса к сервисам Сбербанк');
       await Orders.updateOne({ id: order.id }, {
         id: order.id,
@@ -24,8 +25,9 @@ module.exports = {
       if (!sum) return res.status(400).send('Необходимо указать sum');
       if (!origin) return res.status(400).send('Необходимо указать origin');
       const person = await Persons.findOne(req.session.User.person);
+      const orderNumber = uuidv4().replace(/-/g, '');
       const order = await Orders
-        .create({ sum, person: req.session.User.person })
+        .create({ sum, orderNumber, person: req.session.User.person })
         .fetch();
       const settings = await Settings.findOne(1);
       const isSberCredentialsExists = settings.sberUsername && settings.sberPassword;
@@ -35,17 +37,17 @@ module.exports = {
         qs: {
           userName: settings.sberUsername,
           password: settings.sberPassword,
-          orderNumber: order.id,
+          orderNumber: orderNumber,
           amount: order.sum *100,
-          returnUrl: `${origin}/orders/confirm?orderId=${order.id}`,
+          returnUrl: `${origin}/orders/confirm?orderNumber=${orderNumber}`,
           description: `${person.name}: пополнение баланса`,
           clientId: person.id
         },
         json:true
       });
-      if (result.errorMessage) return res.status(400).send(result.errorMessage);
+      if (result.errorMessage) return res.badRequest(result.errorMessage);
       await Orders.updateOne(
-        { id: order.id },
+        { orderNumber },
         { id: order.id, externalId: result.orderId, formUrl: result.formUrl });
       return res.send(result.formUrl);
     } catch (error) {
