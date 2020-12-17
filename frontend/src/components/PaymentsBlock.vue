@@ -91,7 +91,7 @@
       :baseUrl="incomeUrl" 
       :itemForm="incomeForm" 
       ref="addIncomeModal" 
-      @formSaved="fetchPage" />
+      @formSaved="incomeAdded" />
     <PaymentsModal 
       modalId="paymentsModal"
       ref="paymentsModal"
@@ -131,9 +131,9 @@ export default {
       unapyedGroupMonths: {},
       personalUnpayedEvents: [],
       personalUnapyedGroupMonths: [],
-      personForm: PersonForm,
-      paymentForm: PaymentForm,
-      incomeForm: IncomeForm,
+      personForm: Object.assign([], PersonForm),
+      paymentForm: Object.assign([], PaymentForm),
+      incomeForm: Object.assign([], IncomeForm),
       addIncomeShown: false,
       payer: null,
       incomeSum: 0,
@@ -195,6 +195,10 @@ export default {
       this.transactions = await this.$getAsync(
         `${this.baseUrl}/${this.isControlPanelShown ? 'transactions' : 'self-transactions'}`, 
         transactionsQuery); 
+    },
+    async incomeAdded() {
+      await this.fetchPage();
+      this.addPaymentsModalShow();
     },
     updatePayer() {
       this.balance = this.persons.find(p => p.id == this.payer).balance;

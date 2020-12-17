@@ -18,7 +18,7 @@ export default {
   data() {
     return {
       baseUrl: "/groups",
-      itemForm: GroupForm,
+      itemForm: Object.assign([], GroupForm),
       creationErrorMessage: null,
       fields: [
         {

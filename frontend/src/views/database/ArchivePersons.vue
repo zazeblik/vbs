@@ -17,7 +17,7 @@ export default {
   data() {
     return {
       baseUrl: "/archivepersons",
-      itemForm: ArchivePersonForm,
+      itemForm: Object.assign([], ArchivePersonForm),
       creationErrorMessage: null,
       fields: [
         {

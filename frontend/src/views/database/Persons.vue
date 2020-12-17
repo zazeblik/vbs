@@ -37,7 +37,7 @@ export default {
     const self= this;
     return {
       baseUrl: "/persons",
-      itemForm: PersonForm,
+      itemForm: Object.assign([], PersonForm),
       customFields: [],
       additionalButtons: [],
       fields: [

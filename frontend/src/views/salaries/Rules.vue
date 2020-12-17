@@ -13,7 +13,7 @@ export default {
   data() {
     return {
       baseUrl: "/salaryrules",
-      itemForm: RuleForm,
+      itemForm: Object.assign([], RuleForm),
       groups: [],
       fields: [
         {

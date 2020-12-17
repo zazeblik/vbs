@@ -168,7 +168,7 @@
 </template>
 <script>
 const GroupType = require("../../../../enums").GroupType;
-import Multiselect from 'vue-multiselect'
+import Multiselect from 'vue-multiselect';
 import ModelModal from "../../components/ModelModal";
 import { GroupForm, EventForm, PaymentForm } from "../../shared/forms";
 export default {
@@ -198,9 +198,9 @@ export default {
       defaultInstructor: null,
       defaultPlace: null,
       defaultDuration: null,
-      groupForm: GroupForm,
-      eventForm: EventForm,
-      paymentForm: PaymentForm
+      groupForm: Object.assign([], GroupForm),
+      eventForm: Object.assign([], EventForm),
+      paymentForm: Object.assign([], PaymentForm)
     };
   },
   async mounted() {
@@ -408,6 +408,7 @@ export default {
       this.eventForm.find(f => f.property == "place").models = detail.places;
       this.groupForm.find(f => f.property == "defaultInstructor").models = detail.persons;
       this.groupForm.find(f => f.property == "defaultPlace").models = detail.places;
+      this.groupForm.find(f => f.property == "schedule").models = detail.places;
       this.groupForm.find(f => f.property == "hidden").hidden = true;
       this.defaultPlace = detail.group.defaultPlace;
       this.defaultDuration = detail.group.defaultDuration;

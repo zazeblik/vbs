@@ -96,7 +96,7 @@
 <script>
 const GroupType = require("../../../../enums").GroupType;
 import ModelModal from "../../components/ModelModal";
-import { GroupForm, EventForm } from "../../shared/forms";
+import { EventForm } from "../../shared/forms";
 export default {
   components: {
     ModelModal
@@ -114,7 +114,7 @@ export default {
       months: this.$moment.months().map((m, i) => {
         return { value: i, text: m };
       }),
-      eventForm: EventForm,
+      eventForm: Object.assign([], EventForm),
       instructor: null,
       groups: [],
       persons: [],

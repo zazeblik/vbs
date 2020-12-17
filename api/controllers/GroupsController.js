@@ -6,7 +6,7 @@ const ExcelService = require('../services/ExcelService');
 module.exports = {
   exportGenerals: async function (req, res){
     if (!req.param("year")) return res.status(400).send("year не указан");
-    if (!req.param("month")) return res.status(400).send("month не указан");
+    if (req.param("month") == undefined) return res.status(400).send("month не указан");
     if (!req.param("group")) return res.status(400).send("group не указан");
     try {
       const year = Number(req.param("year"));
@@ -21,7 +21,7 @@ module.exports = {
   },
   exportPersonals: async function (req, res){
     if (!req.param("year")) return res.status(400).send("year не указан");
-    if (!req.param("month")) return res.status(400).send("month не указан");
+    if (req.param("month") == undefined) return res.status(400).send("month не указан");
     if (!req.param("instructor")) return res.status(400).send("instructor не указан");
     try {
       const year = Number(req.param("year"));
@@ -98,7 +98,7 @@ module.exports = {
   instructorScheduleCalendar: async function (req, res){
     if (!req.param("id")) return res.status(400).send("id не указан");
     if (!req.param("year")) return res.status(400).send("year не указан");
-    if (!req.param("month")) return res.status(400).send("month не указан");
+    if (req.param("month") == undefined) return res.status(400).send("month не указан");
     try {
       const id = Number(req.param("id"));
       const year = Number(req.param("year"));
@@ -132,7 +132,7 @@ module.exports = {
     try {
       if (!req.param("id")) return res.status(400).send("id не указан");
       if (!req.param("year")) return res.status(400).send("year не указан");
-      if (!req.param("month")) return res.status(400).send("month не указан");
+      if (req.param("month") == undefined) return res.status(400).send("month не указан");
       const id = Number(req.param("id"));
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));

@@ -20,7 +20,7 @@ module.exports = {
   groupUnpayedEvents: async function (req, res){
     if (!req.param("person")) return res.status(400).send("person не указан");
     if (!req.param("group")) return res.status(400).send("group не указан");
-    if (!req.param("month")) return res.status(400).send("month не указан");
+    if (req.param("month") == undefined) return res.status(400).send("month не указан");
     if (!req.param("year")) return res.status(400).send("year не указан");
     const person = Number(req.param("person"));
     const group = Number(req.param("group"));
@@ -35,7 +35,7 @@ module.exports = {
   },
   selfGroupUnpayedEvents: async function (req, res){
     if (!req.param("group")) return res.status(400).send("group не указан");
-    if (!req.param("month")) return res.status(400).send("month не указан");
+    if (req.param("month") == undefined) return res.status(400).send("month не указан");
     if (!req.param("year")) return res.status(400).send("year не указан");
     const group = Number(req.param("group"));
     const month = Number(req.param("month"));

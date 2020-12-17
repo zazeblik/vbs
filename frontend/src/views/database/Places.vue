@@ -12,7 +12,7 @@ export default {
   data() {
     return {
       baseUrl: "/places",
-      itemForm: PlaceForm,
+      itemForm: Object.assign([], PlaceForm),
       fields: [
         {
           key: "name",

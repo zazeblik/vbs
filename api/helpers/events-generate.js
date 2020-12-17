@@ -13,7 +13,7 @@ module.exports = {
       let monthsDays = daysInMonth(date.getMonth(), date.getFullYear());
       let eventsToAdd = [];
       for (let j = currentDate; j <= monthsDays; j++) {
-        let currentMonthDate = new Date(date.getFullYear(), date.getMonth(), j);
+        let currentMonthDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), j));
         let day = currentMonthDate.getDay();
         for (var i = 0; i < groups.length; i++) {
           let group = groups[i];
@@ -37,13 +37,15 @@ module.exports = {
             if (group.defaultInstructor) event.instructor = group.defaultInstructor;
             let hours = schedule[day].time.split(":")[0];
             let minutes = schedule[day].time.split(":")[1];
-            let startsAt = new Date(
+            let startsAt = new Date(Date.UTC(
               currentMonthDate.getFullYear(),
               currentMonthDate.getMonth(),
               currentMonthDate.getDate(),
               Number(hours),
               Number(minutes)
-            );
+            ));
+            var currentTimeZoneOffsetInHours = startsAt.getTimezoneOffset() / 60;
+            startsAt.setHours(startsAt.getHours() + currentTimeZoneOffsetInHours);
             event.startsAt = startsAt.getTime();
             event.duration = group.defaultDuration;
             const isAlreadyExists = await sails.helpers.isAlreadyExistsEvent(
@@ -62,5 +64,5 @@ module.exports = {
 };
 
 function daysInMonth(month, year) {
-  return 32 - new Date(year, month, 32).getDate();
+  return 32 - new Date(Date.UTC(year, month, 32)).getDate();
 }

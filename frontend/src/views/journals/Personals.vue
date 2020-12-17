@@ -67,7 +67,7 @@ export default {
       instructors: [],
       persons: [],
       places: [],
-      itemForm: GroupForm
+      itemForm: Object.assign([], GroupForm)
     };
   },
   async mounted() {
@@ -86,6 +86,7 @@ export default {
       this.places = personal.places;
       this.itemForm.find(f => f.property == "defaultInstructor").models = this.persons;
       this.itemForm.find(f => f.property == "defaultPlace").models = this.places;
+      this.itemForm.find(f => f.property == "schedule").models = this.places;
       this.itemForm.find(f => f.property == "hidden").hidden = true;
       this.itemForm.find(f => f.property == "type").hidden = true;
       if (this.selectedInstructor)

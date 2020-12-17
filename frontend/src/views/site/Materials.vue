@@ -12,7 +12,7 @@ export default {
   data() {
     return {
       baseUrl: "/materials",
-      itemForm: MaterialForm,
+      itemForm: Object.assign([], MaterialForm),
       fields: [
         {
           key: "name",

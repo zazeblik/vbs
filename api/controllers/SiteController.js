@@ -7,7 +7,7 @@ const PersonsController = require('./PersonsController');
 module.exports = {
   publicSchedule: async function (req, res) {
     if (!req.param("year")) return res.status(400).send("year не указан");
-    if (!req.param("month")) return res.status(400).send("month не указан");
+    if (req.param("month") == undefined) return res.status(400).send("month не указан");
     try {
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));
@@ -28,7 +28,7 @@ module.exports = {
   },
   selfSchedule: async function (req, res) {
     if (!req.param("year")) return res.status(400).send("year не указан");
-    if (!req.param("month")) return res.status(400).send("month не указан");
+    if (req.param("month") == undefined) return res.status(400).send("month не указан");
     try {
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));

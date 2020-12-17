@@ -12,7 +12,7 @@ export default {
   data() {
     return {
       baseUrl: "/files",
-      itemForm: FileForm,
+      itemForm: Object.assign([], FileForm),
       fields: [
         {
           key: "name",
