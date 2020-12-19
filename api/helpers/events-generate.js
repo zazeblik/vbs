@@ -1,3 +1,4 @@
+const GetDate = require('../utils/DateUtil').GetDate;
 module.exports = {
   inputs: {
     time: {
@@ -14,8 +15,7 @@ module.exports = {
       let timeZoneOffset = sails.config.tz ? -1 * sails.config.tz : 0; 
       let eventsToAdd = [];
       for (let j = currentDate; j <= monthsDays; j++) {
-        let currentMonthDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), j));
-        currentMonthDate.setHours(currentMonthDate.getHours() + timeZoneOffset);
+        let currentMonthDate = GetDate(date.getFullYear(), date.getMonth(), j);
         let day = currentMonthDate.getDay();
         for (var i = 0; i < groups.length; i++) {
           let group = groups[i];
@@ -39,7 +39,7 @@ module.exports = {
             if (group.defaultInstructor) event.instructor = group.defaultInstructor;
             let hours = schedule[day].time.split(":")[0];
             let minutes = schedule[day].time.split(":")[1];
-            let startsAt = new Date(Date.UTC(
+            let startsAt = GetDate(new Date(
               currentMonthDate.getFullYear(),
               currentMonthDate.getMonth(),
               currentMonthDate.getDate(),
@@ -65,5 +65,5 @@ module.exports = {
 };
 
 function daysInMonth(month, year) {
-  return 32 - new Date(Date.UTC(year, month, 32)).getDate();
+  return 32 - new Date(year, month, 32).getDate();
 }

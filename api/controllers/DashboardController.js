@@ -1,6 +1,7 @@
 const DateRangeHelper =  require('../utils/DateRangeHelper');
 const DashboardService = require('../services/DashboardService');
 const ExcelService = require('../services/ExcelService');
+const GetDate = require('../utils/DateUtil').GetDate;
 
 module.exports = {
   exportVisits: async function(req, res) {
@@ -111,10 +112,10 @@ module.exports = {
     try {
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));
-      const currentDate = new Date();
+      const currentDate = GetDate();
       const isCurrentMonth = currentDate.getFullYear() == year && currentDate.getMonth() == month;
-      const startDate = new Date(year, month);
-      await sails.helpers.eventsGenerate(isCurrentMonth ? Date.now() : startDate.getTime());
+      const startDate = GetDate(year, month);
+      await sails.helpers.eventsGenerate(isCurrentMonth ? currentDate.getTime() : startDate.getTime());
       return res.ok();
     }  catch (err) {
       return res.badRequest(err.message);
