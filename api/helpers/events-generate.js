@@ -44,7 +44,7 @@ module.exports = {
               Number(hours),
               Number(minutes)
             ));
-            let timeZoneOffset = sails.confg.tz ? -1 * sails.confg.tz : 0; 
+            let timeZoneOffset = sails.config.tz ? -1 * sails.config.tz : 0; 
             startsAt.setHours(startsAt.getHours() + timeZoneOffset);
             event.startsAt = startsAt.getTime();
             event.duration = group.defaultDuration;
