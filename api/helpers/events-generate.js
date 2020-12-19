@@ -11,9 +11,11 @@ module.exports = {
       let groups = await Groups.find({ schedule: { '!=': '' } });
       let currentDate = date.getDate();
       let monthsDays = daysInMonth(date.getMonth(), date.getFullYear());
+      let timeZoneOffset = sails.config.tz ? -1 * sails.config.tz : 0; 
       let eventsToAdd = [];
       for (let j = currentDate; j <= monthsDays; j++) {
         let currentMonthDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), j));
+        currentMonthDate.setHours(currentMonthDate.getHours() + timeZoneOffset);
         let day = currentMonthDate.getDay();
         for (var i = 0; i < groups.length; i++) {
           let group = groups[i];
@@ -44,7 +46,6 @@ module.exports = {
               Number(hours),
               Number(minutes)
             ));
-            let timeZoneOffset = sails.config.tz ? -1 * sails.config.tz : 0; 
             startsAt.setHours(startsAt.getHours() + timeZoneOffset);
             event.startsAt = startsAt.getTime();
             event.duration = group.defaultDuration;
