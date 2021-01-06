@@ -70,7 +70,7 @@ export default {
   },
   methods: {
     async fetchInfo() {
-      this.events = await this.$getAsync(`${this.baseUrl}/self-schedule`, {
+      this.events = await this.$getAsync(`${this.baseUrl}/public-schedule`, {
         month: this.selectedMonth,
         year: this.selectedYear,
       });

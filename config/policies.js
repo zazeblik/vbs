@@ -62,6 +62,7 @@ module.exports.policies = {
     selfSchedule: ['authenticated', 'hasPerson'],
     person: ['authenticated', 'hasPerson'],
     uploads: true,
+    groups: true,
     publicSchedule: true,
     settings: true
   }
