@@ -198,22 +198,34 @@ export default {
       await this.fetchCalendar();
     },
     async changeVisitorState(member, event){
-      const result = await this.$postAsync(
-        `${this.eventUrl}/${member.isVisitor ? 'remove' : 'add' }-visitor/${event.id}`, 
-        { visitors: [member.id] },
-        true );
+      let autoDebit = false;
+      let isVisitor = member.isVisitor;
+      if (!isVisitor && this.getMemberPaymentAvailability(member, event)) {
+        autoDebit = await this.promptMemeberPaymentAvailability();
+      }
+      const result = await this.$postAsync(`${this.eventUrl}/${isVisitor ? 'remove' : 'add' }-visitor/${event.id}`, { 
+        visitors: [member.id],
+        autoDebit: autoDebit
+      }, true );
       if (result.success){
         this.updateEvents(result, event);
         return;
       }
-      member.isVisitor = !member.isVisitor;
+      member.isVisitor = !isVisitor;
     },
     async checkAll(event){
+      let autoDebit = false;
       const allChecked = event.members.every(m => m.isVisitor);
-      const lostIds = event.members.filter(m => allChecked ? m.isVisitor : !m.isVisitor ).map(m => m.id)
+      const lostIds = event.members.filter(m => allChecked ? m.isVisitor : !m.isVisitor).map(m => m.id);
+      if (!allChecked && event.members.some(x => this.getMemberPaymentAvailability(x, event))){
+        autoDebit = await this.promptMemeberPaymentAvailability();
+      }
       const result = await this.$postAsync(
         `${this.eventUrl}/${!allChecked ? 'add' : 'remove' }-visitor/${event.id}`, 
-        { visitors: lostIds },
+        { 
+          visitors: lostIds,
+          autoDebit: autoDebit 
+        },
         true );
       if (result.success){
         event.members.filter(m => lostIds.includes(m.id)).forEach(m => {
@@ -222,6 +234,14 @@ export default {
         this.updateEvents(result, event);
       }
     },
+    async promptMemeberPaymentAvailability() {
+      return await this.$bvModal.msgBoxConfirm(`Списать оплату за занятие автоматически?`, {
+        cancelTitle: "Отмена",
+        cancelVariant: "outline-secondary",
+        okTitle: "Списать",
+        okVariant: "success"
+      });
+    }, 
     updateEvents(result, event) {
       if (result.createdPayments && result.createdPayments.length){
         result.createdPayments.forEach(p => event.payments.push(p)); 
@@ -286,16 +306,18 @@ export default {
         }
       }
     },
-    getMemberPaymentColor(member, event){
-      const isPayed = !!event.payments.find(p => p.person == member.id);
-      if (isPayed) return 'success';
+    getMemberPaymentAvailability(member, event) {
       const group = this.groups.find(g => g.id == event.group);
       const visitors = event.members.filter(x => x.isVisitor);
       const isVisitorMemeber = visitors.map(x => x.id).includes(member.id);
       const visiorsCount = isVisitorMemeber ? visitors.length : (visitors.length + 1);
       const memberCost = group.cost / visiorsCount; // 1 если надо платить всем
-      if (member.balance >= memberCost) return 'primary';
-      return 'danger';
+      return member.balance >= memberCost;
+    },
+    getMemberPaymentColor(member, event){
+      const isPayed = !!event.payments.find(p => p.person == member.id);
+      if (isPayed) return 'success';
+      return this.getMemberPaymentAvailability(member, event) ? 'primary' : 'danger';
     },
     getMemberFirstName(member) {
       return member.name.split(" ")[0];
@@ -319,7 +341,7 @@ export default {
       return this.$moment(event.startsAt).format("HH:mm");
     },
     getEventEnd(event) {
-       return this.$moment(event.startsAt).add('minutes', event.duration).format("HH:mm");
+      return this.$moment(event.startsAt).add('minutes', event.duration).format("HH:mm");
     }
   }
 };

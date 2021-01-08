@@ -242,7 +242,42 @@ export default {
       this.eventForm.find(f => f.property == "instructor").value = this.defaultInstructor;
       this.eventForm.find(f => f.property == "place").value = this.defaultPlace;
       this.eventForm.find(f => f.property == "duration").value = this.defaultDuration;
+      this.eventForm.find(f => f.property == "startsAt").value = this.getNextNearTime();
       this.$refs.eventModal.showAdd();
+    },
+    getNextNearTime() {
+      const currentDate = new Date();
+      const isCurrentMonth = currentDate.getFullYear() == this.selectedYear && currentDate.getMonth() == this.selectedMonth;
+      let firstDate = 1;
+      let hours = 17;
+      let minutes = 0;
+      let nextDate = new Date(this.selectedYear, this.selectedMonth, isCurrentMonth ? currentDate.getDate() : firstDate);
+      if (this.group.schedule) {
+        let scheduleItems = this.group.schedule.split(",");
+        let scheduleDays = scheduleItems.map(x => { 
+          return { 
+            weekDay: Number(x.split(" ")[0]),
+            hours: Number((x.split(" ")[1]).split(":")[0]),
+            minutes: Number((x.split(" ")[1]).split(":")[1]),
+          }
+        });
+        let days = scheduleDays
+          .map(x => this.nextWeekDay(nextDate, x.weekDay));
+        nextDate = new Date(Math.min.apply(null,days));
+        let findedDay = scheduleDays.find( x => x.weekDay == nextDate.getDay());
+        hours = findedDay.hours;
+        minutes = findedDay.minutes;
+      }
+      nextDate.setHours(hours);
+      nextDate.setMinutes(minutes);
+      nextDate.setSeconds(0);
+      nextDate.setMilliseconds(0);
+      return nextDate;
+    },
+    nextWeekDay(startDate, weekDay){
+      let date = new Date(startDate.getTime());
+      date.setDate(date.getDate() + (weekDay+(7-date.getDay())) % 7);
+      return date;
     },
     showEditEventModal(field) {
       this.eventForm.find(f => f.property == "group").hidden = true;

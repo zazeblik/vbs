@@ -41,6 +41,7 @@ module.exports = {
     try {
       const event_id = Number(req.param("id"));
       let visitors = req.param("visitors");
+      let autoDebit = req.param("autoDebit");
       let event = await Events.findOne(event_id)
         .populate("payments")
         .populate("visitors");
@@ -50,7 +51,7 @@ module.exports = {
       let updatedPersonIds = [];
       let personBalances = {};
       await Events.addToCollection(event_id, "visitors").members(visitors);
-      if (group.type == GroupType.Personal) {
+      if (group.type == GroupType.Personal && autoDebit) {
         const persons = await Persons.find({id: visitors}).sort('balance DESC');
         const eventPayments = event.payments;
         const eventVisitorIds = event.visitors.map(x => x.id);
