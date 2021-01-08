@@ -1,4 +1,5 @@
 const fs = require('fs');
+const PersonalDebitMode = require('../../enums').PersonalDebitMode;
 
 module.exports = {
   attributes: {
@@ -62,6 +63,14 @@ module.exports = {
     bottomHtml: {
       type: "string"
     },
+    debitMode: {
+      type: "number",
+      defaultsTo: PersonalDebitMode.AlwaysAsk
+    },
+    divideSumMode: {
+      type: "boolean",
+      defaultsTo: true
+    }
   },
   beforeCreate: updateHandler,
   beforeUpdate: updateHandler

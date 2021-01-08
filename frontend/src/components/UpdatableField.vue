@@ -11,14 +11,14 @@
           value-as-date
           :start-weekday="1"
           v-model="model"
-          @hidden="save(validationContext)"
+          @hidden="save(validationContext, settingsField)"
           :state="getValidationState(validationContext)"
         />
         <b-form-checkbox
           size="lg"
           v-else-if="type == 'checkbox'"
           v-model="model"
-          @input="save({dirty: true, valid: true})"
+          @input="save({dirty: true, valid: true}, settingsField)"
           :state="getValidationState({dirty: true, valid: true})"
         />
         <b-form-file
@@ -50,7 +50,15 @@
           max-rows="6"
           v-model="model"
           :placeholder="placeholder"
-          @change="save(validationContext)"
+          @change="save(validationContext, settingsField)"
+          :state="getValidationState(validationContext)"
+        />
+        <b-form-select
+          v-else-if="type == 'select'"
+          size="sm"
+          v-model="model"
+          :options="options"
+          @change="save(validationContext, settingsField)"
           :state="getValidationState(validationContext)"
         />
         <b-form-input
@@ -59,7 +67,7 @@
           size="sm"
           v-model="model"
           :placeholder="placeholder"
-          @change="save(validationContext)"
+          @change="save(validationContext, settingsField)"
           :state="getValidationState(validationContext)"
         />
         <b-form-invalid-feedback :id="'feedback_'+field">{{ validationContext.errors[0] }}</b-form-invalid-feedback>
@@ -79,6 +87,8 @@ export default {
     "updateUrl",
     "type",
     "placeholder",
+    "options",
+    "settingsField"
   ],
   data() {
     const updatableField = this.initComponent();
@@ -89,12 +99,13 @@ export default {
     };
   },
   methods: {
-    async save(validationState) {
+    async save(validationState, settingsField) {
       const state = this.getValidationState(validationState);
       if (state) {
         let changes = {};
         changes[this.field] = this.updatableField.convertModel(this.model);
         const result = await this.$postAsync(this.updateUrl, changes, true);
+        if (settingsField) this.$settings[this.field] = this.model;
         this.$bvToast.toast("Статус запроса: " + result, {
           title: `Значение ${this.label} ${
             result == "OK" ? "успешно" : "не"
@@ -117,7 +128,7 @@ export default {
       if (this.type == 'icon'){
         await this.$postAsync('/site/icon');
       } else {
-        await this.save({dirty: true, valid: true});
+        await this.save({dirty: true, valid: true}, this.settingsField);
       }
     },
     convertModel(model) {

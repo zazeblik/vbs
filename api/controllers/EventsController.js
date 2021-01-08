@@ -1,5 +1,6 @@
 const moment = require('moment');
 const GroupType = require('../../enums').GroupType;
+const PersonalDebitMode = require('../../enums').PersonalDebitMode;
 
 module.exports = {
   delete: async function (req, res) {
@@ -42,6 +43,9 @@ module.exports = {
       const event_id = Number(req.param("id"));
       let visitors = req.param("visitors");
       let autoDebit = req.param("autoDebit");
+      const settings = await Settings.findOne(1);
+      if (settings.debitMode == PersonalDebitMode.AlwaysDebit) autoDebit = true;
+      if (settings.debitMode == PersonalDebitMode.AlwaysNoDebit) autoDebit = false;
       let event = await Events.findOne(event_id)
         .populate("payments")
         .populate("visitors");
@@ -57,7 +61,7 @@ module.exports = {
         const eventVisitorIds = event.visitors.map(x => x.id);
         const eventPaymentsPersons = eventPayments.map(p => p.person);
         const uniquePersons = [...new Set(eventVisitorIds.concat(visitors))];
-        const memberCost = group.cost / uniquePersons.length;
+        const memberCost = settings.divideSumMode ? (group.cost / uniquePersons.length) : group.cost;
         const visiorsToCreatePayments = visitors
           .filter(v => !eventPaymentsPersons.includes(v) && persons.find(p => p.id == v).balance >= memberCost);
         const paymentsToCreate = visiorsToCreatePayments.map(v => {
@@ -111,6 +115,7 @@ module.exports = {
     try {
       const event_id = Number(req.param("id"));
       const visitors = req.param("visitors");
+      const settings = await Settings.findOne(1);
       let event = await Events.findOne(event_id)
         .populate("payments")
         .populate("visitors");
@@ -125,7 +130,7 @@ module.exports = {
         const eventVisitorIds = event.visitors.map(x => x.id);
         const eventPaymentsPersons = eventPayments.map(p => p.person);
         const remainingPersons = eventVisitorIds.filter(x => !visitors.includes(x));
-        const memberCost = group.cost / remainingPersons.length;
+        const memberCost = settings.divideSumMode ? (group.cost / remainingPersons.length) : group.cost;
         const visiorsToDeletePayments = eventPaymentsPersons.filter(x => visitors.includes(x));
         const paymentIdsToDelete = eventPayments
           .filter(p => visiorsToDeletePayments.includes(p.person))

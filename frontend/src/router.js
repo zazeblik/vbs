@@ -166,6 +166,10 @@ export default new Router({
           component: () => import('./views/site/Settings.vue')
         },
         {
+          path: 'customization',
+          component: () => import('./views/Сustomization.vue')
+        },
+        {
           path: 'materials',
           component: () => import('./views/site/Materials.vue')
         },

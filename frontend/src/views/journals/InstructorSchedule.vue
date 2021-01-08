@@ -95,6 +95,7 @@
 </template>
 <script>
 const GroupType = require("../../../../enums").GroupType;
+const PersonalDebitMode = require("../../../../enums").PersonalDebitMode;
 import ModelModal from "../../components/ModelModal";
 import { EventForm } from "../../shared/forms";
 export default {
@@ -200,7 +201,7 @@ export default {
     async changeVisitorState(member, event){
       let autoDebit = false;
       let isVisitor = member.isVisitor;
-      if (!isVisitor && this.getMemberPaymentAvailability(member, event)) {
+      if (!isVisitor && this.getMemberPaymentAvailability(member, event) && this.$settings.debitMode == PersonalDebitMode.AlwaysAsk) {
         autoDebit = await this.promptMemeberPaymentAvailability();
       }
       const result = await this.$postAsync(`${this.eventUrl}/${isVisitor ? 'remove' : 'add' }-visitor/${event.id}`, { 
@@ -217,7 +218,7 @@ export default {
       let autoDebit = false;
       const allChecked = event.members.every(m => m.isVisitor);
       const lostIds = event.members.filter(m => allChecked ? m.isVisitor : !m.isVisitor).map(m => m.id);
-      if (!allChecked && event.members.some(x => this.getMemberPaymentAvailability(x, event))){
+      if (!allChecked && event.members.some(x => this.getMemberPaymentAvailability(x, event)) && this.$settings.debitMode == PersonalDebitMode.AlwaysAsk){
         autoDebit = await this.promptMemeberPaymentAvailability();
       }
       const result = await this.$postAsync(
@@ -311,7 +312,7 @@ export default {
       const visitors = event.members.filter(x => x.isVisitor);
       const isVisitorMemeber = visitors.map(x => x.id).includes(member.id);
       const visiorsCount = isVisitorMemeber ? visitors.length : (visitors.length + 1);
-      const memberCost = group.cost / visiorsCount; // 1 если надо платить всем
+      const memberCost = this.$settings.divideSumMode ? (group.cost / visiorsCount) : group.cost;
       return member.balance >= memberCost;
     },
     getMemberPaymentColor(member, event){
