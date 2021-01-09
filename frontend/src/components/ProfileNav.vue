@@ -8,7 +8,7 @@
         </template>
         <b-dropdown-item v-if="isSiteShown && $user.role != 0" href="/cp">Панель управления</b-dropdown-item>
         <b-dropdown-item v-if="!isSiteShown" href="/">На сайт</b-dropdown-item>
-        <b-dropdown-item v-if="!isSiteShown" href="/cp/customization">Общие настройки</b-dropdown-item>
+        <b-dropdown-item v-if="!isSiteShown && $user.role == 2" href="/cp/customization">Общие настройки</b-dropdown-item>
         <b-dropdown-item v-if="isSiteShown" href="/profile">Профиль</b-dropdown-item>
         <b-dropdown-item v-if="isSiteShown && $user.person" href="/self-payments">Оплата</b-dropdown-item>
         <b-dropdown-item v-if="isSiteShown && $user.person" href="/self-schedule">Расписание</b-dropdown-item>

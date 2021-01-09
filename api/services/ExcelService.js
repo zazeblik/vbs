@@ -81,6 +81,21 @@ module.exports.getInstructors = async function(year, month){
   return wbbuf;
 }
 
+module.exports.getIncomes = async function(fromDate, toDate){
+  const workbook = new Excel.Workbook();
+  await workbook.xlsx.readFile('api/templates/incomes.xlsx');
+  let sheet = workbook.worksheets[0];
+  const incomes = await Incomes.find({createdAt: {">=": fromDate, "<=": toDate}}).populate('person');
+  incomes.forEach((v, i) => {
+    sheet.getRow(i+2).values = [moment(v.createdAt).format("DD.MM.YYYY"), v.person.name, v.sum, v.description];
+  });
+  const totalsRow = sheet.getRow(incomes.length+2);
+  const totalSumCell = totalsRow.getCell(3);
+  totalSumCell.value = {'richText': [{'font': {'bold': true}, 'text': `Итого: ${incomes.map(x => x.sum).reduce((a, b) => a + b, 0)}`}]};
+  const wbbuf = await workbook.xlsx.writeBuffer();
+  return wbbuf;
+}
+
 module.exports.getVisits = async function(year, month){
   const workbook = new Excel.Workbook();
   await workbook.xlsx.readFile('api/templates/visits.xlsx');

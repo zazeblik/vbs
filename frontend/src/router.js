@@ -162,6 +162,10 @@ export default new Router({
           component: () => import('./views/payments/Payments.vue')
         },
         {
+          path: 'incomes',
+          component: () => import('./views/payments/Incomes.vue')
+        },
+        {
           path: 'settings',
           component: () => import('./views/site/Settings.vue')
         },
