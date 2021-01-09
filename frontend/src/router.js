@@ -130,15 +130,15 @@ export default new Router({
           component: () => import('./views/journals/Generals.vue')
         },
         {
-          path: 'generals/:id',
-          component: () => import('./views/journals/GeneralsDetail.vue'),
+          path: 'group-detail/:id',
+          component: () => import('./views/journals/GroupDetail.vue'),
         },
         {
           path: 'personals',
           component: () => import('./views/journals/Personals.vue')
         },
         {
-          path: 'personals/:id',
+          path: 'instructor-schedule/:id',
           component: () => import('./views/journals/InstructorSchedule.vue')
         },
         {

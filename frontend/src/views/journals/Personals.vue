@@ -30,7 +30,7 @@
               <b-dropdown-item @click="showEditModal(group)">Редактировать</b-dropdown-item>
               <b-dropdown-item @click="showDeleteConfirm(group)">Удалить</b-dropdown-item>
             </b-dropdown>
-            <h6 class="mb-0 pointed" @click="showEditModal(group)">{{group.name}}</h6>
+            <h6 class="mb-0 pointed" @click="goToDetailPage(group)">{{group.name}}</h6>
           </template>
           <b-card-text class="px-3 pt-2 pb-1">
             <p>Стоимость: {{group.cost}}</p>
@@ -113,7 +113,12 @@ export default {
     },
     goToTrenerPersonals() {
       this.$router.push({ 
-        path: `/cp/personals/${this.selectedInstructor}`
+        path: `/cp/instructor-schedule/${this.selectedInstructor}`
+      });
+    },
+    goToDetailPage(group) {
+      this.$router.push({ 
+        path: `/cp/group-detail/${group.id}`
       });
     },
     async showDeleteConfirm(group) {

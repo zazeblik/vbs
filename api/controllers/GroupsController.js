@@ -4,7 +4,7 @@ const GroupsService = require('../services/GroupsService');
 const ExcelService = require('../services/ExcelService');
 
 module.exports = {
-  exportGenerals: async function (req, res){
+  exportReport: async function (req, res){
     if (!req.param("year")) return res.status(400).send("year не указан");
     if (req.param("month") == undefined) return res.status(400).send("month не указан");
     if (!req.param("group")) return res.status(400).send("group не указан");
@@ -12,7 +12,7 @@ module.exports = {
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));
       const group = Number(req.param("group"));
-      const wbbuf = await ExcelService.getGenerals(year, month, group);
+      const wbbuf = await ExcelService.getGroupReport(year, month, group);
       res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
       return res.end( wbbuf );
     } catch (err) {

@@ -40,7 +40,7 @@ module.exports.routes = {
   '/groups/add-person/:id': 'GroupsController.addPerson',
   '/groups/add-persons/:id': 'GroupsController.addPersons',
   '/groups/remove-person/:id': 'GroupsController.removePerson',
-  '/groups/export-generals': 'GroupsController.exportGenerals',
+  '/groups/export': 'GroupsController.exportReport',
   '/groups/export-personals': 'GroupsController.exportPersonals',
   '/events/edit/:id': 'EventsController.edit',
   '/events/delete/:id': 'EventsController.delete',

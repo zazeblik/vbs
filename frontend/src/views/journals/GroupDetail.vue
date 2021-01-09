@@ -1,7 +1,7 @@
 <template>
   <div class="py-2">
     <b-breadcrumb class="mt-1">
-      <b-breadcrumb-item to="/cp/generals">Общие группы</b-breadcrumb-item>
+      <b-breadcrumb-item :to="group.type ==  0 ? '/cp/generals' : '/cp/personals'">{{group.type ==  0 ? 'Общие' : 'Индивидуальные'}} группы</b-breadcrumb-item>
       <b-breadcrumb-item active>{{title}}</b-breadcrumb-item>
     </b-breadcrumb>
     <b-input-group size="sm">
@@ -225,7 +225,7 @@ export default {
       return count && !isOpen;
     },
     async exportData() {
-      await this.$getAsync(`${this.groupUrl}/export-generals`, {
+      await this.$getAsync(`${this.groupUrl}/export`, {
         month: this.selectedMonth,
         year: this.selectedYear,
         group: this.group.id

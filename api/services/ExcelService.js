@@ -227,9 +227,9 @@ module.exports.getPersonals = async function(year, month, instructor){
   return wbbuf;
 }
 
-module.exports.getGenerals = async function(year, month, group){
+module.exports.getGroupReport = async function(year, month, group){
   const workbook = new Excel.Workbook();
-  await workbook.xlsx.readFile('api/templates/generals.xlsx');
+  await workbook.xlsx.readFile('api/templates/groupReport.xlsx');
   const monthDateRange = GetMonthDateRange(year, month);
   let sheet = workbook.worksheets[0];
   const sheetData = await GroupsService.getSheet(group, monthDateRange);

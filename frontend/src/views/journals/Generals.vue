@@ -103,7 +103,7 @@ export default {
     },
     goToDetailPage(group) {
       this.$router.push({ 
-        path: `/cp/generals/${group.id}`
+        path: `/cp/group-detail/${group.id}`
       });
     },
     async showDeleteConfirm(group) {
