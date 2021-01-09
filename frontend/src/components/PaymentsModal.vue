@@ -332,13 +332,17 @@ export default {
         const match = p.month && p.type == GroupType.General ? p.month.split(" ") : null;
         const month = match ? Number(match[0]) : null;
         const year = match ? Number(match[1]) : null;
-        let description = `Оплата ${this.getPaymentDescription(p)} `;
         let payment = {
           group: p.group,
           sum: p.sum,
           month: month,
           year: year
         };
+        if (p.event) {
+          payment.events = [p.event];
+          payment.group = p.group = this.unpayedEvents.find(x => x.id == p.event).group; 
+        }
+        let description = `Оплата ${this.getPaymentDescription(p)} `;
         if (this.isControlPanelShown){
           payment.person = this.payer;
           description += 'вручную';
@@ -346,9 +350,6 @@ export default {
           description += 'онлайн';
         }
         payment.description = description;
-        if (p.event) {
-          payment.events = [p.event];
-        }
         resultPayments.push(payment);
       });
       return resultPayments;

@@ -48,6 +48,7 @@ module.exports = {
       const id = valueToSet.id;
       const actualRule = await SalaryRules.findOne({id});
       const existsRulesCount = await SalaryRules.count({
+        id: {"!=": id},
         instructor: valueToSet.instructor || actualRule.instructor, 
         group: valueToSet.group || actualRule.group, 
         forGroupType: valueToSet.forGroupType || actualRule.forGroupType

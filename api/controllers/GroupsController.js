@@ -87,9 +87,9 @@ module.exports = {
     try {
       const id = Number(req.param("id"));
       const instructor = await Persons.findOne(id);
-      const persons = await Persons.find({select: ["id", "name"]}).sort('name ASC');;
+      const persons = await Persons.find({select: ["id", "name"]}).sort('name ASC');
       const places = await Places.find();
-      const groups = await Groups.find({ type: GroupType.Personal, defaultInstructor: id, hidden: false });
+      const groups = await Groups.find({ type: GroupType.Personal, defaultInstructor: id, hidden: false }).sort('name ASC');;
       return res.send({ instructor, places, persons, groups });
     } catch (error) {
       return res.badRequest(error.message);
@@ -207,7 +207,7 @@ module.exports = {
             defaultInstructor: id,
             hidden: false
           },
-          sort: "updatedAt DESC"
+          sort: "name ASC"
         })
         .populate("defaultInstructor")
         .populate("defaultPlace")
