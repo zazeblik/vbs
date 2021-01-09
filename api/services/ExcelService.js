@@ -1,6 +1,7 @@
 const Excel = require('exceljs');
 const GetMonthDateRange =  require('../utils/DateRangeHelper').GetMonthDateRange;
 const GroupsService = require('./GroupsService');
+const ReportsService = require('./ReportsService');
 const moment = require('moment');
 
 module.exports.getTotals = async function(year, month){
@@ -16,14 +17,14 @@ module.exports.getTotals = async function(year, month){
     .populate("visitors")
     .populate("payments")
     .populate("group");
-  let results = DashboardService.getTotals(events);
+  let results = ReportsService.getTotals(events);
   results.forEach((r, i) => {
     sheet.getRow(i+2).values = [r.group, r.eventsTotal, r.visitsTotal, r.paymentsTotal, r.paymentsTotalSum];
   });
   const totalRow = sheet.getRow(results.length+2);
   totalRow.values = ["","","","",""];
   totalRow.eachCell(function(cell, colNumber) {
-    cell.value = {'richText': [{'font': {'bold': true}, 'text': DashboardService.resolveTotalSum(results, colNumber)}]};
+    cell.value = {'richText': [{'font': {'bold': true}, 'text': ReportsService.resolveTotalSum(results, colNumber)}]};
     cell.alignment = { horizontal: 'right' };
   })
   const wbbuf = await workbook.xlsx.writeBuffer();
@@ -52,7 +53,7 @@ module.exports.getPayments = async function(year, month){
       const incomes = await Incomes
         .find({ updatedAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() }})
         .populate('person');
-      let results = DashboardService.getTransactionSums(payments, incomes);
+      let results = ReportsService.getTransactionSums(payments, incomes);
       results.forEach((r, i) => {
         sheet.getRow(i+2).values = [r.name, r.paymentsSum, r.incomesSum];
       });
@@ -72,7 +73,7 @@ module.exports.getInstructors = async function(year, month){
     .sort("startsAt ASC")
     .populate("instructor")
     .populate("group");
-  let results = DashboardService.getInstructors(events);
+  let results = ReportsService.getInstructors(events);
   for (let i = 0; i < results.length; i++) {
     const r = results[i];
     sheet.getRow(i+2).values = [r.name, r.generalsCount, r.personalsCount, r.total];
@@ -87,10 +88,19 @@ module.exports.getIncomes = async function(fromDate, toDate){
   let sheet = workbook.worksheets[0];
   const incomes = await Incomes.find({createdAt: {">=": fromDate, "<=": toDate}}).populate('person');
   incomes.forEach((v, i) => {
-    sheet.getRow(i+2).values = [moment(v.createdAt).format("DD.MM.YYYY"), v.person.name, v.sum, v.description];
+    sheet.getRow(i+2).values = [moment(v.createdAt).format("DD.MM.YYYY"), v.person.name, v.sum, v.cashless ? "да" : "нет", v.online ? "да" : "нет", v.description];
   });
   const totalsRow = sheet.getRow(incomes.length+2);
-  const totalSumCell = totalsRow.getCell(3);
+  const totalManualSumCell = totalsRow.getCell(1);
+  totalManualSumCell.value = {'richText': [{'font': {'bold': true}, 'text': `Итого наличными: ${incomes.filter(x => !x.cashless && !x.online).map(x => x.sum).reduce((a, b) => a + b, 0)}`}]};
+
+  const totalCachlessSumCell = totalsRow.getCell(2);
+  totalCachlessSumCell.value = {'richText': [{'font': {'bold': true}, 'text': `Итого безнал.: ${incomes.filter(x => x.cashless).map(x => x.sum).reduce((a, b) => a + b, 0)}`}]};
+
+  const totalOnlineSumCell = totalsRow.getCell(3);
+  totalOnlineSumCell.value = {'richText': [{'font': {'bold': true}, 'text': `Итого online: ${incomes.filter(x => x.online).map(x => x.sum).reduce((a, b) => a + b, 0)}`}]};
+  
+  const totalSumCell = totalsRow.getCell(4);
   totalSumCell.value = {'richText': [{'font': {'bold': true}, 'text': `Итого: ${incomes.map(x => x.sum).reduce((a, b) => a + b, 0)}`}]};
   const wbbuf = await workbook.xlsx.writeBuffer();
   return wbbuf;
@@ -108,7 +118,7 @@ module.exports.getVisits = async function(year, month){
     .sort("startsAt ASC")
     .populate("visitors")
     .populate("group");
-  let visits = DashboardService.getVisits(events);
+  let visits = ReportsService.getVisits(events);
   visits.forEach((v, i) => {
     sheet.getRow(i+2).values = [v.name, v.generalsCount, v.personalsCount, v.total];
   });

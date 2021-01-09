@@ -19,6 +19,10 @@ module.exports = {
       type: 'boolean',
       defaultsTo: false
     },
+    cashless: {
+      type: 'boolean',
+      defaultsTo: false
+    },
     description: {
       type: 'string',
       defaultsTo: 'Пополнение баланса вручную'

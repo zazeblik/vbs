@@ -41,6 +41,11 @@ module.exports.IncomeForm = [
     }
   },
   {
+    label: "Безналичный расчёт",
+    property: "cashless",
+    type: "checkbox"
+  },
+  {
     label: "Описание",
     property: "description",
     type: "string",

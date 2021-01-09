@@ -1,6 +1,6 @@
 <template>
   <div class="py-2">
-    <h5>История</h5>
+    <h5>Баланс</h5>
     <PaymentsBlock :isControlPanelShown="true" />
   </div>
 </template>

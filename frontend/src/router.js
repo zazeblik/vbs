@@ -182,6 +182,22 @@ export default new Router({
           component: () => import('./views/site/Files.vue')
         },
         {
+          path: 'visits-report',
+          component: () => import('./views/reports/VisitsReport.vue')
+        },
+        {
+          path: 'instructors-report',
+          component: () => import('./views/reports/InstructorsReport.vue')
+        },
+        {
+          path: 'totals-report',
+          component: () => import('./views/reports/TotalsReport.vue')
+        },
+        {
+          path: 'transactions-report',
+          component: () => import('./views/reports/TransactionsReport.vue')
+        },
+        {
           path: 'rules',
           component: () => import('./views/salaries/Rules.vue')
         },

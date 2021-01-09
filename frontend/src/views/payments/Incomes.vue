@@ -28,7 +28,11 @@
     </b-input-group>
     <b-table class="py-2 incomes-table" small bordered responsive :fields="fields" :items="incomes" foot-clone foot-variant="light" no-footer-sorting>
       <template v-slot:foot()="data">
-        <b>{{data.column == 'sum' ? 'Итого: ' + total : ''}}</b>
+        <b v-if="data.column == 'description'">{{'Итого: ' + total}}</b>
+        <b v-else-if="data.column == 'createdAt'">{{'Итого наличными: ' + totalManual}}</b>
+        <b v-else-if="data.column == 'person.name'">{{'Итого безнал.: ' + totalCashless}}</b>
+        <b v-else-if="data.column == 'sum'">{{'Итого online: ' + totalOnline}}</b>
+        <b v-else></b>
       </template>
     </b-table>
   </div>
@@ -45,6 +49,8 @@ export default {
         { key: 'createdAt', label: 'Дата создания', sortable: true, formatter: (value, key, item) => this.$moment(value).format("DD.MM.YYYY") },
         { key: 'person.name', label: 'Плательщик', sortable: true },
         { key: 'sum', label: 'Сумма', sortable: true },
+        { key: 'cashless', label: 'Безнал.', sortable: true, formatter: (value, key, item) => value ? "да" : "нет" },
+        { key: 'online', label: 'Online', sortable: true, formatter: (value, key, item) => value ? "да" : "нет" },
         { key: 'description', label: 'Описание', sortable: true }
       ],
       incomes: [],
@@ -64,6 +70,9 @@ export default {
         toDate: this.$moment(this.toDate).endOf('day').valueOf(),
       });
       this.total = this.incomes.sum(x => x.sum);
+      this.totalOnline = this.incomes.filter(x => x.online).sum(x => x.sum);
+      this.totalCashless = this.incomes.filter(x => x.cashless).sum(x => x.sum);
+      this.totalManual = this.incomes.filter(x => !x.cashless && !x.online).sum(x => x.sum);
     },
     async exportData() {
       await this.$getAsync(`${this.baseUrl}/export`, {

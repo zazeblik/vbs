@@ -30,6 +30,9 @@ module.exports.policies = {
   incomes: {
     '*': ['authenticated', 'isControlPanelAvailable']
   },
+  reports: {
+    '*': ['authenticated', 'isAdmin']
+  },
   payments: {
     '*': ['authenticated', 'isControlPanelAvailable'],
     selfGroupUnpayedEvents: ['authenticated', 'hasPerson'],
