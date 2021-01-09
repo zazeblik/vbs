@@ -284,7 +284,7 @@ module.exports.RuleForm = [
     type: "enum",
     options: [
       { text: "процент за занятие", value: SalaryRuleType.Precentage },
-      { text: "фиксированная сумма за занятие с человека", value: SalaryRuleType.FixPerEvent },
+      { text: "фиксированная сумма за занятие", value: SalaryRuleType.FixPerEvent },
       { text: "фиксированная сумма за месяц занятий", value: SalaryRuleType.FixMonthly }
     ],
   },

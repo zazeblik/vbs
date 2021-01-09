@@ -114,7 +114,7 @@ module.exports.getRule = function (group){
         adding = "% от всех платежей"
         break;
       case SalaryRuleType.FixPerEvent:
-        adding = " за каждое занятие с человека"
+        adding = " за каждое занятие"
         break;
       case SalaryRuleType.FixMonthly:
         adding = " за месяц занятий в группе"
