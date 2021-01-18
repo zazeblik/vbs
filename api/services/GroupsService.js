@@ -84,7 +84,7 @@ module.exports.getInstructorScheduleEvents = async function(id, monthDateRange) 
   const membersByGroup = {};
   for (let i = 0; i < groups.length; i++) {
     const group = groups[i];
-    let actionsByPerson = groupedActions[group.id]
+    let actionsByPerson = groupedActions[group.id] || {};
     let groupMembers = group.members;
     membersByGroup[group.id] = resolveGroupMembersByActions(groupMembers, actionsByPerson);
   }
