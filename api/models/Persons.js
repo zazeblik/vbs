@@ -59,7 +59,7 @@ module.exports = {
   },
   afterDestroy: async function(value, next){
     try {
-      await ArchivePersons.destroy({person: value.id}).fetch();
+      await GroupMemberActions.destroy({person: value.id}).fetch();
       await Payments.destroy({person: value.id}).fetch();
       await Incomes.destroy({person: value.id}).fetch();
       await Orders.destroy({person: value.id}).fetch();

@@ -11,7 +11,6 @@
           <template v-slot:button-content>
             <b-icon icon="three-dots-vertical"/><span class="sr-only">Actions</span>
           </template>
-          <b-dropdown-item @click="showArchivePersonConfirm(member)">Перевести в архив</b-dropdown-item>
           <b-dropdown-item @click="showRemovePersonConfirm(member)">Удалить из группы</b-dropdown-item>
         </b-dropdown>
     </b-list-group-item>
@@ -72,31 +71,8 @@ export default {
         }
       }
     },
-    async showArchivePersonConfirm(person) {
-      try {
-        const confirm = await this.$bvModal.msgBoxConfirm(
-          `Вы уверены, что хотите убрать в архив ${person.name}?`,
-          {
-            cancelTitle: "Отмена",
-            cancelVariant: "outline-secondary",
-            okTitle: "Убрать",
-            okVariant: "danger"
-          }
-        );
-        if (!confirm) return;
-        await this.archivePerson(person.id);
-      } catch (error) {
-        if (error.response) {
-          this.$error(error.response.data.message || error.response.data);
-        }
-      }
-    },
     async removePerson(person) {
       await this.$postAsync(`/groups/remove-person/${this.groupId}`, { person });
-      this.$emit("changed");
-    },
-    async archivePerson(person) {
-      await this.$postAsync(`/archivepersons`, { group: this.groupId, person });
       this.$emit("changed");
     },
     async addPerson() {

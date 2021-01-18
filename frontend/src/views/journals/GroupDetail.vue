@@ -1,7 +1,7 @@
 <template>
   <div class="py-2">
     <b-breadcrumb class="mt-1">
-      <b-breadcrumb-item :to="group.type ==  0 ? '/cp/generals' : '/cp/personals'">{{group.type ==  0 ? 'Общие' : 'Индивидуальные'}} группы</b-breadcrumb-item>
+      <b-breadcrumb-item :to="isGeneralGroup ? '/cp/generals' : '/cp/personals'">{{isGeneralGroup ? 'Общие' : 'Индивидуальные'}} группы</b-breadcrumb-item>
       <b-breadcrumb-item active>{{title}}</b-breadcrumb-item>
     </b-breadcrumb>
     <b-input-group size="sm">
@@ -130,7 +130,6 @@
             <b-icon icon="three-dots-vertical"/><span class="sr-only">Actions</span>
           </template>
           <b-dropdown-item v-if="!allEventsPayed(data)" @click="showAddPaymentModal(data.value)">Оплатить месяц</b-dropdown-item>
-          <b-dropdown-item @click="showArchivePersonConfirm(data.value)">Перевести в архив</b-dropdown-item>
           <b-dropdown-item @click="showRemovePersonConfirm(data.value)">Удалить из группы</b-dropdown-item>
         </b-dropdown>
       </template>
@@ -183,6 +182,7 @@ export default {
       addPersonsPlaceholder: "Выберите участников",
       isBusy: false,
       addPersonShown: false,
+      isGeneralGroup: true,
       selectedPersons: [],
       persons: [],
       eventUrl: '/events',
@@ -352,25 +352,6 @@ export default {
         }
       }
     },
-    async showArchivePersonConfirm(person) {
-      try {
-        const confirm = await this.$bvModal.msgBoxConfirm(
-          `Вы уверены, что хотите убрать в архив ${person.name}?`,
-          {
-            cancelTitle: "Отмена",
-            cancelVariant: "outline-secondary",
-            okTitle: "Убрать",
-            okVariant: "danger"
-          }
-        );
-        if (!confirm) return;
-        await this.archivePerson(person.id);
-      } catch (error) {
-        if (error.response) {
-          this.$error(error.response.data.message || error.response.data);
-        }
-      }
-    },
     async showRemoveEventConfirm(field) {
       try {
         const confirm = await this.$bvModal.msgBoxConfirm(
@@ -402,10 +383,6 @@ export default {
       await this.$postAsync(`/groups/remove-person/${this.$route.params.id}`, { person });
       await this.fetchData();
     },
-    async archivePerson(person) {
-      await this.$postAsync(`/archivepersons`, { group: this.$route.params.id, person });
-      await this.fetchData();
-    },
     async removeEvent(event){
       await this.$postAsync(`/events/delete/${event}`);
       await this.fetchData();
@@ -435,8 +412,9 @@ export default {
       this.isBusy = false;
     },
     async fetchDetail() {
-      const detail = await this.$getAsync(`/groups/detail/${this.$route.params.id}`);
+      const detail = await this.$getAsync(`/groups/detail/${this.$route.params.id}`, { year: this.selectedYear, month: this.selectedMonth });
       this.group = detail.group;
+      this.isGeneralGroup = this.group.type == GroupType.General; 
       this.persons =  detail.persons;
       this.defaultInstructor = detail.group.defaultInstructor;
       this.eventForm.find(f => f.property == "instructor").models = detail.persons;

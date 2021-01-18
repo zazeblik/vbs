@@ -154,10 +154,6 @@ export default new Router({
           component: () => import('./views/database/Places.vue')
         },
         {
-          path: 'archive',
-          component: () => import('./views/database/ArchivePersons.vue')
-        },
-        {
           path: 'payments',
           component: () => import('./views/payments/Payments.vue')
         },

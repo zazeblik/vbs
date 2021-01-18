@@ -8,7 +8,6 @@
         <b-dropdown-item to="/cp/persons">Участники</b-dropdown-item>
         <b-dropdown-item to="/cp/places" v-if="$user.role == 2">Залы</b-dropdown-item>
         <b-dropdown-item to="/cp/groups" v-if="$user.role == 2">Группы</b-dropdown-item>
-        <b-dropdown-item to="/cp/archive" v-if="$user.role == 2">Архив</b-dropdown-item>
       </b-nav-item-dropdown>
       <b-nav-item-dropdown class="border-top border-secondary px-2">
         <template slot="button-content">

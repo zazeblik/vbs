@@ -18,9 +18,6 @@ module.exports.policies = {
     materials: true,
     find: true
   },
-  archivePersons: {
-    '*': ['authenticated', 'isControlPanelAvailable']
-  },
   salaryRules: {
     '*': ['authenticated', 'isControlPanelAvailable']
   },

@@ -3,6 +3,8 @@ const fs = require('fs');
 const GroupType = require('../../enums').GroupType;
 const DateRangeHelper =  require('../utils/DateRangeHelper');
 const PersonsController = require('./PersonsController');
+const GroupsService = require('../services/GroupsService');
+const { GroupMemberActionType } = require('../../enums');
 
 module.exports = {
   publicSchedule: async function (req, res) {
@@ -34,9 +36,9 @@ module.exports = {
       const month = Number(req.param("month"));
       const monthDateRange = DateRangeHelper.GetMonthDateRange(year, month);
       const groups = await Groups.find({ hidden: false }).populate('members');
-      const archive = await ArchivePersons.find({person: req.session.User.person});
-      const archivedInGroups = archive.map(x => x.group);
-      const groupIds = groups.filter(x => (x.members.map(y => y.id)).includes(req.session.User.person) && !archivedInGroups.includes(x.id) ).map(g => g.id);
+      const groupIds = groups
+        .filter(x => (x.members.map(y => y.id)).includes(req.session.User.person))
+        .map(g => g.id);
       const events = await Events
         .find({ group: groupIds, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
         .sort("startsAt ASC")

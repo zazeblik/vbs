@@ -1,4 +1,5 @@
-const GroupType = require('../../enums').GroupType
+const GroupType = require('../../enums').GroupType;
+const GroupMemberActionType = require('../../enums').GroupMemberActionType;
 const GetMonthDateRange =  require('../utils/DateRangeHelper').GetMonthDateRange;
 const GroupsService = require('../services/GroupsService');
 const ExcelService = require('../services/ExcelService');
@@ -50,6 +51,7 @@ module.exports = {
       const id = Number(req.param("id"));
       const person = Number(req.param("person"));
       await Groups.addToCollection(id, "members").members([person]);
+      await GroupMemberActions.create({group: id, person: person, type: GroupMemberActionType.Added});
       await Groups.update(id, { updater: req.session.User.id })
       return res.ok();
     } catch (error) {
@@ -63,6 +65,8 @@ module.exports = {
       const id = Number(req.param("id"));
       const persons = req.param("persons");
       await Groups.addToCollection(id, "members").members(persons);
+      const actions = persons.map(x => { return {group: id, person: x, type: GroupMemberActionType.Added}});
+      await GroupMemberActions.createEach(actions);
       await Groups.update(id, { updater: req.session.User.id })
       return res.ok();
     } catch (error) {
@@ -76,6 +80,7 @@ module.exports = {
       const id = Number(req.param("id"));
       const person = Number(req.param("person"));
       await Groups.removeFromCollection(id, "members").members([person]);
+      await GroupMemberActions.create({group: id, person: person, type: GroupMemberActionType.Deleted});
       await Groups.update(id, { updater: req.session.User.id })
       return res.ok();
     } catch (error) {
@@ -109,19 +114,28 @@ module.exports = {
       const rows = GroupsService.getInstructorScheduleRows(year, month, events, fields);
       const paymentsSum = GroupsService.getInstructorSchedulePaymentsSum(events);
       const hoursSum = GroupsService.getInstructorScheduleHoursSum(events);
-      const totals = {hoursSum, paymentsSum}
+      const totals = { hoursSum, paymentsSum };
       return res.send({ fields, rows, totals });
     } catch (error) {
       return res.badRequest(error.message);
     }
   },
   detail: async function (req, res){
-    if (!req.param("id")) return res.status(400).send("id не указан");
+    if (!req.param('id')) return res.status(400).send('id не указан');
+    if (!req.param('year')) return res.status(400).send('year не указан');
+    if (req.param('month') == undefined) return res.status(400).send('month не указан');
     try {
-      const id = Number(req.param("id"));
-      const group = await Groups.findOne(id).populate("members");
+      const id = Number(req.param('id'));
+      const year = Number(req.param('year'));
+      const month = Number(req.param('month'));
+      const monthDateRange = GetMonthDateRange(year, month);
+      const groupMemberActions = await GroupMemberActions.find({ group: id, createdAt: { '<=': monthDateRange.end.valueOf() } });
+      const group = await Groups.findOne(id).populate('members');
+
       let existingIds = group.members.map(m => m.id);
-      const persons = await Persons.find({ where: { id: { "!=": existingIds } }, select: ["id", "name"]}).sort('name ASC');;
+      const persons = await Persons
+        .find({ where: { id: { '!=': existingIds } }, select: ['id', 'name'] })
+        .sort('name ASC');
       const places = await Places.find();
       return res.send({ group, persons, places });
     } catch (error) {
@@ -201,23 +215,10 @@ module.exports = {
       const id = Number(req.param("id"));
       const type = Number(req.param("type"));
       let groups = await Groups
-        .find({
-          where: { 
-            type: type,
-            defaultInstructor: id,
-            hidden: false
-          },
-          sort: "name ASC"
-        })
+        .find({ where: { type: type, defaultInstructor: id, hidden: false }, sort: "name ASC" })
         .populate("defaultInstructor")
         .populate("defaultPlace")
-        .populate("members", {
-          sort: "name ASC"
-        });
-      const archivePersons = await ArchivePersons.find({ group: groups.map(g => g.id) }); 
-      groups.forEach(g => {
-        g.members = g.members.filter(m => archivePersons.filter(ap => ap.group == g.id && ap.person == m.id).length == 0)
-      })
+        .populate("members", { sort: "name ASC" });
       return res.send(groups);
     } catch (error) {
       return res.badRequest(error.message);

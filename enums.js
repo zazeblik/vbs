@@ -24,6 +24,11 @@ module.exports.SiteBlock = {
   Contacts: 6
 }
 
+module.exports.GroupMemberActionType = {
+  Added: 0,
+  Deleted: 1
+}
+
 module.exports.FilesBlock = {
   Tournaments: 0,
   Photo: 1,

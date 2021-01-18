@@ -1,15 +1,13 @@
 const moment = require('moment');
 moment.locale('ru'); 
 const GroupType = require('../../enums').GroupType;
+const GroupMemberActionType = require('../../enums').GroupMemberActionType;
 
 module.exports.getSheet = async function(id, monthDateRange){
-  const archivePersons = await ArchivePersons.find({ group: id });
-  const group = await Groups.findOne(id)
-    .populate("members", { 
-      where: { id: { '!=' : archivePersons.map(ap => ap.person) } }, 
-      sort: "name ASC" 
-    });
-  const groupMembers = group.members;
+  const group = await Groups.findOne(id).populate("members", { sort: "name ASC" });
+  let groupMembers = group.members;
+  const actionsByPerson = await getActionsByPerson(id, monthDateRange.end.valueOf());
+  groupMembers = resolveGroupMembersByActions(groupMembers, actionsByPerson);
   const events = await Events
     .find({ group: id, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
     .sort("startsAt ASC")
@@ -76,22 +74,26 @@ module.exports.getInstructorScheduleEvents = async function(id, monthDateRange) 
   const groups = await Groups
     .find({ type: GroupType.Personal, hidden: false })
     .populate("members", {select: ["id", "name", "balance"]});
-  const archivePersons = await ArchivePersons.find({ group: groups.map(g => g.id) });
   const groupIds = groups.map(g => g.id);
+  const groupedActions = await getGroupedActions(groupIds, monthDateRange.end.valueOf());
   let events = await Events
     .find({ instructor: id, group: groupIds, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
     .sort("startsAt ASC")
     .populate("visitors", {select: ["id", "name"]})
     .populate("payments", {select: ["id", "person", "sum"]});
+  const membersByGroup = {};
+  for (let i = 0; i < groups.length; i++) {
+    const group = groups[i];
+    let actionsByPerson = groupedActions[group.id]
+    let groupMembers = group.members;
+    membersByGroup[group.id] = resolveGroupMembersByActions(groupMembers, actionsByPerson);
+  }
   events.forEach(e => {
-    const members = groups
-      .find(g => g.id == e.group).members
-      .filter(m => archivePersons.filter(ap => ap.group == e.group && ap.person == m.id).length == 0)
-      .map(x => { return {
-        id: x.id,
-        name: x.name,
-        balance: x.balance
-      }});
+    const members = membersByGroup[e.group].map(x => { return {
+      id: x.id,
+      name: x.name,
+      balance: x.balance
+    }});
     members.forEach(m => { 
       m.isVisitor = !!e.visitors.find(v => v.id == m.id) 
     });
@@ -220,4 +222,55 @@ function getWeekNumber(startsAt){
   const startOfMonthDay = startOfMonthDate.getDay() - 1;
   const weekdayNumber = Math.floor((date.getDate() + startOfMonthDay) / 7);
   return weekdayNumber;
+}
+
+async function getActionsByPerson(group, toDate) {
+  const actions = await GroupMemberActions
+    .find({group: group, createdAt: {"<=": toDate}})
+    .populate("person")
+    .sort('createdAt ASC');
+  let actionsByPerson = {};
+  actions.forEach(action => {
+    const person = action.person.id;
+    if (!actionsByPerson[person]) actionsByPerson[person] = [];
+    actionsByPerson[person].push(action); 
+  });
+  return actionsByPerson;
+}
+
+async function getGroupedActions(groupIds, toDate) {
+  const actions = await GroupMemberActions
+    .find({group: groupIds, createdAt: {"<=": toDate}})
+    .populate("person")
+    .sort('createdAt ASC');
+  let actionsByPerson = {};
+  actions.forEach(action => {
+    const group = action.group;
+    const person = action.person.id;
+    if (!actionsByPerson[group]) actionsByPerson[group] = {};
+    if (!actionsByPerson[group][person]) actionsByPerson[group][person] = [];
+    actionsByPerson[group][person].push(action); 
+  });
+  return actionsByPerson;
+}
+
+function resolveGroupMembersByActions(groupMembers, actionsByPerson){
+  let groupMemberIds = groupMembers.map(x => x.id);
+  for (const personId in actionsByPerson) {
+    let actions = actionsByPerson[personId];
+    let pId = Number(personId);
+    if (actions.length) {
+      const lastAction = actions[actions.length - 1];
+      if (lastAction.type == GroupMemberActionType.Added) {
+        if (!groupMemberIds.includes(pId)) groupMembers.push(lastAction.person);
+      } else {
+        groupMembers = groupMembers.filter(x => x.id != pId);
+      }
+    }
+  }
+  for (let i = 0; i < groupMembers.length; i++) {
+    const member = groupMembers[i];
+    if (!actionsByPerson[member.id]) groupMembers = groupMembers.filter(x => x.id != member.id);
+  }
+  return groupMembers.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
 }

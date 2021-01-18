@@ -1,29 +1,9 @@
-const SalaryRules = require("../../../api/models/SalaryRules");
 const Enums = require("../../../enums");
 const GroupType = Enums.GroupType;
 const SiteBlock = Enums.SiteBlock;
 const FilesBlock = Enums.FilesBlock;
 const Role = Enums.Role;
 const SalaryRuleType = Enums.SalaryRuleType;
-
-module.exports.ArchivePersonForm = [
-  {
-    label: "Участник",
-    property: "person",
-    type: "model",
-    validations: {
-      required: true
-    }
-  },
-  {
-    label: "Группа",
-    property: "group",
-    type: "model",
-    validations: {
-      required: true
-    }
-  }
-];
 
 module.exports.IncomeForm = [
   {
