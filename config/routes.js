@@ -58,6 +58,7 @@ module.exports.routes = {
   '/reports/export-instructors': 'ReportsController.exportInstructors',
   '/reports/export-transactions': 'ReportsController.exportTransactions',
   '/reports/export-totals': 'ReportsController.exportTotals',
+  '/reports/export-activity': 'ReportsController.exportActivity',
   '/dashboard/month-info': 'DashboardController.monthInfo',
   '/dashboard/create-month-events': 'DashboardController.createMonthEvents',
   '/materials/edit/:id': 'MaterialsController.edit',

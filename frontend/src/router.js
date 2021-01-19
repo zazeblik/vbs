@@ -194,6 +194,10 @@ export default new Router({
           component: () => import('./views/reports/TransactionsReport.vue')
         },
         {
+          path: 'activity-report',
+          component: () => import('./views/reports/ActivityReport.vue')
+        },
+        {
           path: 'rules',
           component: () => import('./views/salaries/Rules.vue')
         },

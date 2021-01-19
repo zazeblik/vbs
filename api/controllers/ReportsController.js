@@ -1,5 +1,6 @@
 const ExcelService = require('../services/ExcelService');
 const ReportsService = require('../services/ReportsService');
+const GroupsService = require('../services/GroupsService');
 const DateRangeHelper =  require('../utils/DateRangeHelper');
 
 module.exports = {
@@ -95,6 +96,24 @@ module.exports = {
       return res.badRequest(err.message);
     }
   },
+  activity: async function (req, res) {
+    if (!req.param("year")) return res.status(400).send("year не указан");
+    if (req.param("month") == undefined) return res.status(400).send("month не указан");
+    if (req.param("activity") == undefined) return res.status(400).send("activity не указан");
+    try {
+      const year = Number(req.param("year"));
+      const month = Number(req.param("month"));
+      const activity = Number(req.param("activity"));
+      const monthDateRange = DateRangeHelper.GetMonthDateRange(year, month);
+      const groups = await Groups.find({ hidden: false }).populate("members");
+      const groupIds = groups.map(g => g.id);
+      const groupedActions = await GroupsService.getGroupedActions(groupIds, monthDateRange.end.valueOf());
+      const persons = await ReportsService.getActivityPersons(groupedActions, groups, activity);
+      return res.send({ persons });
+    } catch (err) {
+      return res.badRequest(err.message);
+    }
+  },
   exportVisits: async function(req, res) {
     if (!req.param("year")) return res.status(400).send("year не указан");
     if (req.param("month") == undefined) return res.status(400).send("month не указан");
@@ -147,6 +166,20 @@ module.exports = {
       return res.badRequest(err.message);
     }
   },
-
+  exportActivity: async function(req, res) {
+    if (!req.param("year")) return res.status(400).send("year не указан");
+    if (req.param("month") == undefined) return res.status(400).send("month не указан");
+    if (req.param("activity") == undefined) return res.status(400).send("activity не указан");
+    try {
+      const year = Number(req.param("year"));
+      const month = Number(req.param("month"));
+      const activity = Number(req.param("activity"));
+      const wbbuf = await ExcelService.getActivity(year, month, activity);
+      res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
+      return res.end( wbbuf );
+    } catch (err) {
+      return res.badRequest(err.message);
+    }
+  }
 };
 

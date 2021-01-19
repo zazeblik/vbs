@@ -1,6 +1,30 @@
 
 const GroupType = require('../../enums').GroupType;
 
+module.exports.getActivityPersons = async function(groupedActions, groups, activity){
+  let persons = [];
+  let activePersons = [];
+  let activePersonsIds = [];
+  const membersByGroup = {};
+  for (let i = 0; i < groups.length; i++) {
+    const group = groups[i];
+    let actionsByPerson = groupedActions[group.id] || {};
+    let groupMembers = group.members;
+    membersByGroup[group.id] = GroupsService.resolveGroupMembersByActions(groupMembers, actionsByPerson);
+  }
+  for (const gId in membersByGroup) {
+    const groupActiveMembers = membersByGroup[gId];
+    activePersons = activePersons.concat(groupActiveMembers.filter(x => !activePersonsIds.includes(x.id)));
+    activePersonsIds = activePersons.map(x => x.id);
+  }
+  if (activity) {
+    persons = await Persons.find({id: {"!=": activePersonsIds}});
+  } else {
+    persons = activePersons;
+  }
+  return persons.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0))
+}
+
 module.exports.getVisits = function(events) {
   let visits = [];
   events.forEach(e => {

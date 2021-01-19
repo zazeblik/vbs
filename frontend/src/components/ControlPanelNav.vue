@@ -45,6 +45,7 @@
         <b-dropdown-item to="/cp/visits-report">По посещениям</b-dropdown-item>
         <b-dropdown-item to="/cp/instructors-report">По тренерам</b-dropdown-item>
         <b-dropdown-item to="/cp/transactions-report">По оплатам</b-dropdown-item>
+        <b-dropdown-item to="/cp/activity-report">По активности</b-dropdown-item>
         <b-dropdown-item to="/cp/totals-report">Общая сводка</b-dropdown-item>
       </b-nav-item-dropdown>
       <b-nav-item class="border-top border-secondary px-2" to="/cp/users" v-if="$user.role == 2">

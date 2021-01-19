@@ -4,6 +4,22 @@ const GroupsService = require('./GroupsService');
 const ReportsService = require('./ReportsService');
 const moment = require('moment');
 
+module.exports.getActivity = async function(year, month, activity){
+  const workbook = new Excel.Workbook();
+  await workbook.xlsx.readFile('api/templates/activity.xlsx');
+  const monthDateRange = GetMonthDateRange(year, month);
+  let sheet = workbook.worksheets[0];
+  const groups = await Groups.find({ hidden: false }).populate("members");
+  const groupIds = groups.map(g => g.id);
+  const groupedActions = await GroupsService.getGroupedActions(groupIds, monthDateRange.end.valueOf());
+  const results = await ReportsService.getActivityPersons(groupedActions, groups, activity);
+  results.forEach((r, i) => {
+    sheet.getRow(i+2).values = [i+1, r.name];
+  });
+  const wbbuf = await workbook.xlsx.writeBuffer();
+  return wbbuf;
+}
+
 module.exports.getTotals = async function(year, month){
   const workbook = new Excel.Workbook();
   await workbook.xlsx.readFile('api/templates/totals.xlsx');
