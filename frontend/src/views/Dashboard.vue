@@ -11,7 +11,7 @@
       <b-form-select v-model="selectedMonth" :options="months" @change="fetchInfo()" />
       <b-form-select v-model="selectedYear" :options="years" @change="fetchInfo()" />
       <b-input-group-append>
-        <b-button variant="outline-success" v-if="tabIndex == 0" @click="createMonthEvents()">
+        <b-button variant="outline-success" @click="createMonthEvents()">
           <b-iconstack>
             <b-icon stacked icon="plus-circle-fill" shift-h="-4" shift-v="3" scale="0.6"></b-icon>
             <b-icon stacked icon="calendar" shift-h="0"></b-icon>
