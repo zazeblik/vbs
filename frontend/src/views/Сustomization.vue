@@ -3,6 +3,17 @@
     <h5>Общие настройки</h5>
     <validation-observer ref="observer">
     <b-tabs fill small class="pt-2">
+      <b-tab title="Платежи">
+        <b-form class="pt-2">
+          <UpdatableField 
+            label="Открывать форму платежей после пополнения счёта"
+            type="checkbox"
+            :fieldValue="$settings.autoOpenPaymentModel"
+            field="autoOpenPaymentModel"
+            :settingsField="true"
+            updateUrl="/site/update" />
+        </b-form> 
+      </b-tab>
       <b-tab title="Индивидуальные занятия">
         <b-form class="pt-2">
           <UpdatableField 

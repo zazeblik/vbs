@@ -109,7 +109,7 @@
 import ModelModal from "./ModelModal";
 import PaymentsModal from "./PaymentsModal";
 import { ModelSelect } from "vue-search-select";
-import { GroupType, TransactionType } from "../../../enums";
+import { TransactionType } from "../../../enums";
 import { PersonForm, PaymentForm, IncomeForm } from "../shared/forms";
 export default {
   components: {
@@ -198,7 +198,9 @@ export default {
     },
     async incomeAdded() {
       await this.fetchPage();
-      this.addPaymentsModalShow();
+      if (this.$settings.autoOpenPaymentModel){
+        this.addPaymentsModalShow();
+      }
     },
     updatePayer() {
       this.balance = this.persons.find(p => p.id == this.payer).balance;

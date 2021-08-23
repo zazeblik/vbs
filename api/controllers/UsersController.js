@@ -97,7 +97,8 @@ module.exports = {
       const notFilledPersons = await Persons.find({id: {'!=': usedPersonIds}})
       const accounts = [];
       for (const person of notFilledPersons) {
-        const login = cyrillicToTranslit().transform(`${person.name.toLowerCase()} ${person.id}`, "_");
+        const personName = person.name.toLowerCase().replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '');
+        const login = cyrillicToTranslit().transform(`${personName} ${person.id}`, "_");
         const password =  login.length < 8
           ? `${login}_${Date.now()}`
           : login;

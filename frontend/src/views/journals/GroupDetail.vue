@@ -280,8 +280,6 @@ export default {
       return date;
     },
     showEditEventModal(field) {
-      this.eventForm.find(f => f.property == "group").hidden = true;
-      this.eventForm.find(f => f.property == "instructor").hidden = false;
       this.$refs.eventModal.showEdit(field.event);
     },
     showAddPaymentModal(person){
@@ -417,6 +415,8 @@ export default {
       this.isGeneralGroup = this.group.type == GroupType.General; 
       this.persons =  detail.persons;
       this.defaultInstructor = detail.group.defaultInstructor;
+      this.eventForm.find(f => f.property == "group").hidden = true;
+      this.eventForm.find(f => f.property == "instructor").hidden = !this.isGeneralGroup;
       this.eventForm.find(f => f.property == "instructor").models = detail.persons;
       this.eventForm.find(f => f.property == "place").models = detail.places;
       this.groupForm.find(f => f.property == "defaultInstructor").models = detail.persons;

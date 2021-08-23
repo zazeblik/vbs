@@ -45,7 +45,7 @@
         <div class="w-100 mb-2" v-if="$settings.vkGroupId">
           <VkCommunity :mode="3" :groupId="$settings.vkGroupId" width="auto" />
         </div>
-        <div class="mb-2">
+        <!-- <div class="mb-2">
           <iframe 
             v-if="$settings.instagram"
             :src="`//averin.pro/widget.php?l=${shortNameFromUrl($settings.instagram)}&style=1&gallery=1&s=80&icc=4&icr=3&t=1&tt=${shortNameFromUrl($settings.instagram)}&h=1&ttcolor=FFFFFF&th=c3c3c3&bw=f9f9f9&bscolor=FFFFFF&bs=800080&ch=utf8`"
@@ -53,7 +53,7 @@
             frameborder="0"
             scrolling="no"
             style="border:none; overflow:hidden; height: 400px; width: 100%;" />
-        </div>
+        </div> -->
       </b-col>
     </b-row>
   </b-container>
@@ -66,7 +66,6 @@ import VueGoodshareViber from "vue-goodshare/src/providers/Viber";
 import VueGoodshareWhatsApp from "vue-goodshare/src/providers/WhatsApp";
 import VueGoodshareTelegram from "vue-goodshare/src/providers/Telegram";
 import VkCommunity from "vue-vk/src/components/VKCommunity/VKCommunity";
-import injectVKCallApi from "vue-vk/src/core/index"
 const SiteBlock = require("../../../enums").SiteBlock;
 const FilesBlock = require("../../../enums").FilesBlock;
 export default {

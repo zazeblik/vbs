@@ -70,6 +70,10 @@ module.exports = {
     divideSumMode: {
       type: "boolean",
       defaultsTo: true
+    },
+    autoOpenPaymentModel: {
+      type: "boolean",
+      defaultsTo: true
     }
   },
   beforeCreate: updateHandler,
