@@ -201,7 +201,7 @@ export default {
     async changeVisitorState(member, event){
       let autoDebit = false;
       let isVisitor = member.isVisitor;
-      if (!isVisitor && this.getMemberPaymentAvailability(member, event) && this.$settings.debitMode == PersonalDebitMode.AlwaysAsk) {
+      if (event.members.some(x => this.getMemberPaymentAvailability(x, event)) && this.$settings.debitMode == PersonalDebitMode.AlwaysAsk) {
         autoDebit = await this.promptMemeberPaymentAvailability();
       }
       const result = await this.$postAsync(`${this.eventUrl}/${isVisitor ? 'remove' : 'add' }-visitor/${event.id}`, { 
@@ -236,10 +236,10 @@ export default {
       }
     },
     async promptMemeberPaymentAvailability() {
-      return await this.$bvModal.msgBoxConfirm(`Списать оплату за занятие автоматически?`, {
+      return await this.$bvModal.msgBoxConfirm(`Пересчитать оплаты за занятие автоматически?`, {
         cancelTitle: "Отмена",
         cancelVariant: "outline-secondary",
-        okTitle: "Списать",
+        okTitle: "Пересчитать",
         okVariant: "success"
       });
     }, 
