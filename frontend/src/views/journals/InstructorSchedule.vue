@@ -201,7 +201,7 @@ export default {
     async changeVisitorState(member, event){
       let autoDebit = false;
       let isVisitor = member.isVisitor;
-      if (event.members.some(x => this.getMemberPaymentAvailability(x, event)) && this.$settings.debitMode == PersonalDebitMode.AlwaysAsk) {
+      if (!isVisitor && event.members.some(x => this.getMemberPaymentAvailability(x, event)) && this.$settings.debitMode == PersonalDebitMode.AlwaysAsk) {
         autoDebit = await this.promptMemeberPaymentAvailability();
       }
       const result = await this.$postAsync(`${this.eventUrl}/${isVisitor ? 'remove' : 'add' }-visitor/${event.id}`, { 
