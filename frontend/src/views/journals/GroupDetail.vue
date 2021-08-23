@@ -135,7 +135,7 @@
       </template>
 
       <template v-slot:cell(payments)="data">
-        {{ data.value }}
+        {{ Math.floor(data.value) }}
       </template>
 
       <template v-slot:cell(visits)="data">
@@ -157,7 +157,7 @@
         </div>
       </template>
       <template v-slot:foot()="data">
-        <b>{{totals[data.column]}}</b>
+        <b>{{Math.floor(totals[data.column])}}</b>
       </template>
     </b-table>
     <ModelModal modalId="eventModal" :baseUrl="eventUrl" :itemForm="eventForm" ref="eventModal" @formSaved="fetchSheet" />
@@ -167,6 +167,7 @@
 </template>
 <script>
 const GroupType = require("../../../../enums").GroupType;
+const PersonalDebitMode = require("../../../../enums").PersonalDebitMode;
 import Multiselect from 'vue-multiselect';
 import ModelModal from "../../components/ModelModal";
 import { GroupForm, EventForm, PaymentForm } from "../../shared/forms";
@@ -319,15 +320,24 @@ export default {
     async checkAll(field){
       const allChecked = this.rows.every(row => row[field.key].visited);
       const lostIds = this.rows.filter(r => allChecked ? r[field.key].visited : !r[field.key].visited ).map(row => row[field.key].visitorId)
+      let autoDebit = false;
+      if (!this.isGeneralGroup && !allChecked && this.$settings.debitMode == PersonalDebitMode.AlwaysAsk) {
+        autoDebit = await this.promptMemeberPaymentAvailability();
+      }
       const result = await this.$postAsync(
         `/events/${!allChecked ? 'add' : 'remove' }-visitor/${field.eventId}`, 
-        { visitors: lostIds },
+        { visitors: lostIds, autoDebit },
         true );
       if (result.success){
         this.rows.filter(r => lostIds.includes(r[field.key].visitorId)).forEach(row => {
           row[field.key].visited = !allChecked;
         });
-        this.updateTotals();
+        
+        if (this.needToRefetchData(autoDebit, false)){
+          await this.fetchData();
+        } else {
+          this.updateTotals();
+        }
         return;
       }
     },
@@ -385,17 +395,36 @@ export default {
       await this.$postAsync(`/events/delete/${event}`);
       await this.fetchData();
     },
+    async promptMemeberPaymentAvailability() {
+      return await this.$bvModal.msgBoxConfirm(`Пересчитать оплаты за занятие автоматически?`, {
+        cancelTitle: "Отмена",
+        cancelVariant: "outline-secondary",
+        okTitle: "Пересчитать",
+        okVariant: "success"
+      });
+    }, 
     async changeEventVisit(cell){
+      let autoDebit = false;
+      if (!this.isGeneralGroup && cell.visited && this.$settings.debitMode == PersonalDebitMode.AlwaysAsk) {
+        autoDebit = await this.promptMemeberPaymentAvailability();
+      }
       const result = await this.$postAsync(
         `/events/${cell.visited ? 'add' : 'remove' }-visitor/${cell.eventId}`, 
-        { visitors: [cell.visitorId] },
+        { visitors: [cell.visitorId], autoDebit },
         true );
       if (result.success) {
-        this.updateTotals();
+        if (this.needToRefetchData(autoDebit, cell.visited)) {
+          await this.fetchData();
+        } else {
+          this.updateTotals();
+        }
         return;
       }
       
       cell.visited = !cell.visited;
+    },
+    needToRefetchData(autoDebit, visited){
+      return !this.isGeneralGroup && ( autoDebit || !visited || this.$settings.debitMode == PersonalDebitMode.AlwaysDebit );
     },
     async fetchData(){
       await this.fetchDetail();

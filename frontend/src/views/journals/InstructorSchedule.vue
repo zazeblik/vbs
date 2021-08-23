@@ -18,7 +18,7 @@
       <b-form-select v-model="selectedYear" :options="years" @change="fetchData()" />
       <b-input-group-append>
         <b-input-group-text >Всего часов: {{hoursSum}}</b-input-group-text>
-        <b-input-group-text >Сумма оплат: {{paymentsSum}}</b-input-group-text>
+        <b-input-group-text >Сумма оплат: {{Math.floor(paymentsSum)}}</b-input-group-text>
         <b-button variant="outline-success" @click="exportData">
           <b-icon icon="file-earmark-arrow-down"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Экспорт</span>
         </b-button>
@@ -94,7 +94,6 @@
   </div>
 </template>
 <script>
-const GroupType = require("../../../../enums").GroupType;
 const PersonalDebitMode = require("../../../../enums").PersonalDebitMode;
 import ModelModal from "../../components/ModelModal";
 import { EventForm } from "../../shared/forms";
