@@ -103,11 +103,11 @@ async function updateHandler(value, next) {
       }
       if (value.headHtml != undefined){
         portalConfig.headHtml = value.headHtml;
-        htmlString = htmlString.replace(/<!-- headHtml -->.+<!-- \/headHtml -->/i, `<!-- headHtml --> ${value.headHtml}<!-- /headHtml -->`);
+        htmlString = htmlString.replace(/<!-- headHtml -->.+<!-- \/headHtml -->/i, `<!-- headHtml --> ${value.headHtml.trim()}<!-- /headHtml -->`);
       }
       if (value.bottomHtml != undefined){
         portalConfig.bottomHtml = value.bottomHtml;
-        htmlString = htmlString.replace(/<!-- bottomHtml -->.+<!-- \/bottomHtml -->/i, `<!-- bottomHtml --> ${value.bottomHtml}<!-- /bottomHtml -->`);
+        htmlString = htmlString.replace(/<!-- bottomHtml -->.+<!-- \/bottomHtml -->/i, `<!-- bottomHtml --> ${value.bottomHtml.trim()}<!-- /bottomHtml -->`);
       }
       fs.writeFileSync('frontend/portal.config.json', JSON.stringify(portalConfig, null, 2));
       fs.writeFileSync('assets/index.html', htmlString, 'utf-8');

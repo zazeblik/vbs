@@ -157,7 +157,7 @@
         </div>
       </template>
       <template v-slot:foot()="data">
-        <b>{{Math.floor(totals[data.column])}}</b>
+        <b>{{data.column == 'payments' ? Math.floor(totals[data.column]) : totals[data.column] }}</b>
       </template>
     </b-table>
     <ModelModal modalId="eventModal" :baseUrl="eventUrl" :itemForm="eventForm" ref="eventModal" @formSaved="fetchSheet" />
