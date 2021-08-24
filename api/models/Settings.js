@@ -111,6 +111,7 @@ async function updateHandler(value, next) {
       }
       fs.writeFileSync('frontend/portal.config.json', JSON.stringify(portalConfig, null, 2));
       fs.writeFileSync('assets/index.html', htmlString, 'utf-8');
+      fs.writeFileSync('.tmp/public/index.html', htmlString, 'utf-8');
     }
     return next();
   } catch (error) {
