@@ -21,6 +21,7 @@
     "sails-hook-orm": "^2.1.1",
     "sails-hook-sockets": "^2.0.0",
     "sails-mysql": "^1.0.1",
+    "skipper": "^0.9.3",
     "uuid": "^8.3.2"
   },
   "devDependencies": {

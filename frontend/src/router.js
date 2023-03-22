@@ -13,101 +13,6 @@ export default new Router({
       component: () => import('./views/Home.vue')
     },
     {
-      path: '/articles',
-      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
-      component: () => import('./views/pages/Articles.vue')
-    },
-    {
-      path: '/club',
-      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
-      component: () => import('./views/pages/Club.vue')
-    },
-    {
-      path: '/prices',
-      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
-      component: () => import('./views/pages/Prices.vue')
-    },
-    {
-      path: '/boss',
-      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
-      component: () => import('./views/pages/Boss.vue')
-    },
-    {
-      path: '/profile',
-      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
-      component: () => import('./views/pages/Profile.vue')
-    },
-    {
-      path: '/feedback',
-      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
-      component: () => import('./views/pages/Feedback.vue')
-    },
-    {
-      path: '/galery',
-      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
-      component: () => import('./views/pages/Galery.vue')
-    },
-    {
-      path: '/tournaments',
-      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
-      component: () => import('./views/pages/Tournaments.vue')
-    },
-    {
-      path: '/halls',
-      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
-      component: () => import('./views/pages/Halls.vue')
-    },
-    {
-      path: '/instructors',
-      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
-      component: () => import('./views/pages/Instructors.vue')
-    },
-    {
-      path: '/schedule',
-      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
-      component: () => import('./views/pages/Schedule.vue')
-    },
-    {
-      path: '/contacts',
-      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
-      component: () => import('./views/pages/Contacts.vue')
-    },
-    {
-      path: '/payment-methods',
-      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
-      component: () => import('./views/pages/PaymentMethods.vue')
-    },
-    {
-      path: '/service-rules',
-      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
-      component: () => import('./views/pages/ServiceRules.vue')
-    },
-    {
-      path: '/data-transport',
-      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
-      component: () => import('./views/pages/DataTransport.vue')
-    },
-    {
-      path: '/privacy',
-      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
-      component: () => import('./views/pages/Privacy.vue')
-    },
-    {
-      path: '/self-schedule',
-      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
-      component: () => import('./views/pages/SelfSchedule.vue')
-    },
-    {
-      path: '/self-payments',
-      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
-      component: () => import('./views/pages/SelfPayments.vue')
-    },
-    {
-      path: '/articles/:id',
-      beforeEnter: (to, from, next) => to.query.route ? next(`/${to.query.route}`) : next(),
-      component: () => import('./views/pages/Article.vue')
-    },
-    {
       path: '/auth',
       name: 'auth',
       beforeEnter: (to, from, next) => Vue.prototype.$isAuthenticated ? next({ name: 'dashboard' }) : next(),
@@ -162,20 +67,8 @@ export default new Router({
           component: () => import('./views/payments/Incomes.vue')
         },
         {
-          path: 'settings',
-          component: () => import('./views/site/Settings.vue')
-        },
-        {
           path: 'customization',
           component: () => import('./views/Сustomization.vue')
-        },
-        {
-          path: 'materials',
-          component: () => import('./views/site/Materials.vue')
-        },
-        {
-          path: 'files',
-          component: () => import('./views/site/Files.vue')
         },
         {
           path: 'visits-report',

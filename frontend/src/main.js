@@ -8,7 +8,6 @@ import router from './router'
 
 import axios from 'axios'
 import VueAxios from 'vue-axios'
-import VKWidgets from 'vue-vk'
 
 import {
   ValidationObserver,
@@ -18,7 +17,6 @@ import {
 } from "vee-validate";
 import ru from "vee-validate/dist/locale/ru.json";
 import * as rules from "vee-validate/dist/rules";
-import CKEditor from '@ckeditor/ckeditor5-vue';
 
 const moment = require('moment');
 require('moment/locale/ru');
@@ -29,11 +27,10 @@ Object.keys(rules).forEach(rule => extend(rule, rules[rule]));
 Vue.component("ValidationObserver", ValidationObserver);
 Vue.component("ValidationProvider", ValidationProvider);
 Vue.use(require('vue-moment'), { moment });
-Vue.use(CKEditor);
+
 Vue.use(VueAxios, axios);
 Vue.use(BootstrapVue);
 Vue.use(BootstrapVueIcons);
-Vue.use(VKWidgets);
 Vue.config.productionTip = false;
 
 Vue.prototype.$error = function (message) {
@@ -131,7 +128,7 @@ Vue.prototype.$url = window.location.origin;
 Vue.prototype.$location = window.location;
 Vue.prototype.$document = document;
 
-axios.get('/site/settings')
+axios.get('/settings/get')
   .then((response) => {
     Vue.prototype.$settings = response.data;
     document.title = response.data.name;

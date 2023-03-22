@@ -21,28 +21,6 @@
           @input="save({dirty: true, valid: true}, settingsField)"
           :state="getValidationState({dirty: true, valid: true})"
         />
-        <b-form-file
-          v-else-if="type == 'image'"
-          size="sm"
-          class="file-input"
-          accept="image/*"
-          @input="uploadImage($event)"
-          :state="getValidationState(validationContext)"
-          :placeholder="model ? model.substr(model.lastIndexOf('/') + 1) : 'Выберите или перетащите файл...'"
-          drop-placeholder="Перетащите файл сюда..."
-          browse-text="Выбрать..."
-        />
-        <b-form-file
-          v-else-if="type == 'icon'"
-          size="sm"
-          class="file-input"
-          accept=".ico"
-          @input="uploadImage($event, validationContext, 'frontend/public', 'favicon.ico')"
-          :state="getValidationState(validationContext)"
-          :placeholder="model ? model.substr(model.lastIndexOf('/') + 1) : 'Выберите или перетащите файл...'"
-          drop-placeholder="Перетащите файл сюда..."
-          browse-text="Выбрать..."
-        />
         <b-form-textarea
           v-else-if="type == 'textarea'"
           size="sm"
@@ -77,7 +55,6 @@
 </template>
 
 <script>
-import { UploadFile } from "../shared/uploadAdapter";
 export default {
   props: [
     "label",
@@ -119,17 +96,6 @@ export default {
     },
     getValidationState({ dirty, validated, valid = null }) {
       return dirty || validated ? valid : null;
-    },
-    async uploadImage(file, validationContext, pathToSave, name) {
-      this.showSpinner = true;
-      const result = await UploadFile(file, pathToSave, name);
-      this.showSpinner = false;
-      this.model = result && result.default ? result.default : this.model;
-      if (this.type == 'icon'){
-        await this.$postAsync('/site/icon');
-      } else {
-        await this.save({dirty: true, valid: true}, this.settingsField);
-      }
     },
     convertModel(model) {
       if (this.type == "date") {

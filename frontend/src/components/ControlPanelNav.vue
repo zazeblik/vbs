@@ -18,14 +18,6 @@
       </b-nav-item-dropdown>
       <b-nav-item-dropdown class="border-top border-secondary px-2" v-if="$user.role == 2">
         <template slot="button-content">
-          <b-icon icon="globe2"></b-icon>&nbsp;Сайт
-        </template>
-        <b-dropdown-item to="/cp/settings">Настройки</b-dropdown-item>
-        <b-dropdown-item to="/cp/materials">Материалы</b-dropdown-item>
-        <b-dropdown-item to="/cp/files">Файлы</b-dropdown-item>
-      </b-nav-item-dropdown>
-      <b-nav-item-dropdown class="border-top border-secondary px-2" v-if="$user.role == 2">
-        <template slot="button-content">
           <b-icon icon="credit-card"></b-icon>&nbsp;Оплата
         </template>
         <b-dropdown-item to="/cp/payments">Баланс участника</b-dropdown-item>

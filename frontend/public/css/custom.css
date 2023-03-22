@@ -103,42 +103,6 @@ button.check-all {
   }
 }
 
-.material {
-  padding: 1rem;
-  background: #fff;
-  margin: 0.5rem;
-}
-
-.article {
-  overflow: auto;
-}
-
-.article p {
-  margin-bottom: 0.5rem;
-  text-align: justify;
-}
-
-.article figure.image {
-  text-align: center;
-}
-
-.article figure.image.image-style-side {
-  float: right;
-  margin-left: 1.5rem;
-}
-
-.article img {
-  display: block;
-  margin: 0 auto;
-  max-width: 100%;
-  min-width: 50px;
-}
-
-.button-social {
-  margin: 0 2px !important;
-  padding: 4px 5px !important;
-}
-
 .multiselect {
   width: auto !important;
   min-height: auto !important;

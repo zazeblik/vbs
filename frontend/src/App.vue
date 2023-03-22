@@ -4,13 +4,11 @@
       :isAuthShown="isAuthShown"
       :isControlPanelShown="isControlPanelShown" />
     <router-view :class="isSiteShown ? 'mt-5 pt-5 site-page' : null" />
-    <SiteFooter v-if="isSiteShown" />
   </div>
 </template>
 
 <script>
 import Header from './components/Header'
-import SiteFooter from './components/SiteFooter'
 export default {
   name: 'app',
   data() {
@@ -20,8 +18,7 @@ export default {
     }
   },
   components: {
-    Header,
-    SiteFooter
+    Header
   },
   computed: {
     isSiteShown() {

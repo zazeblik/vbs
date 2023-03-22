@@ -46,22 +46,6 @@
                   v-model="control.value"
                   :state="getValidationState(validationContext)"
                 />
-                <b-form-file
-                  v-if="control.type == 'file'"
-                  size="sm"
-                  :value="control.file"
-                  class="file-input"
-                  :accept="control.accept"
-                  @input="uploadImage($event, index)"
-                  :state="getValidationState(validationContext)"
-                  :placeholder="
-                    control.value
-                      ? control.value.substr(control.value.lastIndexOf('/') + 1)
-                      : 'Выберите или перетащите файл...'
-                  "
-                  drop-placeholder="Перетащите файл сюда..."
-                  browse-text="Выбрать..."
-                />
                 <b-form-input
                   v-if="control.type == 'number'"
                   type="number"
@@ -252,31 +236,6 @@
                 ref="formSchedule"
               />
             </b-form-group>
-            <b-form-group
-              label-cols-sm="12"
-              label-size="sm"
-              v-if="itemForm.some((c) => c.type == 'content')"
-              :label="itemForm.find((c) => c.type == 'content').label"
-              class="mb-1"
-            >
-              <ckeditor
-                :editor="editor"
-                :config="editorConfig"
-                v-model="itemForm.find((c) => c.type == 'content').value"
-              />
-            </b-form-group>
-            <b-form-group
-              label-cols-sm="12"
-              label-size="sm"
-              v-if="itemForm.some((c) => c.type == 'html')"
-              :label="itemForm.find((c) => c.type == 'html').label"
-              class="mb-1"
-            >
-              <b-form-textarea
-                size="sm"
-                v-model="itemForm.find((c) => c.type == 'html').value"
-              />
-            </b-form-group>
           </b-form>
         </b-overlay>
       </b-modal>
@@ -287,9 +246,6 @@
 <script>
 import { ModelSelect } from "vue-search-select";
 import FormSchedule from "../components/FormSchedule";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import "@ckeditor/ckeditor5-build-classic/build/translations/ru";
-import { UploadAdapter, UploadFile } from "../shared/uploadAdapter";
 
 export default {
   components: {
@@ -304,33 +260,12 @@ export default {
       id: null,
       isEdit: false,
       showSpinner: false,
-      editor: ClassicEditor,
-      lastFormTypes: ["schedule", "content", "html"],
-      editorConfig: {
-        language: "ru",
-        extraPlugins: [this.uploadAdapterPlugin],
-      },
+      lastFormTypes: ["schedule"],
     };
   },
   methods: {
     getValidationState({ dirty, validated, valid = null }) {
       return dirty || validated ? valid : null;
-    },
-    async uploadImage(file, index) {
-      this.showSpinner = true;
-      const result = await UploadFile(file);
-      this.showSpinner = false;
-      this.itemForm[index].value =
-        result && result.default ? result.default : this.itemForm[index];
-      let name = this.itemForm.find((c) => c.property == 'name');
-      if (!name.value && result && result.default){
-        name.value = result.default.substr(result.default.lastIndexOf('/') + 1);
-      }
-    },
-    uploadAdapterPlugin(editor) {
-      editor.plugins.get("FileRepository").createUploadAdapter = (loader) => {
-        return new UploadAdapter(loader);
-      };
     },
     isHiddenControl(control) {
       if (control.hidden) return true;
@@ -347,9 +282,6 @@ export default {
       this.itemForm.forEach((c, index) => {
         switch (c.type) {
           case "string":
-          case "content":
-          case "html":
-          case "file":
           case "number":
           case "color":
           case "model":
@@ -385,9 +317,7 @@ export default {
       this.itemForm.forEach((c) => {
         switch (c.type) {
           case "string":
-          case "content":
           case "html":
-          case "file":
           case "color":
           case "schedule":
             c.value = item[c.property] || c.defaultValue;
@@ -445,9 +375,6 @@ export default {
       this.itemForm.forEach((c) => {
         switch (c.type) {
           case "string":
-          case "content":
-          case "html":
-          case "file":
           case "color":
           case "schedule":
           case "model":
@@ -527,7 +454,7 @@ export default {
       this.title = "";
       this.id = null;
       this.itemForm.forEach((c, index) => {
-        c.value = c.type == "content" ? "" : null;
+        c.value = null;
         delete c.onChange;
       });
       this.$nextTick(() => {
@@ -539,9 +466,4 @@ export default {
 </script>
 
 <style scoped>
-.file-input {
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-}
 </style>

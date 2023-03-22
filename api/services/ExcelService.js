@@ -104,19 +104,16 @@ module.exports.getIncomes = async function(fromDate, toDate){
   let sheet = workbook.worksheets[0];
   const incomes = await Incomes.find({createdAt: {">=": fromDate, "<=": toDate}}).populate('person');
   incomes.forEach((v, i) => {
-    sheet.getRow(i+2).values = [moment(v.createdAt).format("DD.MM.YYYY"), v.person.name, v.sum, v.cashless ? "да" : "нет", v.online ? "да" : "нет", v.description];
+    sheet.getRow(i+2).values = [moment(v.createdAt).format("DD.MM.YYYY"), v.person.name, v.sum, v.cashless ? "да" : "нет", v.description];
   });
   const totalsRow = sheet.getRow(incomes.length+2);
   const totalManualSumCell = totalsRow.getCell(1);
-  totalManualSumCell.value = {'richText': [{'font': {'bold': true}, 'text': `Итого наличными: ${incomes.filter(x => !x.cashless && !x.online).map(x => x.sum).reduce((a, b) => a + b, 0)}`}]};
+  totalManualSumCell.value = {'richText': [{'font': {'bold': true}, 'text': `Итого наличными: ${incomes.filter(x => !x.cashless).map(x => x.sum).reduce((a, b) => a + b, 0)}`}]};
 
   const totalCachlessSumCell = totalsRow.getCell(2);
   totalCachlessSumCell.value = {'richText': [{'font': {'bold': true}, 'text': `Итого безнал.: ${incomes.filter(x => x.cashless).map(x => x.sum).reduce((a, b) => a + b, 0)}`}]};
-
-  const totalOnlineSumCell = totalsRow.getCell(3);
-  totalOnlineSumCell.value = {'richText': [{'font': {'bold': true}, 'text': `Итого online: ${incomes.filter(x => x.online).map(x => x.sum).reduce((a, b) => a + b, 0)}`}]};
   
-  const totalSumCell = totalsRow.getCell(4);
+  const totalSumCell = totalsRow.getCell(3);
   totalSumCell.value = {'richText': [{'font': {'bold': true}, 'text': `Итого: ${incomes.map(x => x.sum).reduce((a, b) => a + b, 0)}`}]};
   const wbbuf = await workbook.xlsx.writeBuffer();
   return wbbuf;

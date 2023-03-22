@@ -11,7 +11,7 @@
             :fieldValue="$settings.autoOpenPaymentModel"
             field="autoOpenPaymentModel"
             :settingsField="true"
-            updateUrl="/site/update" />
+            updateUrl="/settings/update" />
         </b-form> 
       </b-tab>
       <b-tab title="Индивидуальные занятия">
@@ -24,14 +24,14 @@
             :fieldValue="$settings.debitMode"
             field="debitMode"
             :settingsField="true"
-            updateUrl="/site/update" />
+            updateUrl="/settings/update" />
           <UpdatableField
             label="Делить сумму на всех присутствовавших"
             type="checkbox"
             :fieldValue="$settings.divideSumMode"
             field="divideSumMode"
             :settingsField="true"
-            updateUrl="/site/update" />
+            updateUrl="/settings/update" />
         </b-form> 
       </b-tab>
     </b-tabs>

@@ -14,25 +14,9 @@ module.exports.TransactionType = {
   Income: 1
 }
 
-module.exports.SiteBlock = {
-  Unset: 0,
-  Articles: 1,
-  Club: 2,
-  Boss: 3,
-  Feedback: 4,
-  Сourse: 5,
-  Contacts: 6
-}
-
 module.exports.GroupMemberActionType = {
   Added: 0,
   Deleted: 1
-}
-
-module.exports.FilesBlock = {
-  Tournaments: 0,
-  Photo: 1,
-  Slider: 2
 }
 
 module.exports.SalaryRuleType = {

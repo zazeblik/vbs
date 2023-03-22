@@ -7,64 +7,6 @@ const GroupsService = require('../services/GroupsService');
 const { GroupMemberActionType } = require('../../enums');
 
 module.exports = {
-  publicSchedule: async function (req, res) {
-    if (!req.param("year")) return res.status(400).send("year не указан");
-    if (req.param("month") == undefined) return res.status(400).send("month не указан");
-    try {
-      const year = Number(req.param("year"));
-      const month = Number(req.param("month"));
-      const monthDateRange = DateRangeHelper.GetMonthDateRange(year, month);
-      const groups = await Groups.find({ type: GroupType.General, hidden: false });
-      const groupIds = groups.map(g => g.id);
-      const events = await Events
-        .find({ group: groupIds, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
-        .sort("startsAt ASC")
-        .populate("instructor")
-        .populate("group")
-        .populate("place");
-      
-      return res.send(events);
-    } catch (err) {
-      return res.badRequest(err.message);
-    }
-  },
-  selfSchedule: async function (req, res) {
-    if (!req.param("year")) return res.status(400).send("year не указан");
-    if (req.param("month") == undefined) return res.status(400).send("month не указан");
-    try {
-      const year = Number(req.param("year"));
-      const month = Number(req.param("month"));
-      const monthDateRange = DateRangeHelper.GetMonthDateRange(year, month);
-      const groups = await Groups.find({ hidden: false }).populate('members');
-      const groupIds = groups
-        .filter(x => (x.members.map(y => y.id)).includes(req.session.User.person))
-        .map(g => g.id);
-      const events = await Events
-        .find({ group: groupIds, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
-        .sort("startsAt ASC")
-        .populate("instructor")
-        .populate("group")
-        .populate("place");
-      
-      return res.send(events);
-    } catch (err) {
-      return res.badRequest(err.message);
-    }
-  },
-  icon: async function (req, res) {
-    fs.copyFile('frontend/public/favicon.ico', 'assets/favicon.ico', (err) => {
-      if (err) res.badRequest(err.message);
-      return res.ok();
-    });
-  },
-  groups: async function (req, res) {
-    try {
-      const groups = await Groups.find({ type: GroupType.General, hidden: false });
-      return res.send(groups);
-    } catch (err) {
-      return res.badRequest(err.message);
-    }
-  },
   uploads: async function (req, res) {
     let filename = req.params[0];
     if (!filename) return res.notFound();

@@ -39,11 +39,6 @@ module.exports = {
       type: 'string',
       allowNull: true
     },
-    content: {
-      type: 'string',
-      columnType: 'LONGTEXT CHARACTER SET utf8mb4',
-      allowNull: true
-    },
     members: {
       collection: 'persons',
       via: 'groups'

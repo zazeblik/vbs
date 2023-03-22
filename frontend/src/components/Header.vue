@@ -3,29 +3,14 @@
     <b-navbar v-if="isSiteShown" toggleable="lg" class="fixed-top shadow bg-white">
       <div class="text-center brand-block">
         <div v-if="$settings">
-          <a class="navbar-brand m-0 p-0" href="/" v-if="$settings.logo && $settings.replaceName">
-            <img :src="$settings.logo" height="40" />
-          </a>
-          <b-navbar-brand to="/" v-else>{{$settings.name}}</b-navbar-brand>
+          <b-navbar-brand to="/">ERP</b-navbar-brand>
           <br>
-          <a class="header-logo-lext d-none d-lg-inline" v-if="isSiteShown && $settings.subtitle">{{$settings.subtitle}}</a>
+          <a class="header-logo-lext d-none d-lg-inline" v-if="isSiteShown"></a>
         </div>
       </div>
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
       <b-collapse id="nav-collapse" is-nav>
         <b-navbar-nav class="site-nav"> 
-          <b-nav-item-dropdown id="siteNavDropdown" class="site-nav-item" text="О клубе">
-            <b-dropdown-item to="/club">Наш клуб</b-dropdown-item>
-            <b-dropdown-item to="/boss">Руководители</b-dropdown-item>
-            <b-dropdown-item to="/halls">Залы</b-dropdown-item>
-            <b-dropdown-item to="/instructors">Тренеры</b-dropdown-item>
-            <b-dropdown-item to="/feedback">Отзывы</b-dropdown-item>
-            <b-dropdown-item to="/schedule">Расписание</b-dropdown-item>
-            <b-dropdown-item to="/prices">Прайс лист</b-dropdown-item>
-          </b-nav-item-dropdown>
-          <b-nav-item class="site-nav-item" to="/articles">Статьи</b-nav-item>
-          <b-nav-item class="site-nav-item" to="/galery">Фото</b-nav-item>
-          <b-nav-item class="site-nav-item" to="/tournaments">Турниры</b-nav-item>
         </b-navbar-nav>
         <ProfileNav :isAuthShown="isAuthShown" :isSiteShown="isSiteShown" />
       </b-collapse>

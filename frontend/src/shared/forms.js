@@ -1,7 +1,5 @@
 const Enums = require("../../../enums");
 const GroupType = Enums.GroupType;
-const SiteBlock = Enums.SiteBlock;
-const FilesBlock = Enums.FilesBlock;
 const Role = Enums.Role;
 const SalaryRuleType = Enums.SalaryRuleType;
 
@@ -159,96 +157,7 @@ module.exports.GroupForm = [
     type: "checkbox",
     hidden: true,
   },
-  {
-    label: "Описание",
-    property: "content",
-    type: "content"
-  },
 ];
-
-module.exports.MaterialForm = [
-  {
-    label: "Наименование",
-    property: "name",
-    type: "string",
-    validations: {
-      required: true
-    }
-  },
-  {
-    label: "Изображение",
-    property: "image",
-    accept: "image/*",
-    type: "file",
-  },
-  {
-    label: "Контент",
-    property: "content",
-    type: "content"
-  },
-  {
-    label: "Опубликовано",
-    property: "public",
-    type: "checkbox",
-    defaultValue: true,
-  },
-  {
-    label: "На главной",
-    property: "onMain",
-    type: "checkbox", 
-  },
-  {
-    label: "Блок",
-    property: "block",
-    type: "enum",
-    options: [
-      { text: "не задано", value: SiteBlock.Unset },
-      { text: "статьи", value: SiteBlock.Articles },
-      { text: "о клубе", value: SiteBlock.Club },
-      { text: "направления", value: SiteBlock.Сourse },
-      { text: "руководители", value: SiteBlock.Boss },
-      { text: "отзывы", value: SiteBlock.Feedback },
-      { text: "контакты", value: SiteBlock.Contacts },
-    ],
-  },
-  {
-    label: "Приоритет",
-    property: "priority",
-    type: "number",
-    description: "Чем больше число, тем вше будет расположен материал",
-    defaultValue: 1,
-    validations: {
-      min_value: 1
-    }
-  }
-]
-
-module.exports.FileForm = [
-  {
-    label: "Наименование",
-    property: "name",
-    type: "string",
-    validations: {
-      required: true
-    }
-  },
-  {
-    label: "Файл",
-    property: "file",
-    accept: "*",
-    type: "file",
-  },
-  {
-    label: "Блок",
-    property: "block",
-    type: "enum",
-    options: [
-      { text: "турниры", value: FilesBlock.Tournaments },
-      { text: "фото", value: FilesBlock.Photo },
-      { text: "слайдер", value: FilesBlock.Slider }
-    ],
-  },
-]
 
 module.exports.RuleForm = [
   {
@@ -375,11 +284,6 @@ module.exports.PersonForm = [
     },
     value: null
   },
-  {
-    label: "Описание",
-    property: "content",
-    type: "content"
-  },
 ]
 
 module.exports.PlaceForm = [
@@ -398,11 +302,6 @@ module.exports.PlaceForm = [
     validations: {
       required: true
     }
-  },
-  {
-    label: "Описание",
-    property: "content",
-    type: "content"
   },
 ]
 

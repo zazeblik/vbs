@@ -31,7 +31,6 @@
         <b v-if="data.column == 'description'">{{'Итого: ' + total}}</b>
         <b v-else-if="data.column == 'createdAt'">{{'Итого наличными: ' + totalManual}}</b>
         <b v-else-if="data.column == 'person.name'">{{'Итого безнал.: ' + totalCashless}}</b>
-        <b v-else-if="data.column == 'sum'">{{'Итого online: ' + totalOnline}}</b>
         <b v-else></b>
       </template>
     </b-table>
@@ -50,11 +49,13 @@ export default {
         { key: 'person.name', label: 'Плательщик', sortable: true },
         { key: 'sum', label: 'Сумма', sortable: true },
         { key: 'cashless', label: 'Безнал.', sortable: true, formatter: (value, key, item) => value ? "да" : "нет" },
-        { key: 'online', label: 'Online', sortable: true, formatter: (value, key, item) => value ? "да" : "нет" },
         { key: 'description', label: 'Описание', sortable: true }
       ],
       incomes: [],
-      total: 0
+      total: 0,
+      totalOnline: 0,
+      totalCashless: 0,
+      totalManual: 0,
     }
   },
   computed: {
@@ -70,9 +71,8 @@ export default {
         toDate: this.$moment(this.toDate).endOf('day').valueOf(),
       });
       this.total = this.incomes.sum(x => x.sum);
-      this.totalOnline = this.incomes.filter(x => x.online).sum(x => x.sum);
       this.totalCashless = this.incomes.filter(x => x.cashless).sum(x => x.sum);
-      this.totalManual = this.incomes.filter(x => !x.cashless && !x.online).sum(x => x.sum);
+      this.totalManual = this.incomes.filter(x => !x.cashless).sum(x => x.sum);
     },
     async exportData() {
       await this.$getAsync(`${this.baseUrl}/export`, {

@@ -34,11 +34,6 @@ module.exports = {
       type: 'number',
       defaultsTo: 0
     },
-    content: {
-      type: 'string',
-      columnType: 'LONGTEXT CHARACTER SET utf8mb4',
-      allowNull: true
-    }
   },
   beforeDestroy: async function(value, next){
     try {

@@ -18,6 +18,10 @@ module.exports.policies = {
     materials: true,
     find: true
   },
+  settings: {
+    '*': ['authenticated', 'isAdmin'],
+    get: true
+  },
   salaryRules: {
     '*': ['authenticated', 'isControlPanelAvailable']
   },
@@ -40,30 +44,4 @@ module.exports.policies = {
   dashboard: {
     '*': ['authenticated', 'isControlPanelAvailable']
   },
-  orders: {
-    '*': false,
-    register: ['authenticated', 'hasPerson'],
-    confirm: ['authenticated', 'hasPerson']
-  },
-  materials: {
-    '*': ['authenticated', 'isAdmin'],
-    find: true,
-    findOne: true
-  },
-  files: {
-    '*': ['authenticated', 'isControlPanelAvailable'],
-    upload: ['authenticated', 'isAdmin'],
-    find: true
-  },
-  site: {
-    '*': ['authenticated', 'isAdmin'],
-    profile: 'authenticated',
-    profilePerson: ['authenticated', 'hasPerson'],
-    selfSchedule: ['authenticated', 'hasPerson'],
-    person: ['authenticated', 'hasPerson'],
-    uploads: true,
-    groups: true,
-    publicSchedule: true,
-    settings: true
-  }
 };

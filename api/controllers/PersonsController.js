@@ -103,7 +103,7 @@ module.exports = {
     try {
       if (!req.param("id"))
         return res.badRequest();
-      await Persons.destroy(req.body).fetch();
+      await Persons.destroy(req.body);
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);

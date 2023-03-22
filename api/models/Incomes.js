@@ -3,9 +3,6 @@ module.exports = {
     updater: {
       model: 'users'
     },
-    order: {
-      model: 'orders'
-    },
     person: {
       model: 'persons',
       required: true
