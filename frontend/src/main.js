@@ -127,16 +127,16 @@ Array.prototype.sum = function(propertySelector = obj => obj) {
 Vue.prototype.$url = window.location.origin;
 Vue.prototype.$location = window.location;
 Vue.prototype.$document = document;
+Vue.prototype.$user = null;
 
-axios.get('/settings/get')
-  .then((response) => {
-    Vue.prototype.$settings = response.data;
-    document.title = response.data.name;
-    return axios.get('/users/authenticated')
-  })  
+axios.get('/users/authenticated')
   .then((response) => {
     Vue.prototype.$user = response.data
     Vue.prototype.$isAuthenticated = true
+    return axios.get('/settings/get')
+  })
+  .then((response) => {
+    Vue.prototype.$settings = response.data
   })
   .catch((err) => {
     Vue.prototype.$user = null

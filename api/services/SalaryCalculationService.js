@@ -9,14 +9,14 @@ let findSalaryRule = ( rules, group, instructorId ) => {
 }
 
 // Делает подсчет зарплаты тренеров
-module.exports.calculateSalaries = async function(dateRange){
+module.exports.calculateSalaries = async function(dateRange, providerId){
     const start = dateRange.start;
     const end = dateRange.end;
 
     let salaryRules = await SalaryRules.find();
 
     let events = await Events
-        .find({startsAt: { ">=": start.valueOf(), "<=": end.valueOf() }})
+        .find({startsAt: { ">=": start.valueOf(), "<=": end.valueOf() }, provider: providerId})
         .sort("startsAt ASC")
         .populate("payments")
         .populate("group")

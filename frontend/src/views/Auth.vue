@@ -60,7 +60,7 @@ export default {
         return;
       Vue.prototype.$user = user;
       Vue.prototype.$isAuthenticated = true;
-      this.$router.push({name: user.role == Role.User ? 'home' : 'dashboard'});
+      this.$router.push({name: 'dashboard'});
     }
   }
 }

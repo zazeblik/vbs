@@ -1,5 +1,5 @@
 module.exports = function (req, res, next) {
-  if (req.session.User.person) {
+  if (req.headers['x-api-token'] == sails.config.apiToken) {
     return next();
   } else {
     return res.forbidden();

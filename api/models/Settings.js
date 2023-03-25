@@ -2,10 +2,6 @@ const PersonalDebitMode = require('../../enums').PersonalDebitMode;
 
 module.exports = {
   attributes: {
-    name: {
-      type: "string",
-      required: true
-    },
     debitMode: {
       type: "number",
       defaultsTo: PersonalDebitMode.AlwaysAsk
@@ -17,6 +13,9 @@ module.exports = {
     autoOpenPaymentModel: {
       type: "boolean",
       defaultsTo: true
+    },
+    provider: {
+      model: 'providers'
     }
   },
 };

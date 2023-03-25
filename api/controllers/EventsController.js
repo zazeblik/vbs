@@ -5,7 +5,7 @@ const PersonalDebitMode = require('../../enums').PersonalDebitMode;
 module.exports = {
   delete: async function (req, res) {
     try {
-      await Events.destroy(req.param("id")).fetch();
+      await Events.destroy(req.param("id"));
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
@@ -15,6 +15,7 @@ module.exports = {
     try {
       req.body.updater = req.session.User.id;
       req.body.id = req.param("id");
+      req.body.provider = req.session.User.provider;
       await Events.update(req.param("id"), req.body)
       return res.ok();
     } catch (err) {
@@ -24,6 +25,7 @@ module.exports = {
   create: async function (req, res) {
     try {
       req.body.updater = req.session.User.id;
+      req.body.provider = req.session.User.provider;
       await Events.create(req.body)
       return res.ok();
     } catch (err) {
@@ -68,6 +70,7 @@ module.exports = {
           return {
             updater: req.session.User.id,
             person: v,
+            provider: req.session.User.provider,
             events: [event.id],
             group: group.id,
             sum: memberCost,
@@ -83,7 +86,7 @@ module.exports = {
         const personsToUpdatePayments = eventPaymentsPersons.filter(p => !visiorsToCreatePayments.includes(p));
         for (let i = 0; i < personsToUpdatePayments.length; i++) {
           const p = eventPayments.find(x => x.person == personsToUpdatePayments[i]);
-          const updatedPayment = await Payments.updateOne({id: p.id}, {id: p.id, sum: memberCost});
+          const updatedPayment = await Payments.updateOne({id: p.id}, {id: p.id, sum: memberCost, provider: req.session.User.provider});
           updatedPersonIds.push(p.person);
           updatedPayments.push(updatedPayment);
         }
@@ -115,7 +118,7 @@ module.exports = {
     try {
       const event_id = Number(req.param("id"));
       const visitors = req.param("visitors");
-      const settings = await Settings.findOne(1);
+      const settings = await Settings.findOne({provider: req.session.User.provider});
       let event = await Events.findOne(event_id)
         .populate("payments")
         .populate("visitors");
@@ -135,18 +138,18 @@ module.exports = {
         const paymentIdsToDelete = eventPayments
           .filter(p => visiorsToDeletePayments.includes(p.person))
           .map(p => p.id);
-        await Payments.destroy({ id: paymentIdsToDelete }).fetch();;
+        await Payments.destroy({id: paymentIdsToDelete, provider: req.session.User.provider});
         removedPayments = removedPayments.concat(paymentIdsToDelete);
         updatedPersonIds = updatedPersonIds.concat(visiorsToDeletePayments);
         const otherEventPayments = eventPayments.filter(p => !paymentIdsToDelete.includes(p.id));
         for (let j = 0; j < otherEventPayments.length; j++) {
           const p = otherEventPayments[j];
-          const updatedPayment = await Payments.updateOne({id: p.id}, {id: p.id, sum: memberCost});
+          const updatedPayment = await Payments.updateOne({id: p.id}, {id: p.id, sum: memberCost, provider: req.session.User.provider});
           updatedPersonIds.push(p.person);
           updatedPayments.push(updatedPayment);
         };
       }
-      const updatedPersons = await Persons.find({id: updatedPersonIds});
+      const updatedPersons = await Persons.find({id: updatedPersonIds, provider: req.session.User.provider});
       for (let i = 0; i < updatedPersons.length; i++) {
         const p = updatedPersons[i];
         personBalances[p.id] = p.balance;

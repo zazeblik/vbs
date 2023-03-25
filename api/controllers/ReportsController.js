@@ -11,10 +11,14 @@ module.exports = {
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));
       const monthDateRange = DateRangeHelper.GetMonthDateRange(year, month);
-      const groups = await Groups.find({ hidden: false });
+      const groups = await Groups.find({ hidden: false, provider: req.session.User.provider });
       const groupIds = groups.map(g => g.id);
       const events = await Events
-        .find({ group: groupIds, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
+        .find({ 
+          group: groupIds, 
+          startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() }, 
+          provider: req.session.User.provider
+        })
         .sort("startsAt ASC")
         .populate("visitors")
         .populate("group");
@@ -31,10 +35,14 @@ module.exports = {
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));
       const monthDateRange = DateRangeHelper.GetMonthDateRange(year, month);
-      const groups = await Groups.find({ hidden: false });
+      const groups = await Groups.find({ hidden: false, provider: req.session.User.provider });
       const groupIds = groups.map(g => g.id);
       const events = await Events
-        .find({ group: groupIds, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
+        .find({ 
+          group: groupIds, 
+          startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() }, 
+          provider: req.session.User.provider
+        })
         .sort("startsAt ASC")
         .populate("payments")
         .populate("group");
@@ -45,9 +53,9 @@ module.exports = {
           paymentIds.push(p.id);
         })
       })
-      const payments = await Payments.find({id: paymentIds}).populate('person');
+      const payments = await Payments.find({id: paymentIds, provider: req.session.User.provider}).populate('person');
       const incomes = await Incomes
-        .find({ updatedAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() }})
+        .find({ updatedAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() }, provider: req.session.User.provider})
         .populate('person');
       const transactionSums = ReportsService.getTransactionSums(payments, incomes);
       return res.send({ transactionSums });
@@ -65,7 +73,11 @@ module.exports = {
       const groups = await Groups.find({ hidden: false });
       const groupIds = groups.map(g => g.id);
       const events = await Events
-        .find({ group: groupIds, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
+        .find({ 
+          group: groupIds, 
+          startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() }, 
+          provider: req.session.User.provider 
+        })
         .sort("startsAt ASC")
         .populate("instructor")
         .populate("group");
@@ -82,10 +94,14 @@ module.exports = {
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));
       const monthDateRange = DateRangeHelper.GetMonthDateRange(year, month);
-      const groups = await Groups.find({ hidden: false });
+      const groups = await Groups.find({ hidden: false, provider: req.session.User.provider });
       const groupIds = groups.map(g => g.id);
       const events = await Events
-        .find({ group: groupIds, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
+        .find({ 
+          group: groupIds, 
+          startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() },
+          provider: req.session.User.provider
+        })
         .sort("startsAt ASC")
         .populate("visitors")
         .populate("payments")
@@ -105,9 +121,9 @@ module.exports = {
       const month = Number(req.param("month"));
       const activity = Number(req.param("activity"));
       const monthDateRange = DateRangeHelper.GetMonthDateRange(year, month);
-      const groups = await Groups.find({ hidden: false }).populate("members");
+      const groups = await Groups.find({ hidden: false, provider: req.session.User.provider }).populate("members");
       const groupIds = groups.map(g => g.id);
-      const groupedActions = await GroupsService.getGroupedActions(groupIds, monthDateRange.end.valueOf());
+      const groupedActions = await GroupsService.getGroupedActions(groupIds, monthDateRange.end.valueOf(), req.session.User.provider);
       const persons = await ReportsService.getActivityPersons(groupedActions, groups, activity);
       return res.send({ persons });
     } catch (err) {
@@ -120,7 +136,7 @@ module.exports = {
     try {
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));
-      const wbbuf = await ExcelService.getVisits(year, month);
+      const wbbuf = await ExcelService.getVisits(year, month, req.session.User.provider);
       res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
       return res.end( wbbuf );
     } catch (err) {
@@ -133,7 +149,7 @@ module.exports = {
     try {
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));
-      const wbbuf = await ExcelService.getInstructors(year, month);
+      const wbbuf = await ExcelService.getInstructors(year, month, req.session.User.provider);
       res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
       return res.end( wbbuf );
     } catch (err) {
@@ -146,7 +162,7 @@ module.exports = {
     try {
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));
-      const wbbuf = await ExcelService.getPayments(year, month);
+      const wbbuf = await ExcelService.getPayments(year, month, req.session.User.provider);
       res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
       return res.end( wbbuf );
     } catch (err) {
@@ -159,7 +175,7 @@ module.exports = {
     try {
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));
-      const wbbuf = await ExcelService.getTotals(year, month);
+      const wbbuf = await ExcelService.getTotals(year, month, req.session.User.provider);
       res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
       return res.end( wbbuf );
     } catch (err) {
@@ -174,7 +190,7 @@ module.exports = {
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));
       const activity = Number(req.param("activity"));
-      const wbbuf = await ExcelService.getActivity(year, month, activity);
+      const wbbuf = await ExcelService.getActivity(year, month, activity, req.session.User.provider);
       res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
       return res.end( wbbuf );
     } catch (err) {

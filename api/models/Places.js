@@ -3,8 +3,7 @@ module.exports = {
     name: {
       type: 'string',
       isNotEmptyString: true,
-      required: true,
-      unique: true
+      required: true
     },
     color: {
       type: 'string',
@@ -19,17 +18,20 @@ module.exports = {
     events: {
       collection: 'events',
       via: 'place'
+    },
+    provider: {
+      model: 'providers'
     }
   },
   beforeDestroy: async function(value, next){
     try {
-      const actualPlacesCount = await Places.count();
+      const actualPlacesCount = await Places.count({provider: value.provider});
       if (value.where && value.where.id && value.where.id.in){
-        const groupsOfPlaces = await Groups.find({defaultPlace: value.where.id.in});
+        const groupsOfPlaces = await Groups.find({defaultPlace: value.where.id.in, provider: value.provider});
         if (groupsOfPlaces.length){
           return next(`Сначала необходимо поменять зал в группах (${groupsOfPlaces.map(x => x.name)})`);
         }
-        const eventsOfPlaces = await Events.find({place: value.where.id.in});
+        const eventsOfPlaces = await Events.find({place: value.where.id.in, provider: value.provider});
         if (eventsOfPlaces.length){
           return next(`Сначала необходимо удалить занятия, где указан выбранный зал`);
         }

@@ -38,14 +38,6 @@ export default {
           }
         },
         {
-          key: "person",
-          label: "Участник",
-          formatter: (value, key, item) => {
-            if (!value) return "";
-            return value.name;
-          }
-        },
-        {
           key: "password",
           label: "Пароль",
           formatter: (value, key, item) => {
@@ -60,7 +52,7 @@ export default {
     DataTable
   },
   async mounted(){
-    this.additionalButtons = [{ name: 'Сгенерировать', action: this.syncAccounts }];
+    this.additionalButtons = [];
     this.passwordShowButton = { getPassword: this.getPassword };
     await this.fetchSettings();
   },
@@ -68,10 +60,6 @@ export default {
     async fetchSettings() {
       const settings = await this.$getAsync(`${this.baseUrl}/settings`);
       this.itemForm.find(f => f.property == "person").models = settings.persons;
-    },
-    async syncAccounts() {
-      await this.$getAsync(`${this.baseUrl}/generate`);
-      await this.$refs.dataTable.fetchTable();
     },
     async getPassword(userId) {
       const response = await this.$getAsync(`${this.baseUrl}/get-password`, { id: userId })

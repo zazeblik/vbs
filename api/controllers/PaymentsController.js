@@ -1,17 +1,9 @@
 const PaymentsService = require('../services/PaymentsService');
 
 module.exports = {
-  selfSettings: async function (req, res){
-    try {
-      const settings = await PaymentsService.getPaymentSettings(req.session.User.person);
-      return res.send(settings);
-    } catch (error) {
-      return res.badRequest(error.message);
-    }
-  },
   settings: async function (req, res){
     try {
-      const settings = await PaymentsService.getPaymentSettings();
+      const settings = await PaymentsService.getPaymentSettings(req.session.User.provider);
       return res.send(settings);
     } catch (error) {
       return res.badRequest(error.message);
@@ -27,21 +19,7 @@ module.exports = {
     const month = Number(req.param("month"));
     const year = Number(req.param("year"));
     try {
-      const result = await PaymentsService.getGroupUnpayedEvents(year, month, group, person);
-      return res.send(result);
-    } catch (error) {
-      return res.badRequest(error.message);
-    }
-  },
-  selfGroupUnpayedEvents: async function (req, res){
-    if (!req.param("group")) return res.status(400).send("group не указан");
-    if (req.param("month") == undefined) return res.status(400).send("month не указан");
-    if (!req.param("year")) return res.status(400).send("year не указан");
-    const group = Number(req.param("group"));
-    const month = Number(req.param("month"));
-    const year = Number(req.param("year"));
-    try {
-      const result = await PaymentsService.getGroupUnpayedEvents(year, month, group, req.session.User.person);
+      const result = await PaymentsService.getGroupUnpayedEvents(year, month, group, person, req.session.User.provider);
       return res.send(result);
     } catch (error) {
       return res.badRequest(error.message);
@@ -53,17 +31,7 @@ module.exports = {
     const person = Number(req.param("person"));
     const limit = Number(req.param("limit"));
     try {
-      const transactions = await PaymentsService.getTransactions(person, limit);
-      return res.send(transactions);
-    } catch (err) {
-      return res.badRequest(err.message);
-    }
-  },
-  selfTransactions: async function (req, res){
-    if (!req.param("limit")) return res.status(400).send("limit не указан");
-    const limit = Number(req.param("limit"));
-    try {
-      const transactions = await PaymentsService.getTransactions(req.session.User.person, limit);
+      const transactions = await PaymentsService.getTransactions(person, limit, req.session.User.provider);
       return res.send(transactions);
     } catch (err) {
       return res.badRequest(err.message);
@@ -71,7 +39,7 @@ module.exports = {
   },
   delete: async function (req, res) {
     try {
-      await Payments.destroy(req.param("id")).fetch();
+      await Payments.destroy(req.param("id"));
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
@@ -80,6 +48,7 @@ module.exports = {
   edit: async function (req, res) {
     try {
       req.body.updater = req.session.User.id;
+      req.body.provider = req.session.User.provider;
       req.body.id = req.param("id");
       await Payments.update(req.param("id"), req.body)
       return res.ok();
@@ -90,6 +59,7 @@ module.exports = {
   create: async function (req, res) {
     try {
       req.body.updater = req.session.User.id;
+      req.body.provider = req.session.User.provider;
       await Payments.create(req.body)
       return res.ok();
     } catch (err) {
@@ -98,27 +68,11 @@ module.exports = {
   },
   createAll: async function (req, res) {
     try {
-      req.body.forEach(p => { p.updater = req.session.User.id });
-      await PaymentsService.createAll(req.body);
-      return res.ok();
-    } catch (err) {
-      return res.badRequest(err.message);
-    }
-  },
-  selfCreateAll: async function (req, res) {
-    try {
-      let payments = req.body;
-      const person = await Persons.findOne(req.session.User.person);
-      let paymentsSum = 0;
-      payments.forEach(p => { 
-        p.updater = req.session.User.id;
-        p.person = req.session.User.person;
-        paymentsSum += p.sum;
+      req.body.forEach(p => { 
+        p.updater = req.session.User.id; 
+        p.provider = req.session.User.provider;
       });
-      if (person.balance < paymentsSum) {
-        return res.badRequest("На вашем балансе не достаточно средств для оплаты");
-      }
-      await PaymentsService.createAll(payments);
+      await PaymentsService.createAll(req.body);
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);

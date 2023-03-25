@@ -26,6 +26,9 @@ module.exports = {
       type: 'number',
       isIn: [GroupType.General, GroupType.Personal],
       defaultsTo: GroupType.General
+    },
+    provider: {
+      model: 'providers'
     }
   },
   beforeCreate: async function (value, next) {
@@ -33,7 +36,9 @@ module.exports = {
       const existsRulesCount = await SalaryRules.count({
         instructor: value.instructor, 
         group: value.group, 
-        forGroupType: value.forGroupType
+        forGroupType: value.forGroupType,
+        forGroupType: value.forGroupType,
+        provider: value.provider
       });
       if (existsRulesCount) {
         return next(`Такое правило уже есть`);
@@ -46,12 +51,13 @@ module.exports = {
   beforeUpdate: async function (valueToSet, next) {
     try {
       const id = valueToSet.id;
-      const actualRule = await SalaryRules.findOne({id});
+      const actualRule = await SalaryRules.findOne({id: id, provider: value.provider});
       const existsRulesCount = await SalaryRules.count({
         id: {"!=": id},
         instructor: valueToSet.instructor || actualRule.instructor, 
         group: valueToSet.group || actualRule.group, 
-        forGroupType: valueToSet.forGroupType || actualRule.forGroupType
+        forGroupType: valueToSet.forGroupType || actualRule.forGroupType,
+        provider: value.provider
       });
       if (existsRulesCount) {
         return next(`Такое правило уже есть`);
@@ -63,7 +69,7 @@ module.exports = {
   },
   beforeDestroy: async function(value, next){
     try {
-      const actualRules = await SalaryRules.find(value);
+      const actualRules = await SalaryRules.find({id: value, provider: value.provider});
       let abortDestroy = false;
       actualRules.forEach(actualRule => {
         if (!actualRule.group && !actualRule.instructor) {

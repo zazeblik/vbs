@@ -11,12 +11,10 @@ module.exports = {
   // **optional** default: `[{ root: './' }]`
   // support monorepos
   projects: [
-    './packages/repo2', // Shorthand for specifying only the project root location
     {
       // **required**
       // Where is your project?
       // It is relative to `vetur.config.js`.
-      root: './packages/repo1',
       // **optional** default: `'package.json'`
       // Where is `package.json` in the project?
       // We use it to determine the version of vue.
@@ -25,7 +23,6 @@ module.exports = {
       // **optional**
       // Where is TypeScript config file in the project?
       // It is relative to root property.
-      tsconfig: './tsconfig.json',
       // **optional** default: `'./.vscode/vetur/snippets'`
       // Where is vetur custom snippets folders?
       snippetFolder: './.vscode/vetur/snippets',

@@ -47,13 +47,16 @@ module.exports = {
       type: 'boolean',
       defaultsTo: false
     },
+    provider: {
+      model: 'providers'
+    }
   },
   afterDestroy: async function(value, next){
     try {
-      await GroupMemberActions.destroy({group: value.id}).fetch();
-      await SalaryRules.destroy({group: value.id}).fetch();
-      await Payments.destroy({group: value.id}).fetch();
-      await Events.destroy({group: value.id}).fetch();  
+      await GroupMemberActions.destroy({group: value.id, provider: value.provider});
+      await SalaryRules.destroy({group: value.id, provider: value.provider});
+      await Payments.destroy({group: value.id, provider: value.provider});
+      await Events.destroy({group: value.id, provider: value.providers});  
       return next();
     } catch (error) {
       return next(JSON.stringify([ error ]));

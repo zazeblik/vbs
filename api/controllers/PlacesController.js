@@ -3,6 +3,7 @@ module.exports = {
   edit: async function (req, res) {
     try {
       req.body.id = req.param("id");
+      req.body.provider = req.session.User.provider;
       await Places.update(req.param("id"), req.body)
       return res.ok();
     } catch (err) {
@@ -11,6 +12,7 @@ module.exports = {
   },
   create: async function (req, res) {
     try {
+      req.body.provider = req.session.User.provider;
       await Places.create(req.body)
       return res.ok();
     } catch (err) {
@@ -29,14 +31,6 @@ module.exports = {
       return res.badRequest(err.message);
     }
   },
-  materials: async function (req, res) {
-    try {
-      let places = await Places.find().populate("groups", { type: GroupType.General, hidden: false, schedule: { '!=': '' } });
-      return res.ok(places);
-    } catch (err) {
-      return res.badRequest(err.message);
-    }
-  },
   list: async function (req, res) {
     try {
       const sort = req.query.sort || "updatedAt DESC";
@@ -44,7 +38,8 @@ module.exports = {
       let currentPage = Number(req.query.page) || 1;
       let query = {
         where: {
-          name: { "contains": req.query.search || "" }
+          name: { "contains": req.query.search || "" },
+          provider: req.session.User.provider
         }
       };
       const total = await Places.count(query);

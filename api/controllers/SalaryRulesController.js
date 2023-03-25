@@ -6,12 +6,14 @@ const Excel = require('exceljs');
 module.exports = {
   settings: async function (req, res) {
     try {
-      const persons = await Persons.find({ select: ["id", "name"] });
-      const groups = await Groups.find({ hidden: false });
+      const persons = await Persons.find({ select: ["id", "name"], where: { provider: req.session.User.provider } });
+      const groups = await Groups.find({ hidden: false, provider: req.session.User.provider });
       const instructorIdsRaw = await Events
         .getDatastore()
-        .sendNativeQuery(`select distinct instructor from vbs.events as e 
-                        where e.group in (select id from vbs.groups where hidden=false)`);
+        .sendNativeQuery(`
+          select distinct instructor from vbs.events as e 
+          where e.group in (select id from vbs.groups where hidden=false and provider=${req.session.User.provider})
+        `);
       const instructorIds = instructorIdsRaw.rows.map(r => r.instructor);
       const defaultInstructorIds = [...new Set(groups.map(g => g.defaultInstructor))];
       const instructors = persons.filter(p => instructorIds.includes(p.id));
@@ -28,6 +30,7 @@ module.exports = {
   edit: async function (req, res) {
     try {
       req.body.updater = req.session.User.id;
+      req.body.provider = req.session.User.provider;
       req.body.id = req.param("id");
       await SalaryRules.update(req.param("id"), req.body)
       return res.ok();
@@ -38,6 +41,7 @@ module.exports = {
   create: async function (req, res) {
     try {
       req.body.updater = req.session.User.id;
+      req.body.provider = req.session.User.provider;
       await SalaryRules.create(req.body)
       return res.ok();
     } catch (err) {
@@ -46,7 +50,7 @@ module.exports = {
   },
   delete: async function (req, res) {
     try {
-      await SalaryRules.destroy(req.body).fetch();
+      await SalaryRules.destroy(req.body);
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
@@ -57,7 +61,9 @@ module.exports = {
       const sort = req.query.sort || "updatedAt DESC";
       const perPage = Number(req.query.perPage) || 10;
       let currentPage = Number(req.query.page) || 1;
-      let query = {};
+      let query = {
+        where: { provider: req.session.User.provider }
+      };
       const total = await SalaryRules.count(query);
       const skip = (currentPage - 1) * perPage;
       query.skip = skip > total ? 0 : skip;
@@ -87,7 +93,7 @@ module.exports = {
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));
       const monthDateRange = DateRangeHelper.GetMonthDateRange(year, month);
-      const serviceResult = await SalaryCalculationService.calculateSalaries(monthDateRange);
+      const serviceResult = await SalaryCalculationService.calculateSalaries(monthDateRange, req.session.User.provider);
       return res.ok(serviceResult);
     } catch (err) {
       return res.badRequest(err.message);
@@ -103,7 +109,7 @@ module.exports = {
       const month = Number(req.param("month"));
       const monthDateRange = DateRangeHelper.GetMonthDateRange(year, month);
       let sheet = workbook.worksheets[0];
-      const serviceResults = await SalaryCalculationService.calculateSalaries(monthDateRange);
+      const serviceResults = await SalaryCalculationService.calculateSalaries(monthDateRange, req.session.User.provider);
       const results = [];
       let totalSum = 0;
       serviceResults.forEach(r => {

@@ -24,11 +24,14 @@ module.exports = {
       type: 'string',
       defaultsTo: 'Пополнение баланса вручную'
     },
+    provider: {
+      model: 'providers'
+    }
   },
   beforeCreate: async function (value, next) {
     try {
-      const person = await Persons.findOne(value.person);
-      await Persons.updateOne({ id: person.id }).set({ balance: person.balance + value.sum })
+      const person = await Persons.findOne({id: value.person, provider: value.provider});
+      await Persons.updateOne({ id: person.id, provider: value.provider }).set({ balance: person.balance + value.sum })
       return next();
     } catch (error) {
       return next(JSON.stringify([ error ]));
@@ -37,11 +40,11 @@ module.exports = {
   beforeUpdate: async function (value, next) {
     try {
       const id = value.id;
-      const actualIncome = await Incomes.findOne(id);
+      const actualIncome = await Incomes.findOne({id: id, provider: value.provider});
       if (value.sum){
-        const person = await Persons.findOne(actualIncome.person);
+        const person = await Persons.findOne({id: actualIncome.person, provider: value.provider});
         const delta = value.sum - actualIncome.sum;
-        await Persons.updateOne({ id: person.id }).set({ balance: person.balance + delta })
+        await Persons.updateOne({ id: person.id, provider: value.provider }).set({ balance: person.balance + delta })
       }
       if (value.person != null && actualIncome.person != value.person) {
         throw new Error("В платеже не должен меняться участник");
@@ -53,8 +56,8 @@ module.exports = {
   },
   afterDestroy: async function(value, next){
     try {
-      const person = await Persons.findOne(value.person);
-      if (person) await Persons.updateOne({ id: person.id }).set({ balance: person.balance - value.sum })
+      const person = await Persons.findOne({id: value.person, provider: value.provider});
+      if (person) await Persons.updateOne({ id: person.id, provider: value.provider }).set({ balance: person.balance - value.sum })
       return next();
     } catch (error) {
       return next(JSON.stringify([ error ]));

@@ -11,6 +11,9 @@ module.exports = {
     type: {
       type: 'number',
       isIn: [GroupMemberActionType.Added, GroupMemberActionType.Deleted]
+    },
+    provider: {
+      model: 'providers'
     }
   }
 };

@@ -5,22 +5,19 @@ module.exports.policies = {
   },
   persons: {
     '*': ['authenticated', 'isControlPanelAvailable'],
-    fields: true,
-    find: true
   },
   groups: {
     '*': ['authenticated', 'isControlPanelAvailable'],
-    generalDefaultInstructors: true,
-    find: true
   },
   places: {
     '*': ['authenticated', 'isControlPanelAvailable'],
-    materials: true,
-    find: true
   },
   settings: {
     '*': ['authenticated', 'isAdmin'],
-    get: true
+    get: 'authenticated'
+  },
+  providers: {
+    '*': 'withApiToken'
   },
   salaryRules: {
     '*': ['authenticated', 'isControlPanelAvailable']
@@ -36,10 +33,6 @@ module.exports.policies = {
   },
   payments: {
     '*': ['authenticated', 'isControlPanelAvailable'],
-    selfGroupUnpayedEvents: ['authenticated', 'hasPerson'],
-    selfSettings: ['authenticated', 'hasPerson'],
-    selfTransactions: ['authenticated', 'hasPerson'],
-    selfCreateAll: ['authenticated', 'hasPerson']
   },
   dashboard: {
     '*': ['authenticated', 'isControlPanelAvailable']

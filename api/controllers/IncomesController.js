@@ -6,7 +6,7 @@ module.exports = {
     try {
       const fromDate = Number(req.param("fromDate"));
       const toDate = Number(req.param("toDate"));
-      const wbbuf = await ExcelService.getIncomes(fromDate, toDate);
+      const wbbuf = await ExcelService.getIncomes(fromDate, toDate, req.session.User.provider);
       res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
       return res.end( wbbuf );
     } catch (err) {
@@ -19,7 +19,9 @@ module.exports = {
     try {
       const fromDate = Number(req.param("fromDate"));
       const toDate = Number(req.param("toDate"));
-      const incomes = await Incomes.find({createdAt: {">=": fromDate, "<=": toDate}}).populate('person');
+      const incomes = await Incomes
+        .find({createdAt: {">=": fromDate, "<=": toDate}, provider: req.session.User.provider})
+        .populate('person');
       return res.send(incomes);
     } catch (err) {
       return res.badRequest();
@@ -28,6 +30,7 @@ module.exports = {
   create: async function (req, res) {
     try {
       req.body.updater = req.session.User.id;
+      req.body.provider = req.session.User.provider;
       await Incomes.create(req.body);
       return res.ok();
     } catch (err) {
@@ -45,6 +48,7 @@ module.exports = {
   edit: async function (req, res) {
     try {
       req.body.updater = req.session.User.id;
+      req.body.provider = req.session.User.provider;
       req.body.id = req.param("id");
       await Incomes.update(req.param("id"), req.body)
       return res.ok();

@@ -151,9 +151,6 @@ export default {
       if (this.isControlPanelShown){
         return true;
       } 
-      if (this.$settings.sberUsername && this.$settings.sberPassword){
-        return true;
-      }
       return false;
     }
   },

@@ -324,17 +324,10 @@ module.exports.UserForm = [
     }
   },
   {
-    label: "Участник",
-    property: "person",
-    type: "model",
-    models: []
-  },
-  {
     label: "Роль",
     property: "role",
     type: "enum",
     options: [
-      { text: "участник", value: Role.User },
       { text: "тренер", value: Role.Coach },
       { text: "админ", value: Role.LocalAdmin }
 

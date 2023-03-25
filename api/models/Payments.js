@@ -35,16 +35,20 @@ module.exports = {
       type: 'string',
       allowNull: true
     },
+    provider: {
+      model: 'providers'
+    }
   },
   beforeCreate: async function (value, next) {
     try {
-      const group = await Groups.findOne(value.group).populate("members");
+      const group = await Groups.findOne({id: value.group, provider: value.provider}).populate("members");
       if (group.type == GroupType.General && value.month && value.year){
         const alreadyExistsPayment = await Payments.findOne({ 
           group: value.group, 
           month: value.month,
           year: value.year,
-          person: value.person
+          person: value.person, 
+          provider: value.provider
         });
         if (alreadyExistsPayment != null) {
           return next("Месяц уже оплачен");
@@ -56,19 +60,20 @@ module.exports = {
             startsAt: { 
               ">=": monthDateRange.start.valueOf(), 
               "<=": monthDateRange.end.valueOf() 
-            } 
+            }, 
+            provider: value.provider
           })
           .sort("startsAt ASC");
         value.events = events.map(e => e.id);
       }
       if (group.type == GroupType.Personal && value.events.length) {
-        let paymentEvents = await Events.find({ id: value.events }).populate('payments');
+        let paymentEvents = await Events.find({ id: value.events, provider: value.provider }).populate('payments');
         if (paymentEvents.some(x => x.payments.find(p => p.payer == value.person))){
           return next("Занятие уже оплачено. events: " + value.events);
         }
       }
       const person = await Persons.findOne(value.person);
-      await Persons.updateOne({ id: person.id }).set({ balance: person.balance - value.sum })
+      await Persons.updateOne({ id: person.id, provider: value.provider }).set({ balance: person.balance - value.sum })
       return next();
     } catch (error) {
       return next(JSON.stringify([ error ]));
@@ -81,7 +86,7 @@ module.exports = {
       if (value.sum){
         const person = await Persons.findOne(actualPayment.person);
         const delta = actualPayment.sum - value.sum;
-        await Persons.updateOne({ id: person.id }).set({ balance: person.balance + delta })
+        await Persons.updateOne({ id: person.id, provider: value.provider }).set({ balance: person.balance + delta })
       }
       if (value.person != null && actualPayment.person != value.person) {
         return next("В платеже не должен меняться участник. person: " + value.person);
@@ -102,7 +107,8 @@ module.exports = {
             group: value.group, 
             month: newMonth,
             year: newYear,
-            person: actualPayment.person
+            person: actualPayment.person, 
+            provider: value.provider
           });
           if (alreadyExistsPayment != null) {
             return next("Месяц уже оплачен. person: " + value.person);
@@ -114,14 +120,16 @@ module.exports = {
             startsAt: { 
               ">=": actualDateRange.start.valueOf(), 
               "<=": actualDateRange.end.valueOf() 
-            }
+            }, 
+            provider: value.provider
           });
           const eventsToAdd = await Events.find({ 
             group: value.group,
             startsAt: { 
               ">=": newDateRange.start.valueOf(), 
               "<=": newDateRange.end.valueOf() 
-            }
+            },
+            provider: value.provider
           })
           await Payments.removeFromCollection(id, "events").members(eventsToRemove.map(p => p.id));
           await Payments.addToCollection(id, "events").members(eventsToAdd.map(p => p.id));
@@ -134,8 +142,8 @@ module.exports = {
   },
   afterDestroy: async function(value, next){
     try {
-      const person = await Persons.findOne(value.person);
-      if (person) await Persons.updateOne({ id: person.id }).set({ balance: person.balance + value.sum })
+      const person = await Persons.findOne({id: value.person, provider: value.provider});
+      if (person) await Persons.updateOne({id: person.id, provider: value.provider}).set({ balance: person.balance + value.sum })
       return next();  
     } catch (error) {
       return next(JSON.stringify([ error ]));

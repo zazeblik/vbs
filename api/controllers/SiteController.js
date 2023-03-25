@@ -1,10 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const GroupType = require('../../enums').GroupType;
-const DateRangeHelper =  require('../utils/DateRangeHelper');
 const PersonsController = require('./PersonsController');
-const GroupsService = require('../services/GroupsService');
-const { GroupMemberActionType } = require('../../enums');
 
 module.exports = {
   uploads: async function (req, res) {
@@ -20,47 +16,15 @@ module.exports = {
   },
   update: async function (req, res) {
     try {
-      await Settings.update(1, req.body);
+      await Settings.update({provider: req.session.User.provider}).set(req.body);
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
     }
   },
   settings: async function (req, res) {
-    const settings = await Settings.findOne(1);
+    const settings = await Settings.findOne({provider: req.session.User.provider});
     return res.send(settings);
   },
-  profile: async function (req, res) {
-    try {
-      delete req.body.role;
-      delete req.body.person;
-      await Users.update(req.session.User.id, req.body);
-      return res.ok();
-    } catch (err) {
-      return res.badRequest(err.message);
-    }
-  },
-  person: async function (req, res){
-    try {
-      const person = await Persons.findOne({id: req.session.User.person});
-      const fields = await PersonCustomFields.find();
-      const fieldValues = await PersonCustomValues.find({person: req.session.User.person});
-      fields.forEach(field => {
-        const value = fieldValues.find(x => x.field == field.id)
-        if (value) person[field.name] = value.value; 
-      });
-      return res.send(person);
-    } catch (err) {
-      return res.badRequest(err.message);
-    }
-  },
-  profilePerson: async function (req, res) {
-    try {
-      req.body.id = req.session.User.person;
-      return await PersonsController.edit(req, res);
-    } catch (err) {
-      return res.badRequest(err.message);
-    }
-  }
 };
 

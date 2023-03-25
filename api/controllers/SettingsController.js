@@ -1,11 +1,11 @@
 module.exports = {
   get: async function (req, res){
-    const settings = await Settings.findOne(1);
+    const settings = await Settings.findOne({provider: req.session.User.provider});
     return res.send(settings);
   },
   update: async function (req, res){
     try {
-      await Settings.update(1, req.body);
+      await Settings.update({provider: req.session.User.provider}).set(req.body);
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);

@@ -3,7 +3,7 @@
     <Header 
       :isAuthShown="isAuthShown"
       :isControlPanelShown="isControlPanelShown" />
-    <router-view :class="isSiteShown ? 'mt-5 pt-5 site-page' : null" />
+    <router-view />
   </div>
 </template>
 

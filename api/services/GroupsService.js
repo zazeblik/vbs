@@ -3,9 +3,9 @@ moment.locale('ru');
 const GroupType = require('../../enums').GroupType;
 const GroupMemberActionType = require('../../enums').GroupMemberActionType;
 
-module.exports.getGroupedActions = async function (groupIds, toDate) {
+module.exports.getGroupedActions = async function (groupIds, toDate, providerId) {
   const actions = await GroupMemberActions
-    .find({group: groupIds, createdAt: {"<=": toDate}})
+    .find({group: groupIds, createdAt: {"<=": toDate}, provider: providerId})
     .populate("person")
     .sort('createdAt ASC');
   let actionsByPerson = {};
@@ -19,13 +19,17 @@ module.exports.getGroupedActions = async function (groupIds, toDate) {
   return actionsByPerson;
 }
 
-module.exports.getSheet = async function(id, monthDateRange){
+module.exports.getSheet = async function(id, monthDateRange, providerId){
   const group = await Groups.findOne(id).populate("members", { sort: "name ASC" });
   let groupMembers = group.members;
-  const actionsByPerson = await getActionsByPerson(id, monthDateRange.end.valueOf());
+  const actionsByPerson = await getActionsByPerson(id, monthDateRange.end.valueOf(), providerId);
   groupMembers = this.resolveGroupMembersByActions(groupMembers, actionsByPerson);
   const events = await Events
-    .find({ group: id, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
+    .find({ 
+      group: id,
+      startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() },
+      provider: providerId
+    })
     .sort("startsAt ASC")
     .populate("visitors", {select: ["id"]})
     .populate("payments", {select: ["id", "person", "sum"]});
@@ -86,9 +90,9 @@ module.exports.getSheet = async function(id, monthDateRange){
   return { fields, rows, totals };
 }
 
-module.exports.getInstructorScheduleEvents = async function(id, monthDateRange) {
+module.exports.getInstructorScheduleEvents = async function(id, monthDateRange, providerId) {
   const groups = await Groups
-    .find({ type: GroupType.Personal, hidden: false })
+    .find({ type: GroupType.Personal, hidden: falseproviderId, provider: providerId })
     .populate("members", {select: ["id", "name", "balance"]});
   const groupIds = groups.map(g => g.id);
   const groupedActions = await this.getGroupedActions(groupIds, monthDateRange.end.valueOf());
@@ -261,9 +265,9 @@ function getWeekNumber(startsAt){
   return weekdayNumber;
 }
 
-async function getActionsByPerson(group, toDate) {
+async function getActionsByPerson(group, toDate, providerId) {
   const actions = await GroupMemberActions
-    .find({group: group, createdAt: {"<=": toDate}})
+    .find({group: group, createdAt: {"<=": toDate}, provider: providerId})
     .populate("person")
     .sort('createdAt ASC');
   let actionsByPerson = {};

@@ -9,6 +9,9 @@ module.exports = {
     value: {
       type: 'string',
       allowNull: true
+    },
+    provider: {
+      model: 'providers'
     }
   },
 };

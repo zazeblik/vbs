@@ -4,7 +4,7 @@ const cyrillicToTranslit = require('cyrillic-to-translit-js');
 module.exports = {
   settings: async function (req, res){
     try {
-      const persons = await Persons.find().sort('name ASC');
+      const persons = await Persons.find({provider: req.session.User.provider}).sort('name ASC');
       return res.send({ persons });
     } catch (err) {
       return res.badRequest(err.message);
@@ -20,6 +20,7 @@ module.exports = {
   edit: async function (req, res) {
     try {
       req.body.id = req.param("id");
+      req.body.provider = req.session.User.provider;
       await Users.update(req.param("id"), req.body)
       return res.ok();
     } catch (err) {
@@ -28,6 +29,7 @@ module.exports = {
   },
   create: async function (req, res) {
     try {
+      req.body.provider = req.session.User.provider;
       await Users.create(req.body)
       return res.ok();
     } catch (err) {
@@ -47,7 +49,7 @@ module.exports = {
   getPassword: async function (req, res) {
     try {
       const id = req.param("id");
-      const user = await Users.findOne({ id: id }).decrypt();
+      const user = await Users.findOne({ id: id, provider: req.session.User.provider }).decrypt();
       return res.send({
         data: user.password
       })
@@ -62,7 +64,8 @@ module.exports = {
       let currentPage = Number(req.query.page) || 1;
       let query = {
         where: {
-          login: { "contains": req.query.search || "" }
+          login: { "contains": req.query.search || "" },
+          provider: req.session.User.provider
         }
       };
       const total = await Users.count(query);
@@ -73,7 +76,7 @@ module.exports = {
       query.limit = perPage;
       query.sort = sort;
       
-      let data = await Users.find(query).populate("person");
+      let data = await Users.find(query);
       // Делаю так чтобы избавиться от ненужных полей и инициализировать пароль заглушкой
       const dataJson = JSON.stringify(data);
       data = JSON.parse(dataJson);
@@ -87,31 +90,6 @@ module.exports = {
         data: data
       })
     } catch (err) {
-      return res.badRequest(err.message);
-    }
-  },
-  generate: async function( req, res ) {
-    try {
-      const filledUsers = await Users.find({person: {'!=': null }})
-      const usedPersonIds = [...new Set(filledUsers.map(x => x.person))];
-      const notFilledPersons = await Persons.find({id: {'!=': usedPersonIds}})
-      const accounts = [];
-      for (const person of notFilledPersons) {
-        const personName = person.name.toLowerCase().replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '');
-        const login = cyrillicToTranslit().transform(`${personName} ${person.id}`, "_");
-        const password =  login.length < 8
-          ? `${login}_${Date.now()}`
-          : login;
-        accounts.push( {
-          role: Role.User,
-          login: login,
-          password: password,
-          person: person.id
-        } )
-      }
-      await Users.createEach(accounts);
-      return res.ok();
-    }  catch (err) {
       return res.badRequest(err.message);
     }
   }

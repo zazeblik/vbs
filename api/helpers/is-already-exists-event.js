@@ -12,6 +12,10 @@ module.exports = {
       type: 'number',
       required: true
     },
+    providerId: {
+      type: 'number',
+      required: true
+    },
     excludeId: {
       type: 'number',
       allowNull: true
@@ -25,6 +29,7 @@ module.exports = {
   fn: async function (inputs, exits) {
     let query = {
       group: inputs.group,
+      provider: inputs.providerId,
       startsAt: { ">=": inputs.startsAt, "<": inputs.startsAt + inputs.duration * 60 * 1000 }
     };
     if (inputs.excludeId) {

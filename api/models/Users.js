@@ -18,18 +18,18 @@ module.exports = {
     },
     role: {
       type: 'number',
-      isIn: [Role.User, Role.Coach, Role.LocalAdmin],
+      isIn: [Role.Coach, Role.LocalAdmin],
       defaultsTo: 0
     },
-    person: {
-      model: 'persons'
+    provider: {
+      model: 'providers'
     }
   },
   beforeDestroy: async function(value, next){
     try {
-      const actualAdminsCount = await Users.count({role: Role.LocalAdmin});
+      const actualAdminsCount = await Users.count({role: Role.LocalAdmin, provider: value.provider});
       if (value.where && value.where.id && value.where.id.in){
-        const usersToDelete = await Users.find(value);
+        const usersToDelete = await Users.find({id: value, provider: value.provider});
         const adminsToDeleteCount = usersToDelete.filter(x => x.role == Role.LocalAdmin).length;
         if (adminsToDeleteCount >= actualAdminsCount){
           return next('Должен остаться хотябы 1 администратор');

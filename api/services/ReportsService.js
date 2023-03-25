@@ -1,7 +1,7 @@
 
 const GroupType = require('../../enums').GroupType;
 
-module.exports.getActivityPersons = async function(groupedActions, groups, activity){
+module.exports.getActivityPersons = async function(groupedActions, groups, activity, providerId){
   let persons = [];
   let activePersons = [];
   let activePersonsIds = [];
@@ -18,7 +18,7 @@ module.exports.getActivityPersons = async function(groupedActions, groups, activ
     activePersonsIds = activePersons.map(x => x.id);
   }
   if (activity) {
-    persons = await Persons.find({id: {"!=": activePersonsIds}});
+    persons = await Persons.find({id: {"!=": activePersonsIds}, provider: providerId});
   } else {
     persons = activePersons;
   }

@@ -5,9 +5,11 @@ module.exports = {
     try {
       const birthdaysRaw = await Persons
         .getDatastore()
-        .sendNativeQuery(`select name, birthday
+        .sendNativeQuery(`select name, birthday, provider
           FROM vbs.persons
-          WHERE DATE_FORMAT(FROM_UNIXTIME(birthday * 0.001 + 3600),'%m-%d') = DATE_FORMAT(NOW(),'%m-%d')`);
+          WHERE 
+          DATE_FORMAT(FROM_UNIXTIME(birthday * 0.001 + 3600),'%m-%d') = DATE_FORMAT(NOW(),'%m-%d') 
+          AND provider = ${req.session.User.provider}`);
       const birthdays = birthdaysRaw.rows;
       return res.send(birthdays);
     } catch (error) {
@@ -24,7 +26,11 @@ module.exports = {
       const groups = await Groups.find({ hidden: false });
       const groupIds = groups.map(g => g.id);
       const events = await Events
-        .find({ group: groupIds, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
+        .find({ 
+          group: groupIds, 
+          startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() },
+          provider: req.session.User.provider
+        })
         .sort("startsAt ASC")
         .populate("instructor")
         .populate("group")
@@ -44,7 +50,7 @@ module.exports = {
       const currentDate = new Date();
       const isCurrentMonth = currentDate.getFullYear() == year && currentDate.getMonth() == month;
       const startDate = new Date(year, month);
-      await sails.helpers.eventsGenerate(isCurrentMonth ? Date.now() : startDate.getTime());
+      await sails.helpers.eventsGenerate(isCurrentMonth ? Date.now() : startDate.getTime(), req.session.User.provider);
       return res.ok();
     }  catch (err) {
       return res.badRequest(err.message);

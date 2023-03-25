@@ -19,7 +19,7 @@ module.exports = {
         return res.badRequest('No file was uploaded');
       }
       try {
-        const persons = await ExcelService.parsePersons(uploadedFiles[0].fd, req.session.User.id)
+        const persons = await ExcelService.parsePersons(uploadedFiles[0].fd, req.session.User.id, req.session.User.provider)
         await Persons.createEach(persons);
         return res.ok();
       } catch (err) {
@@ -29,7 +29,7 @@ module.exports = {
   },
   export: async function(req, res) {
     try {
-      const wbbuf = await ExcelService.getPersons();
+      const wbbuf = await ExcelService.getPersons(req.session.User.provider);
       res.writeHead(200, [['Content-Type',  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']]);
       return res.end( wbbuf );
     } catch (err) {
@@ -38,7 +38,7 @@ module.exports = {
   },
   fields: async function (req, res){
     try {
-      const fields = await PersonCustomFields.find();
+      const fields = await PersonCustomFields.find({provider: req.session.User.provider});
       return res.send(fields);
     } catch (err) {
       return res.badRequest(err.message);
@@ -54,20 +54,21 @@ module.exports = {
         return {
           id: x.id,
           label: x.label,
-          name: cyrillicToTranslit().transform(x.label, "_")
+          name: cyrillicToTranslit().transform(x.label, "_"),
+          provider: req.session.User.provider
         }
       });
       const newFieldsIds = newFields.filter(x => x.id).map(x => x.id); 
       const fieldsToCreate = newFields.filter(x => !x.id);
-      const currentFields = await PersonCustomFields.find();
+      const currentFields = await PersonCustomFields.find({provider: req.session.User.provider});
       const currentFieldsIds = currentFields.map(x => x.id);
       const idsToDelete = currentFieldsIds.filter(x => !newFieldsIds.includes(x));
       const idsToUpdate = currentFieldsIds.filter(x => newFieldsIds.includes(x));
       const fieldsToUpdate = newFields.filter(x => idsToUpdate.includes(x.id));
       await PersonCustomFields.createEach(fieldsToCreate);
-      if (idsToDelete.length) await PersonCustomFields.destroy(idsToDelete).fetch();
+      if (idsToDelete.length) await PersonCustomFields.destroy(idsToDelete);
       fieldsToUpdate.forEach(async x => {
-        await PersonCustomFields.update({id: x.id}).set({id: x.id, label: x.label, name: x.name})
+        await PersonCustomFields.update({id: x.id}).set({id: x.id, label: x.label, name: x.name, provider: req.session.User.provider})
       });
       return res.ok();
     } catch (err) {
@@ -77,11 +78,12 @@ module.exports = {
   edit: async function (req, res){
     try {
       req.body.updater = req.session.User.id;
+      req.body.provider = req.session.User.provider;
       const id = req.param("id");
       req.body.id = id;
       const personToResolve = { ...req.body };
       await Persons.update(id, req.body);
-      await customValuesResolver.resolve(personToResolve);
+      await customValuesResolver.resolve(personToResolve, req.session.User.provider);
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
@@ -90,10 +92,11 @@ module.exports = {
   create: async function (req, res){
     try {
       req.body.updater = req.session.User.id;
+      req.body.provider = req.session.User.provider;
       const personToResolve = { ...req.body };
       const person = await Persons.create(req.body).fetch();
       personToResolve.id = person.id;
-      await customValuesResolver.resolve(personToResolve);
+      await customValuesResolver.resolve(personToResolve, req.session.User.provider);
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
@@ -116,7 +119,8 @@ module.exports = {
       let currentPage = Number(req.query.page) || 1;
       let query = {
         where: {
-          name: { "contains": req.query.search || "" }
+          name: { "contains": req.query.search || "" },
+          provider: req.session.User.provider
         }
       };
       const total = await Persons.count(query);
@@ -127,8 +131,8 @@ module.exports = {
       query.limit = perPage;
       query.sort = sort;
       const data = await Persons.find(query).populate('updater');
-      const fields = await PersonCustomFields.find();
-      const customValues = await PersonCustomValues.find({person: data.map(x => x.id)});
+      const fields = await PersonCustomFields.find({provider: req.session.User.provider});
+      const customValues = await PersonCustomValues.find({person: data.map(x => x.id), provider: req.session.User.provider});
       data.forEach(person => {
         fields.forEach(field => {
           const customValue = customValues.find(x => x.person == person.id && x.field == field.id);
