@@ -439,7 +439,7 @@ export default {
       this.isBusy = false;
     },
     async fetchDetail() {
-      const detail = await this.$getAsync(`/groups/detail/${this.$route.params.id}`, { year: this.selectedYear, month: this.selectedMonth });
+      const detail = await this.$getAsync(`/groups/detail/${this.$route.params.id}`);
       this.group = detail.group;
       this.isGeneralGroup = this.group.type == GroupType.General; 
       this.persons =  detail.persons;

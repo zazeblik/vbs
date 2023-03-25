@@ -82,7 +82,7 @@ module.exports = {
       const id = req.param("id");
       req.body.id = id;
       const personToResolve = { ...req.body };
-      await Persons.update(id, req.body);
+      await Persons.update({id: req.param("id"), provider: req.session.User.provider}, req.body);
       await customValuesResolver.resolve(personToResolve, req.session.User.provider);
       return res.ok();
     } catch (err) {
@@ -104,9 +104,7 @@ module.exports = {
   },
   delete: async function (req, res) {
     try {
-      if (!req.param("id"))
-        return res.badRequest();
-      await Persons.destroy(req.body);
+      await Persons.destroy({id: req.param("id"), provider: req.session.User.provider});
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);

@@ -39,7 +39,7 @@ module.exports = {
   },
   delete: async function (req, res) {
     try {
-      await Incomes.destroy(req.param("id")).fetch();
+      await Incomes.destroy({id: req.param("id"), provider: req.session.User.provider});
       return res.ok();
     } catch (err) {
       return res.badRequest();
@@ -50,7 +50,7 @@ module.exports = {
       req.body.updater = req.session.User.id;
       req.body.provider = req.session.User.provider;
       req.body.id = req.param("id");
-      await Incomes.update(req.param("id"), req.body)
+      await Incomes.update({id: req.param("id"), provider: req.session.User.provider}).set(req.body)
       return res.ok();
     } catch (err) {
       return res.badRequest();

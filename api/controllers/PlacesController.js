@@ -4,7 +4,7 @@ module.exports = {
     try {
       req.body.id = req.param("id");
       req.body.provider = req.session.User.provider;
-      await Places.update(req.param("id"), req.body)
+      await Places.update({id: req.param("id"), provider: req.session.User.provider}).set(req.body)
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
@@ -21,11 +21,7 @@ module.exports = {
   },
   delete: async function (req, res) {
     try {
-      if (!req.param("id"))
-        return res
-          .status(400)
-          .send(err);
-      await Places.destroy(req.body).fetch();
+      await Places.destroy({id: req.param("id"), provider: req.session.User.provider});
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);

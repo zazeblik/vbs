@@ -47,8 +47,10 @@ module.exports = {
   addPerson: async function (req, res) {
     if (!req.param("id")) return res.status(400).send("id не указан");
     if (!req.param("person")) return res.status(400).send("person не указан");
+    const id = Number(req.param("id"));
+    const group = await Groups.findOne(id);
+    if (group.provider != req.session.User.provider) return res.status(403);
     try {
-      const id = Number(req.param("id"));
       const person = Number(req.param("person"));
       await Groups.addToCollection(id, "members").members([person]);
       await GroupMemberActions.create({
@@ -66,8 +68,10 @@ module.exports = {
   addPersons: async function (req, res) {
     if (!req.param("id")) return res.status(400).send("id не указан");
     if (!req.param("persons")) return res.status(400).send("persons не указан");
+    const id = Number(req.param("id"));
+    const group = await Groups.findOne(id);
+    if (group.provider != req.session.User.provider) return res.status(403);
     try {
-      const id = Number(req.param("id"));
       const persons = req.param("persons");
       await Groups.addToCollection(id, "members").members(persons);
       const actions = persons.map(x => { 
@@ -91,8 +95,10 @@ module.exports = {
   removePerson: async function (req, res) {
     if (!req.param("id")) return res.status(400).send("id не указан");
     if (!req.param("person")) return res.status(400).send("person не указан");
+    const id = Number(req.param("id"));
+    const group = await Groups.findOne(id);
+    if (group.provider != req.session.User.provider) return res.status(403);
     try {
-      const id = Number(req.param("id"));
       const person = Number(req.param("person"));
       await Groups.removeFromCollection(id, "members").members([person]);
       await GroupMemberActions.create({
@@ -114,7 +120,7 @@ module.exports = {
     if (!req.param("id")) return res.status(400).send("id не указан");
     try {
       const id = Number(req.param("id"));
-      const instructor = await Persons.findOne(id);
+      const instructor = await Persons.findOne({id: id, provider: req.session.User.provider});
       const persons = await Persons
         .find({
           select: ["id", "name"], 
@@ -158,25 +164,15 @@ module.exports = {
   },
   detail: async function (req, res){
     if (!req.param('id')) return res.status(400).send('id не указан');
-    if (!req.param('year')) return res.status(400).send('year не указан');
-    if (req.param('month') == undefined) return res.status(400).send('month не указан');
     try {
       const id = Number(req.param('id'));
-      const year = Number(req.param('year'));
-      const month = Number(req.param('month'));
-      const monthDateRange = GetMonthDateRange(year, month);
-      const groupMemberActions = await GroupMemberActions.find({ 
-        group: id, 
-        createdAt: { '<=': monthDateRange.end.valueOf() },
-        provider: req.session.User.provider
-      });
-      const group = await Groups.findOne(id).populate('members');
+      const group = await Groups.findOne({id: id, provider: req.session.User.provider}).populate('members');
 
       let existingIds = group.members.map(m => m.id);
       const persons = await Persons
         .find({ where: { id: { '!=': existingIds }, provider: req.session.User.provider }, select: ['id', 'name'] })
         .sort('name ASC');
-      const places = await Places.find();
+      const places = await Places.find({provider: req.session.User.provider});
       return res.send({ group, persons, places });
     } catch (error) {
       return res.badRequest(error.message);
@@ -303,7 +299,7 @@ module.exports = {
   },
   delete: async function (req, res) {
     try {
-      await Groups.destroy(req.param("id")).fetch();
+      await Groups.destroy({id: req.param("id"), provider: req.session.User.provider});
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
@@ -314,7 +310,7 @@ module.exports = {
       req.body.updater = req.session.User.id;
       req.body.provider = req.session.User.provider;
       req.body.id = req.param("id");
-      await Groups.update(req.param("id"), req.body)
+      await Groups.update({id: req.param("id"), provider: req.session.User.provider}).set(req.body)
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);

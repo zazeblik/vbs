@@ -32,7 +32,7 @@ module.exports = {
       req.body.updater = req.session.User.id;
       req.body.provider = req.session.User.provider;
       req.body.id = req.param("id");
-      await SalaryRules.update(req.param("id"), req.body)
+      await SalaryRules.update({id: req.param("id"), provider: req.session.User.provider}).set(req.body)
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
@@ -50,7 +50,7 @@ module.exports = {
   },
   delete: async function (req, res) {
     try {
-      await SalaryRules.destroy(req.body);
+      await SalaryRules.destroy({id: req.param("id"), provider: req.session.User.provider});
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);

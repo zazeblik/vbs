@@ -23,7 +23,7 @@ module.exports = {
       const year = Number(req.param("year"));
       const month = Number(req.param("month"));
       const monthDateRange = DateRangeHelper.GetMonthDateRange(year, month);
-      const groups = await Groups.find({ hidden: false });
+      const groups = await Groups.find({ hidden: false, provider: req.session.User.provider });
       const groupIds = groups.map(g => g.id);
       const events = await Events
         .find({ 

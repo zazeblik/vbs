@@ -97,7 +97,11 @@ module.exports.getInstructorScheduleEvents = async function(id, monthDateRange, 
   const groupIds = groups.map(g => g.id);
   const groupedActions = await this.getGroupedActions(groupIds, monthDateRange.end.valueOf());
   let events = await Events
-    .find({ instructor: id, group: groupIds, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } })
+    .find({ 
+      instructor: id, 
+      group: groupIds, 
+      startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() } 
+    })
     .sort("startsAt ASC")
     .populate("visitors", {select: ["id", "name"]})
     .populate("payments", {select: ["id", "person", "sum"]});
