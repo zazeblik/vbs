@@ -29,7 +29,7 @@
     <section class="features-icons py-5 bg-light text-center">
       <div class="container">
         <div class="row">
-          <div class="col-lg-4">
+          <div class="col-lg-4 col-sm-12">
             <div class="features-icons-item mx-auto mb-5 mb-lg-0 mb-lg-3">
               <div class="features-icons-icon d-flex">
                 <b-icon icon="journal-text"></b-icon>
@@ -38,7 +38,7 @@
               <p class="lead mb-0">Отмечать присутствующих станет удобнее</p>
             </div>
           </div>
-          <div class="col-lg-4">
+          <div class="col-lg-4 col-sm-12">
             <div class="features-icons-item mx-auto mb-5 mb-lg-0 mb-lg-3">
               <div class="features-icons-icon d-flex">
                 <b-icon icon="clipboard-data"></b-icon>
@@ -47,7 +47,7 @@
               <p class="lead mb-0">Вся <strong>посещаемость</strong> и <strong>оплата</strong> как на ладони</p>
             </div>
           </div>
-          <div class="col-lg-4">
+          <div class="col-lg-4 col-sm-12">
             <div class="features-icons-item mx-auto mb-5 mb-lg-0 mb-lg-3">
               <div class="features-icons-icon d-flex">
                 <b-icon icon="graph-up"></b-icon>
@@ -56,7 +56,7 @@
               <p class="lead mb-0">В сравнении и цифрах видно самых активных</p>
             </div>
           </div>
-          <div class="col-lg-4">
+          <div class="col-lg-4 col-sm-12">
             <div class="features-icons-item mx-auto mb-5 mb-lg-0 mb-lg-3">
               <div class="features-icons-icon d-flex">
                 <b-icon icon="calendar4-week"></b-icon>
@@ -65,7 +65,7 @@
               <p class="lead mb-0">Запланировать или отменить <strong>занятие</strong> - пара кликов</p>
             </div>
           </div>
-          <div class="col-lg-4">
+          <div class="col-lg-4 col-sm-12">
             <div class="features-icons-item mx-auto mb-5 mb-lg-0 mb-lg-3">
               <div class="features-icons-icon d-flex">
                 <b-icon icon="collection"></b-icon>
@@ -74,7 +74,7 @@
               <p class="lead mb-0">Найти информацию не составит никакого труда</p>
             </div>
           </div>
-          <div class="col-lg-4">
+          <div class="col-lg-4 col-sm-12">
             <div class="features-icons-item mx-auto mb-0 mb-lg-3">
               <div class="features-icons-icon d-flex">
                 <b-icon icon="check2-circle"></b-icon>
@@ -90,7 +90,7 @@
     <section class="bg-light pb-5">
       <div class="container">
         <div class="row">
-          <div class="col md-4">
+          <div class="col-lg-4 col-sm-12">
             <h2>Возможности</h2>
             <ul>
               <li>делает "прозрачной" всю оплату, задолженности и посещаемость в вашем коллективе</li>
@@ -100,7 +100,7 @@
               <li>даёт возможность сформировать программу лояльности для самых активных участников коллектива</li>
             </ul>
           </div>
-          <div class="col md-4">
+          <div class="col-lg-4 col-sm-12">
             <h2>Универсальность</h2>
             <ul>
               <li>работает с ежемесячными, разовыми и абонементными платежами</li>
@@ -108,7 +108,7 @@
               <li>позволяет подстроить интерфейс, конкретно под ваш коллектив</li>
             </ul>
           </div>
-          <div class="col md-4">
+          <div class="col-lg-4 col-sm-12">
             <h2>Преимущества</h2>
             <ul>
               <li>CRM адаптированная под спортивные секции, танцевальные студии, учебные и фитнес-центры</li>
