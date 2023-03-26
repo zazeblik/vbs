@@ -129,7 +129,7 @@
           <template v-slot:button-content>
             <b-icon icon="three-dots-vertical"/><span class="sr-only">Actions</span>
           </template>
-          <b-dropdown-item v-if="!allEventsPayed(data)" @click="showAddPaymentModal(data.value)">Оплатить месяц</b-dropdown-item>
+          <b-dropdown-item v-if="!allEventsPayed(data) && isGeneralGroup" @click="showAddPaymentModal(data.value)">Оплатить месяц</b-dropdown-item>
           <b-dropdown-item @click="showRemovePersonConfirm(data.value)">Удалить из группы</b-dropdown-item>
         </b-dropdown>
       </template>

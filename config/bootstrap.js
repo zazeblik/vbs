@@ -33,5 +33,5 @@ module.exports.bootstrap = async function() {
       })
     }
   }
-  //await B12MigrationUtil.MigratePersonsAndGroups();
+  //await B12MigrationUtil.MigratePersonsAndGroups(1);
 };
