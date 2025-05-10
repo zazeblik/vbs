@@ -92,7 +92,7 @@ module.exports.getSheet = async function(id, monthDateRange, providerId){
 
 module.exports.getInstructorScheduleEvents = async function(id, monthDateRange, providerId) {
   const groups = await Groups
-    .find({ type: GroupType.Personal, hidden: falseproviderId, provider: providerId })
+    .find({ type: GroupType.Personal, hidden: false, provider: providerId })
     .populate("members", {select: ["id", "name", "balance"]});
   const groupIds = groups.map(g => g.id);
   const groupedActions = await this.getGroupedActions(groupIds, monthDateRange.end.valueOf());

@@ -132,11 +132,10 @@ module.exports = {
       const places = await Places.find({provider: req.session.User.provider});
       const groups = await Groups
         .find({
-          type: GroupType.Personal, 
-          defaultInstructor: id, 
+          type: GroupType.Personal,
           hidden: false, 
           provider: req.session.User.provider
-        }).sort('name ASC');;
+        }).sort('name ASC');
       return res.send({ instructor, places, persons, groups });
     } catch (error) {
       return res.badRequest(error.message);
@@ -159,6 +158,7 @@ module.exports = {
       const totals = { hoursSum, paymentsSum };
       return res.send({ fields, rows, totals });
     } catch (error) {
+      console.log(error);
       return res.badRequest(error.message);
     }
   },
