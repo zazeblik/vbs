@@ -7,7 +7,7 @@ module.exports = {
       required: true
     },
     instructor: {
-      model: 'persons',
+      model: 'instructors',
       required: true
     },
     startsAt: {
@@ -17,10 +17,6 @@ module.exports = {
     duration: {
       type: 'number',
       min: 0,
-      required: true
-    },
-    place: {
-      model: 'places',
       required: true
     },
     payments: {

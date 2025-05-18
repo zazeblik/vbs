@@ -55,8 +55,8 @@ export default new Router({
           component: () => import('./views/database/Groups.vue')
         },
         {
-          path: 'places',
-          component: () => import('./views/database/Places.vue')
+          path: 'instructors',
+          component: () => import('./views/database/Instructors.vue')
         },
         {
           path: 'payments',

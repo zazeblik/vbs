@@ -43,7 +43,6 @@
       <b-list-group flush>
         <b-list-group-item><b>Группа:</b> {{event.group.name}}</b-list-group-item>
         <b-list-group-item><b>Тренер:</b> {{event.instructor.name}}</b-list-group-item>
-        <b-list-group-item><b>Зал:</b> {{event.place.name}}</b-list-group-item>
         <b-list-group-item><b>Месячный абонимент:</b> {{event.group.cost}} р.</b-list-group-item>
         <b-list-group-item><b>Разовое занятие:</b> {{event.group.onceCost}} р.</b-list-group-item>
       </b-list-group>
@@ -105,8 +104,8 @@ export default {
           title: e.group.name,
           start: new Date(e.startsAt),
           end: new Date(e.startsAt + e.duration*60*1000),
-          backgroundColor: e.place.color,
-          borderColor: e.place.color,
+          backgroundColor: e.instructor.color,
+          borderColor: e.instructor.color,
           description: e.group.name
         }
       })

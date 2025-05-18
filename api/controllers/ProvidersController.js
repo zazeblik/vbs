@@ -7,7 +7,7 @@ module.exports = {
     const provider = await Providers.create({ name: name }).fetch();
     await Users.create({ login: `admin${provider.id}`, password: `password${provider.id}`, role: Role.LocalAdmin, provider: provider.id })
     await Settings.create({ provider: provider.id })
-    await Places.create({ name: 'Стандартный', color: '#00e1ff', provider: provider.id })
+    await Instructors.create({ name: 'Тренер по-умолчанию', color: '#00e1ff', provider: provider.id })
     await SalaryRules.create({ 
       value: 50, 
       type: SalaryRuleType.Percentage, 

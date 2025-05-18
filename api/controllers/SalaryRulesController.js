@@ -6,22 +6,8 @@ const Excel = require('exceljs');
 module.exports = {
   settings: async function (req, res) {
     try {
-      const persons = await Persons.find({ select: ["id", "name"], where: { provider: req.session.User.provider } });
+      const instructors = await Instructors.find({ select: ["id", "name"], where: { provider: req.session.User.provider } });
       const groups = await Groups.find({ hidden: false, provider: req.session.User.provider });
-      const instructorIdsRaw = await Events
-        .getDatastore()
-        .sendNativeQuery(`
-          select distinct instructor from vbs.events as e 
-          where e.group in (select id from vbs.groups where hidden=false and provider=${req.session.User.provider})
-        `);
-      const instructorIds = instructorIdsRaw.rows.map(r => r.instructor);
-      const defaultInstructorIds = [...new Set(groups.map(g => g.defaultInstructor))];
-      const instructors = persons.filter(p => instructorIds.includes(p.id));
-      defaultInstructorIds.forEach(id => {
-        if (!instructorIds.includes(id)) {
-          instructors.push(persons.find(p => p.id == id));
-        }
-      });
       return res.send({ groups, instructors });
     } catch (err) {
       return res.badRequest(err.message);

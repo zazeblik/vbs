@@ -5,6 +5,14 @@ const GroupsService = require('../services/GroupsService');
 const ExcelService = require('../services/ExcelService');
 
 module.exports = {
+  autoDebit: async function (req, res) {
+    try {
+      await sails.helpers.autoDebit(req.session.User.provider, req.param("group"));
+      return res.ok();
+    } catch (err) {
+      return res.badRequest(err.message);
+    }
+  },
   exportReport: async function (req, res){
     if (!req.param("year")) return res.status(400).send("year не указан");
     if (req.param("month") == undefined) return res.status(400).send("month не указан");
@@ -38,8 +46,8 @@ module.exports = {
   settings: async function (req, res){
     try {
       const persons = await Persons.find({provider: req.session.User.provider}).sort('name ASC');
-      const places = await Places.find({provider: req.session.User.provider});
-      return res.send({ persons, places });
+      const instructors = await Instructors.find({provider: req.session.User.provider});
+      return res.send({ persons, instructors });
     } catch (error) {
       return res.badRequest(error.message);
     }
@@ -120,7 +128,7 @@ module.exports = {
     if (!req.param("id")) return res.status(400).send("id не указан");
     try {
       const id = Number(req.param("id"));
-      const instructor = await Persons.findOne({id: id, provider: req.session.User.provider});
+      const instructor = await Instructors.findOne({id: id, provider: req.session.User.provider});
       const persons = await Persons
         .find({
           select: ["id", "name"], 
@@ -129,14 +137,13 @@ module.exports = {
           }
         })
         .sort('name ASC');
-      const places = await Places.find({provider: req.session.User.provider});
       const groups = await Groups
         .find({
           type: GroupType.Personal,
           hidden: false, 
           provider: req.session.User.provider
         }).sort('name ASC');
-      return res.send({ instructor, places, persons, groups });
+      return res.send({ instructor, persons, groups });
     } catch (error) {
       return res.badRequest(error.message);
     }
@@ -172,8 +179,7 @@ module.exports = {
       const persons = await Persons
         .find({ where: { id: { '!=': existingIds }, provider: req.session.User.provider }, select: ['id', 'name'] })
         .sort('name ASC');
-      const places = await Places.find({provider: req.session.User.provider});
-      return res.send({ group, persons, places });
+      return res.send({ group, persons });
     } catch (error) {
       return res.badRequest(error.message);
     }
@@ -195,72 +201,28 @@ module.exports = {
   },
   general: async function (req, res) {
     try {
-      const places = await Places.find({where: {provider: req.session.User.provider}, select: ["id", "name"]});
+      let instructors = await Instructors.find({where: {provider: req.session.User.provider}, select: ["id", "name"]});
       const persons = await Persons.find({where: {provider: req.session.User.provider}, select: ["id", "name"]});
-      const groups = await Groups.find({ 
-        where: { 
-          type: GroupType.General, 
-          hidden: false,
-          provider: req.session.User.provider
-        }, 
-        select: ["defaultInstructor"]
-      });
-      const instructorIdsRaw = await Events
-        .getDatastore()
-        .sendNativeQuery(`
-          select distinct instructor from vbs.events as e 
-          where e.group in (
-            select id from vbs.groups where type=${GroupType.General} and provider=${req.session.User.provider}
-          )
-        `);
-      const instructorIds = instructorIdsRaw.rows.map(r => r.instructor);
-      const defaultInstructorIds = [...new Set(groups.map(g => g.defaultInstructor))];
-      const instructors = persons.filter(p => instructorIds.includes(p.id));
-      defaultInstructorIds.forEach(id => {
-        if (!instructorIds.includes(id)){
-          instructors.push(persons.find(p => p.id == id));
-        }
-      });
-      return res.send({ places, persons, instructors });
+      return res.send({ persons, instructors });
     } catch (err) {
       return res.badRequest(err.message);
     }
   },
   personal: async function (req, res) {
     try {
-      const places = await Places.find({
-        select: ["id", "name"],
-        where: {
-          provider: req.session.User.provider 
-        }
-      });
       const persons = await Persons.find({ 
         select: ["id", "name"],
         where: {
           provider: req.session.User.provider 
         } 
       });
-      const groups = await Groups
-        .find({ 
-          type: GroupType.Personal, 
-          hidden: false,
-          provider: req.session.User.provider
-        });
-      const instructorIdsRaw = await Events
-        .getDatastore()
-        .sendNativeQuery(`
-          select distinct instructor from vbs.events as e 
-          where e.group in (select id from vbs.groups where type=${GroupType.Personal} and provider=${req.session.User.provider})
-        `);
-      const instructorIds = instructorIdsRaw.rows.map(r => r.instructor);
-      const defaultInstructorIds = [...new Set(groups.map(g => g.defaultInstructor))];
-      const instructors = persons.filter(p => instructorIds.includes(p.id));
-      defaultInstructorIds.forEach(id => {
-        if (!instructorIds.includes(id)){
-          instructors.push(persons.find(p => p.id == id));
-        }
+      let instructors = await Instructors.find({ 
+        select: ["id", "name"],
+        where: {
+          provider: req.session.User.provider 
+        } 
       });
-      return res.send({ places, persons, instructors });
+      return res.send({ persons, instructors });
     } catch (err) {
       return res.badRequest(err.message);
     }
@@ -277,7 +239,6 @@ module.exports = {
           sort: "name ASC" 
         })
         .populate("defaultInstructor")
-        .populate("defaultPlace")
         .populate("members", { sort: "name ASC" });
       return res.send(groups);
     } catch (error) {
@@ -288,7 +249,7 @@ module.exports = {
     try {
       const groups = await Groups.find({type: GroupType.General, hidden: false, provider: req.session.User.provider});
       const defaultInstructorIds = [...new Set(groups.map(g => g.defaultInstructor))];
-      const instructors = await Persons.find({ id: defaultInstructorIds, provider: req.session.User.provider });
+      const instructors = await Instructors.find({ id: defaultInstructorIds, provider: req.session.User.provider });
       instructors.forEach(i => {
         i.groups = groups.filter(g => g.defaultInstructor == i.id);
       })
@@ -346,7 +307,6 @@ module.exports = {
       query.sort = sort;
       const data = await Groups.find(query)
         .populate("defaultInstructor")
-        .populate("defaultPlace")
         .populate("updater");
       return res.send({
         total: total,

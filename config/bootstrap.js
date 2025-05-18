@@ -13,9 +13,6 @@ module.exports.bootstrap = async function() {
     if (await Settings.count() == 0) {
       await Settings.create({ provider: provider.id })
     }
-    if (await Places.count() == 0) {
-      await Places.create({ name: 'Стандартный', color: '#00e1ff', provider: provider.id })
-    }
     if (await SalaryRules.count({ group: null, instructor: null, forGroupType: GroupType.Personal }) == 0) {
       await SalaryRules.create({ 
         value: 50, 

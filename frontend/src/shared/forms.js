@@ -97,9 +97,15 @@ module.exports.GroupForm = [
     label: "Стоимость (руб)",
     property: "cost",
     type: "number",
+    visibility: (form) => {
+      const typeField = form.find(f => f.property == "type");
+      if ( typeField && typeField.value == GroupType.Personal ) {
+        return false;
+      }
+      return true;
+    },
     validations: {
-      min_value: 0,
-      required: true
+      min_value: 0
     }
   },
   {
@@ -120,15 +126,6 @@ module.exports.GroupForm = [
   {
     label: "Тренер",
     property: "defaultInstructor",
-    type: "model",
-    models: [],
-    validations: {
-      required: true
-    }
-  },
-  {
-    label: "Зал",
-    property: "defaultPlace",
     type: "model",
     models: [],
     validations: {
@@ -237,15 +234,6 @@ module.exports.EventForm = [
     }
   },
   {
-    label: "Зал",
-    property: "place",
-    type: "model",
-    models: [],
-    validations: {
-      required: true
-    }
-  },
-  {
     label: "Время начала",
     property: "startsAt",
     type: "datetime",
@@ -286,14 +274,19 @@ module.exports.PersonForm = [
   },
 ]
 
-module.exports.PlaceForm = [
+module.exports.InstructorForm = [
   {
-    label: "Наименование",
+    label: "Фамилия Имя",
     property: "name",
     type: "string",
     validations: {
       required: true
     }
+  },
+  {
+    label: "Стоимость занятия (руб) для каждого участника, если на занятии было участников",
+    property: "prices",
+    type: "countPrices"
   },
   {
     label: "Цвет",

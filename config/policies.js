@@ -9,7 +9,7 @@ module.exports.policies = {
   groups: {
     '*': ['authenticated', 'isControlPanelAvailable'],
   },
-  places: {
+  instructors: {
     '*': ['authenticated', 'isControlPanelAvailable'],
   },
   settings: {

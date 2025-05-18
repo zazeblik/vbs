@@ -56,12 +56,10 @@ export default {
   methods: {
     async fetchSettings() {
       const settings = await this.$getAsync(`${this.baseUrl}/settings`);
-      if (settings.persons.length == 0 || settings.places.length == 0) {
-        this.creationErrorMessage = "Для создания группы необходимо создать хотябы одного участника и хотябы один зал";
+      if (settings.persons.length == 0 || settings.instructors.length == 0) {
+        this.creationErrorMessage = "Для создания группы необходимо создать хотябы одного участника и хотябы одного тренера";
       }
-      this.itemForm.find(f => f.property == "defaultInstructor").models = settings.persons;
-      this.itemForm.find(f => f.property == "defaultPlace").models = settings.places;
-      this.itemForm.find(f => f.property == "schedule").models = settings.places;
+      this.itemForm.find(f => f.property == "defaultInstructor").models = settings.instructors;
       this.itemForm.find(f => f.property == "hidden").hidden = false;
       this.itemForm.find(f => f.property == "type").hidden = false;
     }

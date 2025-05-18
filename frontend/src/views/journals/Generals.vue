@@ -56,7 +56,6 @@ export default {
       groups: [],
       instructors: [],
       persons: [],
-      places: [],
       itemForm: Object.assign([], GroupForm)
     };
   },
@@ -73,10 +72,7 @@ export default {
       const general = await this.$getAsync(`${this.baseUrl}/general`);
       this.instructors = general.instructors.map(i => { return { value: i.id, text: i.name } });
       this.persons = general.persons;
-      this.places = general.places;
       this.itemForm.find(f => f.property == "defaultInstructor").models = this.persons;
-      this.itemForm.find(f => f.property == "defaultPlace").models = this.places;
-      this.itemForm.find(f => f.property == "schedule").models = this.places;
       this.itemForm.find(f => f.property == "hidden").hidden = true;
       this.itemForm.find(f => f.property == "type").hidden = true;
       if (this.selectedInstructor)

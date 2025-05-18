@@ -231,9 +231,19 @@
             >
               <FormSchedule
                 :value="itemForm.find((c) => c.type == 'schedule').value"
-                :places="itemForm.find((c) => c.type == 'schedule').models"
-                :defaultPlaceId="itemForm.find((c) => c.property == 'defaultPlace').value"
                 ref="formSchedule"
+              />
+            </b-form-group>
+            <b-form-group
+              label-cols-sm="3"
+              label-size="sm"
+              v-if="itemForm.some((c) => c.type == 'countPrices')"
+              :label="itemForm.find((c) => c.type == 'countPrices').label"
+              class="mb-1"
+            >
+              <FormCountPrices
+                :value="itemForm.find((c) => c.type == 'countPrices').value"
+                ref="formCountPrices"
               />
             </b-form-group>
           </b-form>
@@ -246,11 +256,13 @@
 <script>
 import { ModelSelect } from "vue-search-select";
 import FormSchedule from "../components/FormSchedule";
+import FormCountPrices from "../components/FormCountPrices";
 
 export default {
   components: {
     ModelSelect,
     FormSchedule,
+    FormCountPrices
   },
   props: ["baseUrl", "itemForm", "modalId"],
   data() {
@@ -260,7 +272,7 @@ export default {
       id: null,
       isEdit: false,
       showSpinner: false,
-      lastFormTypes: ["schedule"],
+      lastFormTypes: ["schedule", "countPrices"],
     };
   },
   methods: {
@@ -304,6 +316,9 @@ export default {
           case "schedule":
             result[c.property] = this.$refs["formSchedule"].getValue() || null;
             break;
+          case "countPrices":
+            result[c.property] = this.$refs["formCountPrices"].getValue() || null;
+            break;
           default:
             break;
         }
@@ -320,6 +335,7 @@ export default {
           case "html":
           case "color":
           case "schedule":
+          case "countPrices":
             c.value = item[c.property] || c.defaultValue;
             break;
           case "password":
@@ -379,6 +395,9 @@ export default {
           case "schedule":
           case "model":
             c.value = c.value || null;
+            break;
+          case "countPrices":
+            c.value = c.value || [{count: 1, price: 1000}];
             break;
           case "date":
             c.value = null;

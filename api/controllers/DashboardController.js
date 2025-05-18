@@ -33,8 +33,7 @@ module.exports = {
         })
         .sort("startsAt ASC")
         .populate("instructor")
-        .populate("group")
-        .populate("place");
+        .populate("group");
      
       return res.send({ events });
     } catch (err) {

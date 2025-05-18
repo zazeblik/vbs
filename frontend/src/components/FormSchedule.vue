@@ -14,7 +14,6 @@
           >
             <b-input-group>
               <b-form-input
-                size="sm"
                 type="text"
                 autocomplete="off"
                 :value="getShortTime(day.times[index])"
@@ -34,11 +33,7 @@
               </b-input-group-append>
             </b-input-group>
         </validation-provider>
-        <b-form-select
-          size="sm"
-          v-model="day.places[index]"
-          :options="$modelsToOptions(places)" />
-        </div>
+      </div>
       <b-input-group-append>
         <b-button :hidden="!day.active" :disabled="day.times.length == 1" variant="outline-danger" @click="removeTime(day)">
           <b-icon icon="slash-circle-fill" rotate="45" />
@@ -53,7 +48,7 @@
 
 <script>
 export default {
-  props: [ "value", "places", "defaultPlaceId" ],
+  props: [ "value" ],
   data() {
     let weekdays = this.$moment.weekdaysMin();
     let schedule = [];
@@ -62,7 +57,6 @@ export default {
         label: wd,
         cronValue: index,
         times: [],
-        places: [],
         active: false
       });
     });
@@ -78,12 +72,9 @@ export default {
     scheduleRecords.forEach(sr => {
       const raw = sr.split(" ");
       const day = Number(raw[0]);
-      const time = raw[1];
-      const isPlaceAvailable = raw[2] && (this.places.map(x => x.id)).includes(Number(raw[2]));
-      const placeId = isPlaceAvailable ? Number(raw[2]) : this.defaultPlaceId; 
+      const time = raw[1]; 
       this.schedule.find(r => r.cronValue == day).active = true;
       this.schedule.find(r => r.cronValue == day).times.push(time);
-      this.schedule.find(r => r.cronValue == day).places.push(placeId);
     });
   },
   methods: {
@@ -95,11 +86,9 @@ export default {
     },
     addTime(day) {
       day.times.push("12:00:00");
-      day.places.push(this.defaultPlaceId || this.places[0].id);
     },
     removeTime(day) {
       day.times.pop();
-      day.places.pop();
     },
     changeActivation(day) {
       if (day.active){
@@ -115,7 +104,7 @@ export default {
       let usedTimes = [];
       activeDays.forEach(d => {
         d.times.forEach((t, index) => {
-          const result = `${d.cronValue} ${t} ${d.places[index]}`;
+          const result = `${d.cronValue} ${t}`;
           const usedTime = `${d.cronValue} ${t}`;
           if (usedTimes.includes(usedTime))
             return;

@@ -6,7 +6,7 @@
           <b-icon icon="collection"></b-icon>&nbsp;База данных
         </template>
         <b-dropdown-item to="/cp/persons">Участники</b-dropdown-item>
-        <b-dropdown-item to="/cp/places" v-if="$user.role == 2">Залы</b-dropdown-item>
+        <b-dropdown-item to="/cp/instructors" v-if="$user.role == 2">Тренеры</b-dropdown-item>
         <b-dropdown-item to="/cp/groups" v-if="$user.role == 2">Группы</b-dropdown-item>
       </b-nav-item-dropdown>
       <b-nav-item-dropdown class="border-top border-secondary px-2">

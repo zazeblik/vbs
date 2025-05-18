@@ -151,7 +151,7 @@ export default {
   components: {
     ModelSelect
   },
-  props: [ "modalId", "payer", "generals", "personals", "unpayedEvents", "unapyedGroupMonths", "isControlPanelShown" ],
+  props: [ "modalId", "payer", "generals", "personals", "instructors", "unpayedEvents", "unapyedGroupMonths", "isControlPanelShown" ],
   data() {
     return {
       baseUrl: "/payments",
@@ -179,6 +179,8 @@ export default {
       let result = [];
       this.unpayedEvents.forEach(e => {
         let prepared = Object.assign({}, e);
+        prepared.instructor = this.instructors.find(x => x.id = prepared.instructor).name;
+        prepared.visitorsCount = e.visitors.length;
         prepared.name = `${this.getGroupName(prepared)} ${this.getEventDate(prepared)}`;
         result.push(prepared);
       })
@@ -221,10 +223,10 @@ export default {
     getGroupName(template){
       return this.isGeneralGroupType(template)
         ? this.generals.find(g => g.id == template.group).name
-        : this.personals.find(g => g.id == template.group).name;
+        : `${this.personals.find(g => g.id == template.group).name} (${template.instructor}[${template.visitorsCount} чел.])`;
     },
     isGeneralGroupType(payment){
-      return payment.type == GroupType.General || payment.type == OncePay; 
+      return payment.type == GroupType.General || payment.type == OncePay;
     },
     isOncePayment(payment){
       return payment.type == OncePay; 
@@ -283,8 +285,6 @@ export default {
         : this.personals.sort(this.sortByPayerInMembers);
     },
     sortByPayerInMembers(a, b) {
-      const aIsIncludes = a.members.includes(this.payer);
-      const bIsIncludes = b.members.includes(this.payer);
       if (a < b) return -1;
       if (a > b) return 1;
       return 0;
@@ -302,7 +302,7 @@ export default {
       if (this.isControlPanelShown){
         query.person = this.payer
       }
-      payment.monthEvents = await this.$getAsync(`${this.baseUrl}/${this.isControlPanelShown ? 'group-unpayed-events' : 'self-group-unpayed-events'}`, query);
+      payment.monthEvents = await this.$getAsync(`${this.baseUrl}/group-unpayed-events`, query);
       if (payment.monthEvents.length){
         const firstEvent = payment.monthEvents[0];
         payment.event = firstEvent ? firstEvent.id : null;
@@ -310,7 +310,7 @@ export default {
     },
     async sendForm(){
       const result = await this.$postAsync(
-        `${this.baseUrl}/${this.isControlPanelShown ? 'create-all' : 'self-create-all'}`, 
+        `${this.baseUrl}/create-all`, 
         this.getPreparedPayments(), 
         true);
       if (result != "OK") {
@@ -355,7 +355,7 @@ export default {
       return resultPayments;
     },
     tryAddTemplate(template) {
-      if (
+      if (template.type == GroupType.General &&
         this.paymentTemplates
         .map(x => `${x.type}${x.group}${x.month}`)
         .includes(`${template.type}${template.group}${template.month}`)) return;
@@ -384,14 +384,20 @@ export default {
       })
       const personals = this.getPaymentGroups(GroupType.Personal);
       this.unpayedEvents.forEach(e => {
-        const group = personals.find( g => g.id == e.group);
+        const group = personals.find(g => g.id == e.group);
+        const instructor = this.instructors.find(i => i.id == e.instructor);
+        const prices = instructor.prices;
+        const countPrice = prices.find(x => x.count == e.visitors.length) || prices[prices.length - 1];
+        const sum = countPrice.price;
         if (!group.members.includes(this.payer)) return;
         this.tryAddTemplate({
           type: GroupType.Personal,
           month: null,
           groups: personals,
           group: group.id,
-          sum: group.cost,
+          sum: sum,
+          instructor: instructor.name,
+          visitorsCount: e.visitors.length,
           event: e.id
         })
       })

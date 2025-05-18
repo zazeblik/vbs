@@ -1,14 +1,8 @@
-const PersonalDebitMode = require('../../enums').PersonalDebitMode;
-
 module.exports = {
   attributes: {
-    debitMode: {
-      type: "number",
-      defaultsTo: PersonalDebitMode.AlwaysAsk
-    },
-    divideSumMode: {
+    autoDebitPersonalEvents: {
       type: "boolean",
-      defaultsTo: true
+      defaultsTo: false
     },
     autoOpenPaymentModel: {
       type: "boolean",

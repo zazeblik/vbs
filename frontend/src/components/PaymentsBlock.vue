@@ -101,6 +101,7 @@
       :unpayedEvents="personalUnpayedEvents"
       :unapyedGroupMonths="personalUnapyedGroupMonths"
       :payer="payer" 
+      :instructors="instructors" 
       @formSaved="fetchPage" />
   </div>
 </template>
@@ -127,6 +128,7 @@ export default {
       persons: [],
       generals: [],
       personals: [],
+      instructors: [],
       unpayedEvents: {},
       unapyedGroupMonths: {},
       personalUnpayedEvents: [],
@@ -171,11 +173,12 @@ export default {
       await this.fetchTransactions();
     },
     async fetchSettings() {
-      const settings = await this.$getAsync(`${this.baseUrl}/${this.isControlPanelShown ? 'settings' : 'self-settings'}`);
+      const settings = await this.$getAsync(`${this.baseUrl}/settings`);
       this.persons = settings.persons;
       this.generals = settings.generals;
       this.personals = settings.personals;
       this.unpayedEvents = settings.unpayedEvents;
+      this.instructors = settings.instructors;
       this.unapyedGroupMonths = settings.unapyedGroupMonths;
       if (!this.persons.length) return;
       if (!this.payer) this.payer = this.persons[0].id;
@@ -190,7 +193,7 @@ export default {
         transactionsQuery.person = this.payer
       };
       this.transactions = await this.$getAsync(
-        `${this.baseUrl}/${this.isControlPanelShown ? 'transactions' : 'self-transactions'}`, 
+        `${this.baseUrl}/transactions`, 
         transactionsQuery); 
     },
     async incomeAdded() {

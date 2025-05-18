@@ -1,8 +1,13 @@
 <template>
   <div class="py-2">
-    <b-breadcrumb class="mt-1">
-      <b-breadcrumb-item :to="isGeneralGroup ? '/cp/generals' : '/cp/personals'">{{isGeneralGroup ? 'Общие' : 'Индивидуальные'}} группы</b-breadcrumb-item>
-      <b-breadcrumb-item active>{{title}}</b-breadcrumb-item>
+    <b-breadcrumb class="mt-1 with-btn">
+      <div class="inline-block">
+        <b-breadcrumb-item :to="isGeneralGroup ? '/cp/generals' : '/cp/personals'">{{isGeneralGroup ? 'Общие' : 'Индивидуальные'}} группы</b-breadcrumb-item>
+        <b-breadcrumb-item active>{{title}}</b-breadcrumb-item>
+      </div>
+      <b-button v-if="!isGeneralGroup" size="sm" variant="outline-dark" @click="autoDebit">
+        <b-icon icon="lightning-fill"></b-icon>&nbsp;Оплатить занятия
+      </b-button>
     </b-breadcrumb>
     <b-input-group size="sm">
       <b-input-group-prepend>
@@ -167,7 +172,6 @@
 </template>
 <script>
 const GroupType = require("../../../../enums").GroupType;
-const PersonalDebitMode = require("../../../../enums").PersonalDebitMode;
 import Multiselect from 'vue-multiselect';
 import ModelModal from "../../components/ModelModal";
 import { GroupForm, EventForm, PaymentForm } from "../../shared/forms";
@@ -197,7 +201,6 @@ export default {
       rows: [],
       totals: [],
       defaultInstructor: null,
-      defaultPlace: null,
       defaultDuration: null,
       groupForm: Object.assign([], GroupForm),
       eventForm: Object.assign([], EventForm),
@@ -232,6 +235,33 @@ export default {
         group: this.group.id
       }, true);
     },
+    async autoDebit() {
+      try {
+        const confirm = await this.$bvModal.msgBoxConfirm(
+          `При наличии необходимой суммы на балансе участника автоматичекси оплатятся посещённые, но не оплаченные индивидуальные занятия. 
+          Вы уверены, что хотите это сделать?`,
+          {
+            cancelTitle: "Отмена",
+            cancelVariant: "outline-secondary",
+            okTitle: "Списать",
+            okVariant: "success"
+          }
+        );
+        if (!confirm) return;
+        await this.$postAsync(this.groupUrl + "/auto-debit", {group: this.group.id});
+        this.$bvToast.toast("Занятия успешно оплачены", {
+          title: "Автоматическая оплата занятий",
+          variant: "success",
+          autoHideDelay: 3000,
+          solid: true,
+        });
+        await this.fetchData();
+      } catch (error) {
+        if (error.response) {
+          this.$error(error.response.data.message || error.response.data);
+        }
+      }
+    },
     resetAddPersonsForm(){
       this.addPersonShown = false; 
       this.selectedPersons = [];
@@ -241,7 +271,6 @@ export default {
     createEvent(){
       this.eventForm.find(f => f.property == "group").value = this.$route.params.id;
       this.eventForm.find(f => f.property == "instructor").value = this.defaultInstructor;
-      this.eventForm.find(f => f.property == "place").value = this.defaultPlace;
       this.eventForm.find(f => f.property == "duration").value = this.defaultDuration;
       this.eventForm.find(f => f.property == "startsAt").value = this.getNextNearTime();
       this.$refs.eventModal.showAdd();
@@ -320,24 +349,17 @@ export default {
     async checkAll(field){
       const allChecked = this.rows.every(row => row[field.key].visited);
       const lostIds = this.rows.filter(r => allChecked ? r[field.key].visited : !r[field.key].visited ).map(row => row[field.key].visitorId)
-      let autoDebit = false;
-      if (!this.isGeneralGroup && !allChecked && this.$settings.debitMode == PersonalDebitMode.AlwaysAsk) {
-        autoDebit = await this.promptMemeberPaymentAvailability();
-      }
+
       const result = await this.$postAsync(
         `/events/${!allChecked ? 'add' : 'remove' }-visitor/${field.eventId}`, 
-        { visitors: lostIds, autoDebit },
+        { visitors: lostIds },
         true );
       if (result.success){
         this.rows.filter(r => lostIds.includes(r[field.key].visitorId)).forEach(row => {
           row[field.key].visited = !allChecked;
         });
         
-        if (this.needToRefetchData(autoDebit, false)){
-          await this.fetchData();
-        } else {
-          this.updateTotals();
-        }
+        this.updateTotals();
         return;
       }
     },
@@ -395,36 +417,17 @@ export default {
       await this.$postAsync(`/events/delete/${event}`);
       await this.fetchData();
     },
-    async promptMemeberPaymentAvailability() {
-      return await this.$bvModal.msgBoxConfirm(`Пересчитать оплаты за занятие автоматически?`, {
-        cancelTitle: "Отмена",
-        cancelVariant: "outline-secondary",
-        okTitle: "Пересчитать",
-        okVariant: "success"
-      });
-    }, 
     async changeEventVisit(cell){
-      let autoDebit = false;
-      if (!this.isGeneralGroup && cell.visited && this.$settings.debitMode == PersonalDebitMode.AlwaysAsk) {
-        autoDebit = await this.promptMemeberPaymentAvailability();
-      }
       const result = await this.$postAsync(
         `/events/${cell.visited ? 'add' : 'remove' }-visitor/${cell.eventId}`, 
-        { visitors: [cell.visitorId], autoDebit },
+        { visitors: [cell.visitorId] },
         true );
       if (result.success) {
-        if (this.needToRefetchData(autoDebit, cell.visited)) {
-          await this.fetchData();
-        } else {
-          this.updateTotals();
-        }
+        this.updateTotals();
         return;
       }
       
       cell.visited = !cell.visited;
-    },
-    needToRefetchData(autoDebit, visited){
-      return !this.isGeneralGroup && ( autoDebit || !visited || this.$settings.debitMode == PersonalDebitMode.AlwaysDebit );
     },
     async fetchData(){
       await this.fetchDetail();
@@ -447,12 +450,8 @@ export default {
       this.eventForm.find(f => f.property == "group").hidden = true;
       this.eventForm.find(f => f.property == "instructor").hidden = !this.isGeneralGroup;
       this.eventForm.find(f => f.property == "instructor").models = detail.persons;
-      this.eventForm.find(f => f.property == "place").models = detail.places;
       this.groupForm.find(f => f.property == "defaultInstructor").models = detail.persons;
-      this.groupForm.find(f => f.property == "defaultPlace").models = detail.places;
-      this.groupForm.find(f => f.property == "schedule").models = detail.places;
       this.groupForm.find(f => f.property == "hidden").hidden = true;
-      this.defaultPlace = detail.group.defaultPlace;
       this.defaultDuration = detail.group.defaultDuration;
       this.selectedPersons = [];
       this.title = this.group.name;
@@ -488,6 +487,12 @@ export default {
 
 table input[type="checkbox"] {
   height: 20px;
+}
+.inline-block {
+  display: inline-flex;
+}
+.with-btn {
+  justify-content: space-between;
 }
 </style>
 

@@ -7,7 +7,7 @@ module.exports = {
       model: 'users'
     },
     instructor: {
-      model: 'persons'
+      model: 'instructors'
     },
     group: {
       model: 'groups'

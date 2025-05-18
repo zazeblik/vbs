@@ -1,7 +1,10 @@
 <template>
   <div class="py-2">
-    <b-breadcrumb class="mt-1">
+    <b-breadcrumb class="mt-1 with-btn">
       <b-breadcrumb-item active>Индивидуальные группы</b-breadcrumb-item>
+      <b-button size="sm" variant="outline-dark" @click="autoDebit">
+        <b-icon icon="lightning-fill"></b-icon>&nbsp;Оплатить занятия
+      </b-button>
     </b-breadcrumb>
     <b-input-group prepend="Тренер" size="sm">
       <b-form-select v-model="selectedInstructor" :options="instructors" @change="selectedInstructorChanged"></b-form-select>
@@ -66,7 +69,6 @@ export default {
       groups: [],
       instructors: [],
       persons: [],
-      places: [],
       itemForm: Object.assign([], GroupForm)
     };
   },
@@ -83,10 +85,7 @@ export default {
       const personal = await this.$getAsync(`${this.baseUrl}/personal`);
       this.instructors = personal.instructors.map(i => { return { value: i.id, text: i.name } });
       this.persons = personal.persons;
-      this.places = personal.places;
       this.itemForm.find(f => f.property == "defaultInstructor").models = this.persons;
-      this.itemForm.find(f => f.property == "defaultPlace").models = this.places;
-      this.itemForm.find(f => f.property == "schedule").models = this.places;
       this.itemForm.find(f => f.property == "hidden").hidden = true;
       this.itemForm.find(f => f.property == "type").hidden = true;
       if (this.selectedInstructor)
@@ -107,6 +106,32 @@ export default {
       this.itemForm.find(f => f.property == "defaultInstructor").value = this.selectedInstructor;
       this.itemForm.find(f => f.property == "type").value = GroupType.Personal;
       this.$refs.modelModal.showAdd();
+    },
+    async autoDebit() {
+      try {
+        const confirm = await this.$bvModal.msgBoxConfirm(
+          `При наличии необходимой суммы на балансе участника автоматичекси оплатятся посещённые, но не оплаченные индивидуальные занятия. 
+          Вы уверены, что хотите это сделать?`,
+          {
+            cancelTitle: "Отмена",
+            cancelVariant: "outline-secondary",
+            okTitle: "Списать",
+            okVariant: "success"
+          }
+        );
+        if (!confirm) return;
+        await this.$postAsync(this.baseUrl + "/auto-debit");
+        this.$bvToast.toast("Занятия успешно оплачены", {
+          title: "Автоматическая оплата занятий",
+          variant: "success",
+          autoHideDelay: 3000,
+          solid: true,
+        });
+      } catch (error) {
+        if (error.response) {
+          this.$error(error.response.data.message || error.response.data);
+        }
+      }
     },
     showEditModal(group) {
       this.$refs.modelModal.showEdit(group);
@@ -148,5 +173,8 @@ export default {
 <style scoped>
 .card-text {
   min-height: 60px;
+}
+.with-btn {
+  justify-content: space-between;
 }
 </style>

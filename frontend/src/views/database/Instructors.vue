@@ -1,22 +1,22 @@
 <template>
   <div class="py-2">
-    <h5>Залы</h5>
-    <DataTable :baseUrl="baseUrl" :fields="fields" :itemForm="itemForm" filterPlaceHolder="Введите название..." />
+    <h5>Тренеры</h5>
+    <DataTable :baseUrl="baseUrl" :fields="fields" :itemForm="itemForm" filterPlaceHolder="Введите фамилию и имя..." />
   </div>
 </template>
 
 <script>
 import DataTable from "../../components/DataTable";
-import { PlaceForm } from "../../shared/forms";
+import { InstructorForm } from "../../shared/forms";
 export default {
   data() {
     return {
-      baseUrl: "/places",
-      itemForm: Object.assign([], PlaceForm),
+      baseUrl: "/instructors",
+      itemForm: Object.assign([], InstructorForm),
       fields: [
         {
           key: "name",
-          label: "Наименование",
+          label: "Фамилия Имя",
           sortable: true
         },
         {

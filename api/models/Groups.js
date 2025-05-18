@@ -11,10 +11,7 @@ module.exports = {
       required: true
     },
     defaultInstructor: {
-      model: 'persons'
-    },
-    defaultPlace: { 
-      model: 'places'
+      model: 'instructors'
     },
     defaultDuration: {
       type: 'number',
@@ -29,10 +26,11 @@ module.exports = {
     cost: {
       type: 'number',
       min: 0,
-      required: true
+      allowNull: true
     },
     onceCost: {
       type: 'number',
+      min: 0,
       allowNull: true
     },
     schedule: {

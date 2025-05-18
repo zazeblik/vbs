@@ -1,8 +1,13 @@
 <template>
   <div class="py-2">
-    <b-breadcrumb class="mt-1">
-      <b-breadcrumb-item to="/cp/personals">Индивидуальные группы</b-breadcrumb-item>
-      <b-breadcrumb-item active>{{title}}</b-breadcrumb-item>
+    <b-breadcrumb class="mt-1 with-btn">
+      <div class="inline-block">
+        <b-breadcrumb-item to="/cp/personals">Индивидуальные группы</b-breadcrumb-item>
+        <b-breadcrumb-item active>{{title}}</b-breadcrumb-item>
+      </div>
+      <b-button size="sm" variant="outline-dark" @click="autoDebit">
+        <b-icon icon="lightning-fill"></b-icon>&nbsp;Оплатить занятия
+      </b-button>
     </b-breadcrumb>
     <b-input-group size="sm">
       <b-input-group-prepend>
@@ -94,7 +99,6 @@
   </div>
 </template>
 <script>
-const PersonalDebitMode = require("../../../../enums").PersonalDebitMode;
 import ModelModal from "../../components/ModelModal";
 import { EventForm } from "../../shared/forms";
 export default {
@@ -118,7 +122,6 @@ export default {
       instructor: null,
       groups: [],
       persons: [],
-      places: [],
       events: [],
       hoursSum: 0,
       paymentsSum: 0,
@@ -165,7 +168,33 @@ export default {
       this.eventForm.find(f => f.property == "group").models = detail.groups;
       this.eventForm.find(f => f.property == "instructor").models = detail.persons;
       this.eventForm.find(f => f.property == "instructor").value = detail.instructor.id;
-      this.eventForm.find(f => f.property == "place").models = detail.places;
+    },
+    async autoDebit() {
+      try {
+        const confirm = await this.$bvModal.msgBoxConfirm(
+          `При наличии необходимой суммы на балансе участника автоматичекси оплатятся посещённые, но не оплаченные индивидуальные занятия. 
+          Вы уверены, что хотите это сделать?`,
+          {
+            cancelTitle: "Отмена",
+            cancelVariant: "outline-secondary",
+            okTitle: "Списать",
+            okVariant: "success"
+          }
+        );
+        if (!confirm) return;
+        await this.$postAsync(this.groupUrl + "/auto-debit");
+        this.$bvToast.toast("Занятия успешно оплачены", {
+          title: "Автоматическая оплата занятий",
+          variant: "success",
+          autoHideDelay: 3000,
+          solid: true,
+        });
+        await this.fetchData();
+      } catch (error) {
+        if (error.response) {
+          this.$error(error.response.data.message || error.response.data);
+        }
+      }
     },
     async exportData() {
       await this.$getAsync(`${this.groupUrl}/export-personals`, {
@@ -198,82 +227,30 @@ export default {
       await this.fetchCalendar();
     },
     async changeVisitorState(member, event){
-      let autoDebit = false;
       let isVisitor = member.isVisitor;
-      if (!isVisitor && event.members.some(x => this.getMemberPaymentAvailability(x, event)) && this.$settings.debitMode == PersonalDebitMode.AlwaysAsk) {
-        autoDebit = await this.promptMemeberPaymentAvailability();
-      }
       const result = await this.$postAsync(`${this.eventUrl}/${isVisitor ? 'remove' : 'add' }-visitor/${event.id}`, { 
-        visitors: [member.id],
-        autoDebit: autoDebit
+        visitors: [member.id]
       }, true );
       if (result.success){
-        this.updateEvents(result, event);
+        this.updateTotals();
         return;
       }
       member.isVisitor = !isVisitor;
     },
     async checkAll(event){
-      let autoDebit = false;
       const allChecked = event.members.every(m => m.isVisitor);
       const lostIds = event.members.filter(m => allChecked ? m.isVisitor : !m.isVisitor).map(m => m.id);
-      if (!allChecked && event.members.some(x => this.getMemberPaymentAvailability(x, event)) && this.$settings.debitMode == PersonalDebitMode.AlwaysAsk){
-        autoDebit = await this.promptMemeberPaymentAvailability();
-      }
       const result = await this.$postAsync(
         `${this.eventUrl}/${!allChecked ? 'add' : 'remove' }-visitor/${event.id}`, 
         { 
-          visitors: lostIds,
-          autoDebit: autoDebit 
+          visitors: lostIds
         },
         true );
       if (result.success){
         event.members.filter(m => lostIds.includes(m.id)).forEach(m => {
           m.isVisitor = !allChecked;
         });
-        this.updateEvents(result, event);
-      }
-    },
-    async promptMemeberPaymentAvailability() {
-      return await this.$bvModal.msgBoxConfirm(`Пересчитать оплаты за занятие автоматически?`, {
-        cancelTitle: "Отмена",
-        cancelVariant: "outline-secondary",
-        okTitle: "Пересчитать",
-        okVariant: "success"
-      });
-    }, 
-    updateEvents(result, event) {
-      if (result.createdPayments && result.createdPayments.length){
-        result.createdPayments.forEach(p => event.payments.push(p)); 
-      }
-      if (result.removedPayments && result.removedPayments.length){
-        result.removedPayments.forEach(p => {
-          event.payments.splice(event.payments.findIndex(ep => ep.id == p), 1);
-        }); 
-      }
-      if (result.updatedPayments && result.updatedPayments.length){
-        result.updatedPayments.forEach(p => {
-          event.payments.splice(event.payments.findIndex(ep => ep.id == p.id), 1);
-          event.payments.push(p);
-        }); 
-      }
-      this.updateMemberBalances(result.personBalances);
-      this.updateTotals();
-    },
-    updateMemberBalances(personBalances){
-      if (!personBalances) return;
-      for (const personId in personBalances) {
-        for (let i = 0; i < this.scheduleRows.length; i++) {
-          const row = this.scheduleRows[i];
-          for (const key in row) {
-            const cellEvents = row[key].events;
-            cellEvents.forEach(e => {
-              const member = e.members.find(m => m.id == personId);
-              if (!member) return;
-              member.balance = personBalances[personId];
-            })
-          }
-        }
+        this.updateTotals();
       }
     },
     updateTotals() {
@@ -308,10 +285,7 @@ export default {
     },
     getMemberPaymentAvailability(member, event) {
       const group = this.groups.find(g => g.id == event.group);
-      const visitors = event.members.filter(x => x.isVisitor);
-      const isVisitorMemeber = visitors.map(x => x.id).includes(member.id);
-      const visiorsCount = isVisitorMemeber ? visitors.length : (visitors.length + 1);
-      const memberCost = this.$settings.divideSumMode ? (group.cost / visiorsCount) : group.cost;
+      const memberCost = group.cost;
       return member.balance >= memberCost;
     },
     getMemberPaymentColor(member, event){
@@ -365,5 +339,11 @@ table thead th{
   height: 20px;
   margin: 0px;
   padding: 0px 5px;
+}
+.inline-block {
+  display: inline-flex;
+}
+.with-btn {
+  justify-content: space-between;
 }
 </style>

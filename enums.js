@@ -23,9 +23,3 @@ module.exports.SalaryRuleType = {
   FixPerEvent: 1,
   FixMonthly: 2
 }
-
-module.exports.PersonalDebitMode = {
-  AlwaysAsk: 0,
-  AlwaysDebit: 1, 
-  AlwaysNoDebit: 2
-}

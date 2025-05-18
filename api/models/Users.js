@@ -44,4 +44,3 @@ module.exports = {
     return _.omit(this, ['createdAt', 'updatedAt', 'password'])
   }
 };
-

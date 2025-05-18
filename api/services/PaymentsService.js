@@ -4,11 +4,9 @@ const GetMonthDateRange =  require('../utils/DateRangeHelper').GetMonthDateRange
 const moment = require('moment');
 
 module.exports.getPaymentSettings = async function(providerId){
-  let personsQuery = {
-    provider: providerId
-  };
-  const persons = await Persons.find(personsQuery).sort('name ASC');
+  const persons = await Persons.find({provider: providerId}).sort('name ASC');
   const groups = await Groups.find({provider: providerId}).populate("members", {select: ["id"]});
+  const instructors = await Instructors.find({provider: providerId});
   const personals = groups.filter(g => g.type == GroupType.Personal);
   const generals = groups.filter(g => g.type == GroupType.General);
   const personalGroupIds = personals.map(p => p.id);
@@ -53,7 +51,7 @@ module.exports.getPaymentSettings = async function(providerId){
   });
   generals.forEach(group => { group.members = group.members.map(m => m.id) });
   personals.forEach(group => { group.members = group.members.map(m => m.id) }); 
-  return { persons, generals, personals, unpayedEvents, unapyedGroupMonths };
+  return { persons, generals, personals, instructors, unpayedEvents, unapyedGroupMonths };
 }
 
 module.exports.getTransactions = async function(person, limit, providerId){

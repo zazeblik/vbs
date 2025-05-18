@@ -45,38 +45,37 @@ async function generateForProvider(params) {
         weekDayTimes.forEach(weekDayTime => {
           let weekDay = weekDayTime.split(" ")[0];
           let dayTime = weekDayTime.split(" ")[1];
-          let place = weekDayTime.split(" ")[2];
-          schedule[weekDay] = {
-            time: dayTime,
-            place: place ? Number(place) : group.defaultPlace
-          }
+          if (!schedule[weekDay]) schedule[weekDay] = {times: []};
+          schedule[weekDay].times.push(dayTime)
         });
         if (schedule[day] && group.defaultDuration) {
-          let event = {
-            group: group.id,
-            place: schedule[day].place,
-            description: "Создано автоматически", 
-            provider: params.provider
-          };
-          if (group.defaultInstructor) event.instructor = group.defaultInstructor;
-          let hours = schedule[day].time.split(":")[0];
-          let minutes = schedule[day].time.split(":")[1];
-          let startsAt = new Date(
-            currentMonthDate.getFullYear(),
-            currentMonthDate.getMonth(),
-            currentMonthDate.getDate(),
-            Number(hours),
-            Number(minutes)
-          );
-          startsAt.setHours(startsAt.getHours() + timeZoneOffset);
-          event.startsAt = startsAt.getTime();
-          event.duration = group.defaultDuration;
-          const isAlreadyExists = await sails.helpers.isAlreadyExistsEvent(
-            event.group, 
-            event.startsAt,
-            event.duration,
-            params.provider);
-          if (!isAlreadyExists) eventsToAdd.push(event);
+          for (let i = 0; i < schedule[day].times.length; i++) {
+            const time = schedule[day].times[i];
+            let event = {
+              group: group.id,
+              description: "Создано автоматически", 
+              provider: params.provider
+            };
+            if (group.defaultInstructor) event.instructor = group.defaultInstructor;
+            let hours = time.split(":")[0];
+            let minutes = time.split(":")[1];
+            let startsAt = new Date(
+              currentMonthDate.getFullYear(),
+              currentMonthDate.getMonth(),
+              currentMonthDate.getDate(),
+              Number(hours),
+              Number(minutes)
+            );
+            startsAt.setHours(startsAt.getHours() + timeZoneOffset);
+            event.startsAt = startsAt.getTime();
+            event.duration = group.defaultDuration;
+            const isAlreadyExists = await sails.helpers.isAlreadyExistsEvent(
+              event.group, 
+              event.startsAt,
+              event.duration,
+              params.provider);
+            if (!isAlreadyExists) eventsToAdd.push(event); 
+          }
         }
       }
     }

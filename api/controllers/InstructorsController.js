@@ -4,7 +4,7 @@ module.exports = {
     try {
       req.body.id = req.param("id");
       req.body.provider = req.session.User.provider;
-      await Places.update({id: req.param("id"), provider: req.session.User.provider}).set(req.body)
+      await Instructors.update({id: req.param("id"), provider: req.session.User.provider}).set(req.body)
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
@@ -13,7 +13,7 @@ module.exports = {
   create: async function (req, res) {
     try {
       req.body.provider = req.session.User.provider;
-      await Places.create(req.body)
+      await Instructors.create(req.body)
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
@@ -21,7 +21,7 @@ module.exports = {
   },
   delete: async function (req, res) {
     try {
-      await Places.destroy({id: req.param("id"), provider: req.session.User.provider});
+      await Instructors.destroy({id: req.param("id"), provider: req.session.User.provider});
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
@@ -38,14 +38,14 @@ module.exports = {
           provider: req.session.User.provider
         }
       };
-      const total = await Places.count(query);
+      const total = await Instructors.count(query);
       const skip = (currentPage - 1) * perPage;
       query.skip = skip > total ? 0 : skip;
       currentPage = skip > total ? 1 : currentPage;
       let totalPages = Math.ceil(total / perPage);
       query.limit = perPage;
       query.sort = sort;
-      const data = await Places.find(query);
+      const data = await Instructors.find(query);
       return res.send({
         total: total,
         totalPages: totalPages,
