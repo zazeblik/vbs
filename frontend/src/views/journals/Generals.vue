@@ -4,7 +4,7 @@
       <b-breadcrumb-item active>Общие группы</b-breadcrumb-item>
     </b-breadcrumb>
     <b-input-group prepend="Тренер" size="sm">
-      <b-form-select v-model="selectedInstructor" :options="instructors" @change="selectedInstructorChanged"></b-form-select>
+      <model-select v-model="selectedInstructor" :options="$modelsToOptions(instructors)" @input="selectedInstructorChanged" />
       <b-input-group-append>
         <b-button variant="outline-success" @click="showAddModal">
           <b-icon icon="plus-circle-fill"></b-icon>&nbsp;Добавить
@@ -44,10 +44,12 @@
 <script>
 const GroupType = require("../../../../enums").GroupType;
 import ModelModal from "../../components/ModelModal";
+import { ModelSelect } from "vue-search-select";
 import { GroupForm } from "../../shared/forms";
 export default {
   components: {
-    ModelModal
+    ModelModal,
+    ModelSelect
   },
   data() {
     return {
@@ -70,15 +72,15 @@ export default {
     },
     async fetchSettings() {
       const general = await this.$getAsync(`${this.baseUrl}/general`);
-      this.instructors = general.instructors.map(i => { return { value: i.id, text: i.name } });
+      this.instructors = general.instructors;
       this.persons = general.persons;
-      this.itemForm.find(f => f.property == "defaultInstructor").models = this.persons;
+      this.itemForm.find(f => f.property == "defaultInstructor").models = this.instructors;
       this.itemForm.find(f => f.property == "hidden").hidden = true;
       this.itemForm.find(f => f.property == "type").hidden = true;
       if (this.selectedInstructor)
         return;
 
-      this.selectedInstructor = this.instructors[0] ? this.instructors[0].value : null;
+      this.selectedInstructor = this.instructors[0] ? this.instructors[0].id : null;
     },
     async fetchGroups() {
       this.groups = await this.$getAsync(`${this.baseUrl}/instructor-groups/${this.selectedInstructor}`, {

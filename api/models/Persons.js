@@ -43,7 +43,6 @@ module.exports = {
       await GroupMemberActions.destroy({person: value.id, provider: value.provider});
       await Payments.destroy({person: value.id, provider: value.provider});
       await Incomes.destroy({person: value.id, provider: value.provider});
-      await Orders.destroy({person: value.id, provider: value.provider});
       await PersonCustomValues.destroy({person: value.id, provider: value.provider});
       await SalaryRules.destroy({instructor: value.id, provider: value.provider});
       await Payments.destroy({person: value.id, provider: value.provider});

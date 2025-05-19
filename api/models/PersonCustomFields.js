@@ -16,7 +16,7 @@ module.exports = {
   },
   afterDestroy: async function(value, next){
     try {
-      await PersonCustomValues.destroy({field: value.id, provider: value.provider}).fetch();
+      await PersonCustomValues.destroy({field: value.id, provider: value.provider});
       next();
     } catch (error) {
       return next(JSON.stringify([ error ]));

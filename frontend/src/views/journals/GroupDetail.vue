@@ -212,7 +212,7 @@ export default {
   },
   computed: {
     availablePersons() {
-      const result = this.persons.filter(p => p.value != this.group.defaultInstructor);
+      const result = this.persons;
       return result;
     }
   },
@@ -339,7 +339,8 @@ export default {
         );
         if (!confirm) return;
         await this.$postAsync(`/groups/delete/${this.group.id}`);
-        this.$router.push({name: 'groups'});
+        const path = this.group.type == GroupType.General ? 'generals' : 'personals';
+        this.$router.push({name: path});
       } catch (error) {
         if (error.response) {
           this.$error(error.response.data.message || error.response.data);
@@ -449,8 +450,8 @@ export default {
       this.defaultInstructor = detail.group.defaultInstructor;
       this.eventForm.find(f => f.property == "group").hidden = true;
       this.eventForm.find(f => f.property == "instructor").hidden = !this.isGeneralGroup;
-      this.eventForm.find(f => f.property == "instructor").models = detail.persons;
-      this.groupForm.find(f => f.property == "defaultInstructor").models = detail.persons;
+      this.eventForm.find(f => f.property == "instructor").models = detail.instructors;
+      this.groupForm.find(f => f.property == "defaultInstructor").models = detail.instructors;
       this.groupForm.find(f => f.property == "hidden").hidden = true;
       this.defaultDuration = detail.group.defaultDuration;
       this.selectedPersons = [];

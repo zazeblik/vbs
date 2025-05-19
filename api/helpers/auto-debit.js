@@ -107,7 +107,7 @@ async function autoDebitForGroup(group, persons, instructors) {
     });
     for (let i = 0; i < paymentsToCreate.length; i++) {
       const payment = paymentsToCreate[i];
-      await Payments.create(payment);
+      await Payments.create(payment).fetch();;
       persons.find(p => p.id == payment.person).balance -= payment.sum;
     }
   }

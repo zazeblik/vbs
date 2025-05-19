@@ -21,7 +21,7 @@ module.exports = {
     try {
       req.body.id = req.param("id");
       req.body.provider = req.session.User.provider;
-      await Users.update({id: req.param("id"), provider: req.session.User.provider}).set(req.body)
+      await Users.update({id: req.param("id"), provider: req.session.User.provider}).set(req.body).fetch();
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
@@ -30,7 +30,7 @@ module.exports = {
   create: async function (req, res) {
     try {
       req.body.provider = req.session.User.provider;
-      await Users.create(req.body)
+      await Users.create(req.body).fetch();
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
@@ -38,7 +38,7 @@ module.exports = {
   },
   delete: async function (req, res) {
     try {
-      await Users.destroy({id: req.param("id"), provider: req.session.User.provider});
+      await Users.destroy({id: req.param("id"), provider: req.session.User.provider}).fetch();
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);

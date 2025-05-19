@@ -39,6 +39,7 @@ export default new Router({
           component: () => import('./views/journals/GroupDetail.vue'),
         },
         {
+          name: 'personals',
           path: 'personals',
           component: () => import('./views/journals/Personals.vue')
         },

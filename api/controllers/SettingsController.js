@@ -5,7 +5,7 @@ module.exports = {
   },
   update: async function (req, res){
     try {
-      await Settings.update({provider: req.session.User.provider}).set(req.body);
+      await Settings.update({provider: req.session.User.provider}).set(req.body).fetch();
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);

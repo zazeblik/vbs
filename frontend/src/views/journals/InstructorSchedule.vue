@@ -166,7 +166,7 @@ export default {
       this.title = this.instructor.name;
       this.groups = detail.groups;
       this.eventForm.find(f => f.property == "group").models = detail.groups;
-      this.eventForm.find(f => f.property == "instructor").models = detail.persons;
+      this.eventForm.find(f => f.property == "instructor").models = detail.instructors;
       this.eventForm.find(f => f.property == "instructor").value = detail.instructor.id;
     },
     async autoDebit() {

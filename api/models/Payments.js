@@ -143,7 +143,7 @@ module.exports = {
   afterDestroy: async function(value, next){
     try {
       const person = await Persons.findOne({id: value.person, provider: value.provider});
-      if (person) await Persons.updateOne({id: person.id, provider: value.provider}).set({ balance: person.balance + value.sum })
+      if (person) await Persons.updateOne({id: person.id, provider: value.provider}).set({ balance: person.balance + value.sum });
       return next();  
     } catch (error) {
       return next(JSON.stringify([ error ]));

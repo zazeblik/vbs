@@ -22,8 +22,6 @@ module.exports.getGroupedActions = async function (groupIds, toDate, providerId)
 module.exports.getSheet = async function(id, monthDateRange, providerId){
   const group = await Groups.findOne(id).populate("members", { sort: "name ASC" });
   let groupMembers = group.members;
-  const actionsByPerson = await getActionsByPerson(id, monthDateRange.end.valueOf(), providerId);
-  groupMembers = this.resolveGroupMembersByActions(groupMembers, actionsByPerson);
   const events = await Events
     .find({ 
       group: id,

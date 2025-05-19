@@ -28,11 +28,16 @@ module.exports = {
   beforeDestroy: async function(value, next){
     try {
       const actualAdminsCount = await Users.count({role: Role.LocalAdmin, provider: value.provider});
-      if (value.where && value.where.id && value.where.id.in){
-        const usersToDelete = await Users.find({id: value, provider: value.provider});
-        const adminsToDeleteCount = usersToDelete.filter(x => x.role == Role.LocalAdmin).length;
-        if (adminsToDeleteCount >= actualAdminsCount){
-          return next('Должен остаться хотябы 1 администратор');
+      if (value.where && value.where.and && value.where.and.length){
+        const params = value.where.and;
+        const ids = params.find(x => x.id)?.id?.in;
+        const provider = params.find(x => x.provider)?.provider;
+        if (ids && ids.length && provider) {
+          const usersToDelete = await Users.find({id: ids, provider: provider});
+          const adminsToDeleteCount = usersToDelete.filter(x => x.role == Role.LocalAdmin).length;
+          if (adminsToDeleteCount >= actualAdminsCount){
+            return next('Должен остаться хотябы 1 администратор');
+          }
         }
       }
       return next();

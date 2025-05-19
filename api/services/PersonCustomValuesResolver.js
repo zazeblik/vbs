@@ -22,6 +22,6 @@ module.exports.resolve = async function(person, providerId){
   });
   await PersonCustomValues.createEach(valuesToCreate);
   valuesToUpdate.forEach(async x => {
-    await PersonCustomValues.update({id: x.id, provider: providerId}).set({id: x.id, value: x.value, provider: providerId})
+    await PersonCustomValues.update({id: x.id, provider: providerId}).set({id: x.id, value: x.value, provider: providerId}).fetch();
   });
 }

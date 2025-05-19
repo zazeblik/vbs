@@ -4,7 +4,7 @@
       <template v-if="isControlPanelShown" v-slot:prepend>
         <b-input-group-text >Участник</b-input-group-text>
       </template>
-      <b-form-select v-if="isControlPanelShown" v-model="payer" :options="$modelsToOptions(persons)"></b-form-select>
+      <model-select v-if="isControlPanelShown" v-model="payer" :options="$modelsToOptions(persons)" />
       <b-form-input :disabled="true" v-else />
       <b-form-input 
         min="0" 

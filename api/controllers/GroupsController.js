@@ -66,8 +66,8 @@ module.exports = {
         person: person, 
         type: GroupMemberActionType.Added, 
         provider: req.session.User.provider
-      });
-      await Groups.update(id, { updater: req.session.User.id, provider: req.session.User.provider })
+      }).fetch();;
+      await Groups.update(id, { updater: req.session.User.id, provider: req.session.User.provider }).fetch();
       return res.ok();
     } catch (error) {
       return res.badRequest(error.message);
@@ -94,7 +94,7 @@ module.exports = {
       await Groups.update(id, {
         updater: req.session.User.id, 
         provider: req.session.User.provider 
-      })
+      }).fetch();
       return res.ok();
     } catch (error) {
       return res.badRequest(error.message);
@@ -114,7 +114,7 @@ module.exports = {
         person: person, 
         type: GroupMemberActionType.Deleted, 
         provider: req.session.User.provider 
-      });
+      }).fetch();
       await Groups.update(id, { 
         updater: req.session.User.id, 
         provider: req.session.User.provider  
@@ -143,7 +143,13 @@ module.exports = {
           hidden: false, 
           provider: req.session.User.provider
         }).sort('name ASC');
-      return res.send({ instructor, persons, groups });
+      const instructors = await Instructors.find({ 
+        select: ["id", "name"],
+        where: {
+          provider: req.session.User.provider 
+        } 
+      });
+      return res.send({ instructor, persons, groups, instructors });
     } catch (error) {
       return res.badRequest(error.message);
     }
@@ -179,7 +185,8 @@ module.exports = {
       const persons = await Persons
         .find({ where: { id: { '!=': existingIds }, provider: req.session.User.provider }, select: ['id', 'name'] })
         .sort('name ASC');
-      return res.send({ group, persons });
+      const instructors = await Instructors.find({provider: req.session.User.provider}).sort('name ASC');;
+      return res.send({ group, persons, instructors });
     } catch (error) {
       return res.badRequest(error.message);
     }
@@ -260,7 +267,7 @@ module.exports = {
   },
   delete: async function (req, res) {
     try {
-      await Groups.destroy({id: req.param("id"), provider: req.session.User.provider});
+      await Groups.destroy({id: req.param("id"), provider: req.session.User.provider}).fetch();
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
@@ -271,7 +278,7 @@ module.exports = {
       req.body.updater = req.session.User.id;
       req.body.provider = req.session.User.provider;
       req.body.id = req.param("id");
-      await Groups.update({id: req.param("id"), provider: req.session.User.provider}).set(req.body)
+      await Groups.update({id: req.param("id"), provider: req.session.User.provider}).set(req.body).fetch();
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
@@ -281,7 +288,7 @@ module.exports = {
     try {
       req.body.updater = req.session.User.id;
       req.body.provider = req.session.User.provider;
-      await Groups.create(req.body)
+      await Groups.create(req.body).fetch();
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);

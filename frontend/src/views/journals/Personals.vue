@@ -7,7 +7,7 @@
       </b-button>
     </b-breadcrumb>
     <b-input-group prepend="Тренер" size="sm">
-      <b-form-select v-model="selectedInstructor" :options="instructors" @change="selectedInstructorChanged"></b-form-select>
+      <model-select v-model="selectedInstructor" :options="instructors" @input="selectedInstructorChanged" />
       <b-input-group-append>
         <b-button variant="outline-success" @click="showAddModal">
           <b-icon icon="plus-circle-fill"></b-icon>&nbsp;Добавить
@@ -36,7 +36,6 @@
             <h6 class="mb-0 pointed" @click="goToDetailPage(group)">{{group.name}}</h6>
           </template>
           <b-card-text class="px-3 pt-2 pb-1">
-            <p>Стоимость: {{group.cost}}</p>
             {{$getScheduleView(group.schedule)}}
             <GroupPersonsManager 
               :groupId="group.id" 
@@ -55,11 +54,13 @@
 <script>
 const GroupType = require("../../../../enums").GroupType;
 import ModelModal from "../../components/ModelModal";
-import GroupPersonsManager from "../../components/GroupPersonsManager"
+import GroupPersonsManager from "../../components/GroupPersonsManager";
+import { ModelSelect } from "vue-search-select";
 import { GroupForm } from "../../shared/forms";
 export default {
   components: {
     ModelModal,
+    ModelSelect,
     GroupPersonsManager
   },
   data() {
@@ -85,7 +86,7 @@ export default {
       const personal = await this.$getAsync(`${this.baseUrl}/personal`);
       this.instructors = personal.instructors.map(i => { return { value: i.id, text: i.name } });
       this.persons = personal.persons;
-      this.itemForm.find(f => f.property == "defaultInstructor").models = this.persons;
+      this.itemForm.find(f => f.property == "defaultInstructor").models = this.instructors;
       this.itemForm.find(f => f.property == "hidden").hidden = true;
       this.itemForm.find(f => f.property == "type").hidden = true;
       if (this.selectedInstructor)

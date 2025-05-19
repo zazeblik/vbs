@@ -86,7 +86,7 @@ async function resolveGroups(personMappings, providerId){
     qs: { populate: 'members,archived,trener', in_archive: false }, 
     json: true
   });
-  const places = await resolvePlaces(groups, providerId);
+  const instructors = await resolveInstructors(groups, providerId);
   groups.forEach(x => { 
     x.label = x.label.trim();
     x.trener.name = x.trener.name.trim();
@@ -97,18 +97,17 @@ async function resolveGroups(personMappings, providerId){
   const groupsToCreate = groups
     .filter(x => !currentGroupsNames.includes(x.label))
     .map(x => {
-      const place = places.find(y => y.name == x.hall);
+      const instructor = instructors.find(y => y.name == x.trener.name);
       const schedule = x.schedule 
-        ? x.schedule.split(',').map(x => `${x}:00 ${place.id}`).join(',')
+        ? x.schedule.split(',').map(x => `${x}:00`).join(',')
         : '';
       return {
         name: x.label,
-        defaultPlace: place.id,
-        defaultInstructor: personMappings.find(y => y.remoteId == x.trener.id).localId,
+        defaultInstructor: instructor.id,
         defaultDuration: x.duration,
         type: x.type == 'индивидуальная' ? GroupType.Personal : GroupType.General,
-        cost: x.sum,
-        onceCost: x.once_sum,
+        cost: x.type == 'индивидуальная' ? null : x.sum,
+        onceCost: x.type == 'индивидуальная' ? null : x.once_sum,
         provider: providerId,
         schedule: schedule
       }
@@ -118,15 +117,14 @@ async function resolveGroups(personMappings, providerId){
   groupsToUpdate.forEach(async group => {
     const currentGroup = currentGroups.find(x => x.name == group.label);
     const groupId = currentGroup.id;
-    const schedule = group.schedule.split(',').map(x => `${x}:00 ${currentGroup.defaultPlace}`).join(',');
+    const schedule = group.schedule.split(',').map(x => `${x}:00`).join(',');
     await Groups.update({id: groupId, provider: providerId}, {
-      id: groupId, 
-      defaultPlace: places.find(y => y.name == group.hall).id,
+      id: groupId,
       defaultInstructor: personMappings.find(y => y.remoteId == group.trener.id).localId,
       defaultDuration: group.duration,
       type: group.type == 'индивидуальная' ? GroupType.Personal : GroupType.General,
-      cost: group.sum,
-      onceCost: group.once_sum,
+      cost: group.type == 'индивидуальная' ? null : group.sum,
+      onceCost: group.type == 'индивидуальная' ? null : group.once_sum,
       provider: providerId,
       schedule: schedule
     });
@@ -143,24 +141,26 @@ async function resolveGroups(personMappings, providerId){
   });
 }
 
-async function resolvePlaces(groups, providerId) {
-  const placeNames = [...new Set(groups.map(x => x.hall))];
-  for (let i = 0; i < placeNames.length; i++) {
-    const placeName = placeNames[i];
-    const place = await Places.findOne({name: placeName, provider: providerId});
-    if (!place) {
-      await Places.create({name: placeName, color: resolveColor(placeName), provider: providerId})
+async function resolveInstructors(groups, providerId) {
+  const names = [...new Set(groups.map(x => x.trener.name))];
+  for (let i = 0; i < names.length; i++) {
+    const name = names[i];
+    const instructor = await Instructors.findOne({name: name, provider: providerId});
+    if (!instructor) {
+      await Instructors.create({name: name, color: resolveColor(name), provider: providerId, prices: [{count: 1, price: 1000}]})
     }
   }
-  return await Places.find({provider: providerId});
+  return await Instructors.find({provider: providerId});
 }
 
 function resolveColor(name) {
-  switch(name) {
-    case 'серый': return '#cccccc';
-    case 'дргуой': return '#e83e8c';
-    case 'фиолетовый': return '#6f42c1';
-    case 'тренажерный': return '#fd7e14';
-    default: return '#00e1ff'
+  const colors = ['#cccccc', '#e83e8c', '#6f42c1', '#fd7e14', '#00e1ff', '#e83e8c', '#6f42c1', '#fd7e14'];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+      hash = (hash << 6) - hash + name.charCodeAt(i);
+      hash |= 0; // Преобразуем в 32-битное целое
   }
+
+  const index = Math.abs(hash) % colors.length;
+  return colors[index];
 }

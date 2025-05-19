@@ -66,9 +66,9 @@ module.exports = {
       const idsToUpdate = currentFieldsIds.filter(x => newFieldsIds.includes(x));
       const fieldsToUpdate = newFields.filter(x => idsToUpdate.includes(x.id));
       await PersonCustomFields.createEach(fieldsToCreate);
-      if (idsToDelete.length) await PersonCustomFields.destroy(idsToDelete);
+      if (idsToDelete.length) await PersonCustomFields.destroy(idsToDelete).fetch();;
       fieldsToUpdate.forEach(async x => {
-        await PersonCustomFields.update({id: x.id}).set({id: x.id, label: x.label, name: x.name, provider: req.session.User.provider})
+        await PersonCustomFields.update({id: x.id}).set({id: x.id, label: x.label, name: x.name, provider: req.session.User.provider}).fetch();
       });
       return res.ok();
     } catch (err) {
@@ -82,7 +82,7 @@ module.exports = {
       const id = req.param("id");
       req.body.id = id;
       const personToResolve = { ...req.body };
-      await Persons.update({id: req.param("id"), provider: req.session.User.provider}, req.body);
+      await Persons.update({id: req.param("id"), provider: req.session.User.provider}, req.body).fetch();;
       await customValuesResolver.resolve(personToResolve, req.session.User.provider);
       return res.ok();
     } catch (err) {
@@ -104,7 +104,7 @@ module.exports = {
   },
   delete: async function (req, res) {
     try {
-      await Persons.destroy({id: req.param("id"), provider: req.session.User.provider});
+      await Persons.destroy({id: req.param("id"), provider: req.session.User.provider}).fetch();
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);

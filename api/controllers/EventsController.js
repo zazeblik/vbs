@@ -1,7 +1,7 @@
 module.exports = {
   delete: async function (req, res) {
     try {
-      await Events.destroy({id: req.param("id"), provider: req.session.User.provider});
+      await Events.destroy({id: req.param("id"), provider: req.session.User.provider}).fetch();;
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
@@ -12,7 +12,7 @@ module.exports = {
       req.body.updater = req.session.User.id;
       req.body.id = req.param("id");
       req.body.provider = req.session.User.provider;
-      await Events.update({id: req.param("id"), provider: req.session.User.provider}).set(req.body)
+      await Events.update({id: req.param("id"), provider: req.session.User.provider}).set(req.body).fetch();
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
@@ -22,7 +22,7 @@ module.exports = {
     try {
       req.body.updater = req.session.User.id;
       req.body.provider = req.session.User.provider;
-      await Events.create(req.body)
+      await Events.create(req.body).fetch();
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);

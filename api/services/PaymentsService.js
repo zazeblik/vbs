@@ -98,7 +98,8 @@ module.exports.getGroupUnpayedEvents = async function(year, month, group, person
   const monthDateRange = GetMonthDateRange(year, month);
   const events = await Events
     .find({group: group, startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() }, provider: providerId })
+    .populate("visitors")
     .populate("payments");
-  const result = events.filter(e => !e.payments.map(p => p.person).includes(person));
+  const result = events.filter(e => e.visitors.map(p => p.id).includes(person) && !e.payments.map(p => p.person).includes(person));
   return result
 }

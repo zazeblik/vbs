@@ -18,7 +18,7 @@ module.exports = {
       type: 'string',
       isNotEmptyString: true,
       isHexColor: true,
-      required: true
+      defaultsTo: '#00e1ff'
     },
     groups: {
       collection: 'groups',
@@ -34,14 +34,19 @@ module.exports = {
   },
   beforeDestroy: async function(value, next){
     try {
-      if (value.where && value.where.id && value.where.id.in){
-        const groupsOfInstructors = await Groups.find({defaultInstructor: value.where.id.in, provider: value.provider});
-        if (groupsOfInstructors.length){
-          return next(`Сначала необходимо поменять тренера в группах (${groupsOfInstructors.map(x => x.name)})`);
-        }
-        const eventsOfInstructors = await Events.find({instructor: value.where.id.in, provider: value.provider});
-        if (eventsOfInstructors.length){
-          return next(`Сначала необходимо удалить занятия, где участник является тренером`);
+      if (value.where && value.where.and && value.where.and.length){
+        const params = value.where.and;
+        const ids = params.find(x => x.id)?.id?.in;
+        const provider = params.find(x => x.provider)?.provider;
+        if (ids && ids.length && provider) {
+          const groupsOfInstructors = await Groups.find({defaultInstructor: ids, provider: provider});
+          if (groupsOfInstructors.length){
+            return next(`Сначала необходимо поменять тренера в группах (${groupsOfInstructors.map(x => x.name)})`);
+          }
+          const eventsOfInstructors = await Events.find({instructor: ids, provider: provider});
+          if (eventsOfInstructors.length){
+            return next(`Сначала необходимо удалить занятия, где участник является тренером`);
+          }
         }
       }
       return next();

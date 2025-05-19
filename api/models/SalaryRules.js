@@ -51,13 +51,13 @@ module.exports = {
   beforeUpdate: async function (valueToSet, next) {
     try {
       const id = valueToSet.id;
-      const actualRule = await SalaryRules.findOne({id: id, provider: value.provider});
+      const actualRule = await SalaryRules.findOne({id: id, provider: valueToSet.provider});
       const existsRulesCount = await SalaryRules.count({
         id: {"!=": id},
         instructor: valueToSet.instructor || actualRule.instructor, 
         group: valueToSet.group || actualRule.group, 
         forGroupType: valueToSet.forGroupType || actualRule.forGroupType,
-        provider: value.provider
+        provider: valueToSet.provider
       });
       if (existsRulesCount) {
         return next(`Такое правило уже есть`);
@@ -69,15 +69,22 @@ module.exports = {
   },
   beforeDestroy: async function(value, next){
     try {
-      const actualRules = await SalaryRules.find({id: value, provider: value.provider});
-      let abortDestroy = false;
-      actualRules.forEach(actualRule => {
-        if (!actualRule.group && !actualRule.instructor) {
-          abortDestroy = true;
+      if (value.where && value.where.and && value.where.and.length){
+        const params = value.where.and;
+        const ids = params.find(x => x.id)?.id?.in;
+        const provider = params.find(x => x.provider)?.provider;
+        if (ids && ids.length && provider) {
+          const actualRules = await SalaryRules.find({id: ids, provider: provider});
+          let abortDestroy = false;
+          actualRules.forEach(actualRule => {
+            if (!actualRule.group && !actualRule.instructor) {
+              abortDestroy = true;
+            }
+          });
+          if (abortDestroy){
+            return next(`Запрещено удалять общие правила`);
+          }
         }
-      });
-      if (abortDestroy){
-        return next(`Запрещено удалять общие правила`);
       }
       return next();
     } catch (error) {

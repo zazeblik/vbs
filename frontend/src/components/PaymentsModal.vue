@@ -340,7 +340,7 @@ export default {
         };
         if (p.event) {
           payment.events = [p.event];
-          payment.group = p.group = this.unpayedEvents.find(x => x.id == p.event).group; 
+          payment.group = p.group; 
         }
         let description = `Оплата ${this.getPaymentDescription(p)} `;
         if (this.isControlPanelShown){

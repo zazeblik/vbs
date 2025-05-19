@@ -39,7 +39,7 @@ module.exports = {
   },
   delete: async function (req, res) {
     try {
-      await Payments.destroy({id: req.param("id"), provider: req.session.User.provider});
+      await Payments.destroy({id: req.param("id"), provider: req.session.User.provider}).fetch();
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
@@ -50,7 +50,7 @@ module.exports = {
       req.body.updater = req.session.User.id;
       req.body.provider = req.session.User.provider;
       req.body.id = req.param("id");
-      await Payments.update({id: req.param("id"), provider: req.session.User.provider}).set(req.body)
+      await Payments.update({id: req.param("id"), provider: req.session.User.provider}).set(req.body).fetch();
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);
@@ -60,7 +60,7 @@ module.exports = {
     try {
       req.body.updater = req.session.User.id;
       req.body.provider = req.session.User.provider;
-      await Payments.create(req.body)
+      await Payments.create(req.body).fetch();
       return res.ok();
     } catch (err) {
       return res.badRequest(err.message);

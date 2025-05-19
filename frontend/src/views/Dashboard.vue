@@ -35,7 +35,7 @@
     />
     <b-popover 
       v-for="(event, key) in events"
-      :key="'event_popover_'+key" 
+      :key="`event_popover_${key}_${event.id}`" 
       :target="'event_'+event.id" 
       triggers="hover" 
       placement="top"
@@ -43,8 +43,8 @@
       <b-list-group flush>
         <b-list-group-item><b>Группа:</b> {{event.group.name}}</b-list-group-item>
         <b-list-group-item><b>Тренер:</b> {{event.instructor.name}}</b-list-group-item>
-        <b-list-group-item><b>Месячный абонимент:</b> {{event.group.cost}} р.</b-list-group-item>
-        <b-list-group-item><b>Разовое занятие:</b> {{event.group.onceCost}} р.</b-list-group-item>
+        <b-list-group-item v-if="event.group.cost"><b>Месячный абонимент:</b> {{event.group.cost}} р.</b-list-group-item>
+        <b-list-group-item v-if="event.group.onceCost"><b>Разовое занятие:</b> {{event.group.onceCost}} р.</b-list-group-item>
       </b-list-group>
     </b-popover>
   </div>
