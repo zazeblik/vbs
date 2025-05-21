@@ -91,7 +91,6 @@
               <b-form-input
                 size="sm"
                 type="number"
-                :disabled="!isControlPanelShown"
                 v-model="payment.sum"
                 :state="getValidationState(validationContext)" />
             </validation-provider>
@@ -160,11 +159,11 @@ export default {
       addPaymentShown: false,
       months: [],
       paymentTypes: [
+        { text: "Разовый платёж", value: OncePay },
         { text: "Общие", value: GroupType.General },
-        { text: "Индивидуальные", value: GroupType.Personal },
-        { text: "Разовый платёж", value: OncePay }
+        { text: "Индивидуальные", value: GroupType.Personal }
       ],
-      addPaymentType: GroupType.General
+      addPaymentType: OncePay
     };
   },
   computed: {
@@ -215,6 +214,7 @@ export default {
           ? this.getEventDate(payment.monthEvents.find(e => e.id == event))
           : this.getEventDate(this.unpayedEvents.find(e => e.id == event))
       }
+      
       return `${groupName} ${monthInfo}${eventInfo}`;
     },
     getEventDate(event){
@@ -245,12 +245,20 @@ export default {
       const match = month.split(" ");
       return `${this.$moment.months()[Number(match[0])]} ${match[1]}`
     },
-    templateToPayment(template, index){
-      const paymentsEvents = this.payments.filter(p => p.event).map(p => event);
+    async templateToPayment(template){
+      const paymentsEvents = this.payments.filter(p => p.event).map(p => p.event);
       if (paymentsEvents.includes(template.event)) return;
       const paymentGroupMonth = this.payments.filter(p => p.month && p.group).map(p => `${p.month}${p.group}`);
-      if (paymentGroupMonth.includes(`${template.month}${template.group}`)) return;
-      this.payments.push(Object.assign({}, template));
+      if (template.type == GroupType.General && paymentGroupMonth.includes(`${template.month}${template.group}`)) return;
+      
+      if (template.type == OncePay) {
+        await this.tryFetchGroupEvents(template);
+      }
+      const payment = Object.assign({}, template);
+      if (template.type == OncePay) {
+        payment.event = payment.monthEvents.length ? payment.monthEvents[0].id : null;
+      }
+      this.payments.push(payment);
     },
     async addPayment() {
       let payment = {
@@ -299,14 +307,8 @@ export default {
         month: match[0],
         year: match[1]
       };
-      if (this.isControlPanelShown){
-        query.person = this.payer
-      }
+      query.person = this.payer;
       payment.monthEvents = await this.$getAsync(`${this.baseUrl}/group-unpayed-events`, query);
-      if (payment.monthEvents.length){
-        const firstEvent = payment.monthEvents[0];
-        payment.event = firstEvent ? firstEvent.id : null;
-      }
     },
     async sendForm(){
       const result = await this.$postAsync(
@@ -343,20 +345,14 @@ export default {
           payment.group = p.group; 
         }
         let description = `Оплата ${this.getPaymentDescription(p)} `;
-        if (this.isControlPanelShown){
-          payment.person = this.payer;
-          description += 'вручную';
-        } else {
-          description += 'онлайн';
-        }
+        payment.person = this.payer;
         payment.description = description;
         resultPayments.push(payment);
       });
       return resultPayments;
     },
     tryAddTemplate(template) {
-      if (template.type == GroupType.General &&
-        this.paymentTemplates
+      if (template.type == GroupType.General && this.paymentTemplates
         .map(x => `${x.type}${x.group}${x.month}`)
         .includes(`${template.type}${template.group}${template.month}`)) return;
       this.paymentTemplates.push(template);
@@ -371,7 +367,7 @@ export default {
           groups: this.getPaymentGroups(GroupType.General),
           group: g.id,
           sum: g.cost
-        })
+        });
       })
       this.unapyedGroupMonths.forEach(g => {
         this.tryAddTemplate({
@@ -380,26 +376,33 @@ export default {
           groups: this.getPaymentGroups(GroupType.General),
           group: g.group,
           sum: this.generals.find(x => x.id == g.group).cost
-        })
+        });
+        this.tryAddTemplate({
+          type: OncePay,
+          month: `${g.month} ${g.year}`,
+          groups: this.getPaymentGroups(GroupType.General),
+          group: g.group,
+          sum: this.generals.find(x => x.id == g.group).onceCost
+        });
       })
-      const personals = this.getPaymentGroups(GroupType.Personal);
       this.unpayedEvents.forEach(e => {
-        const group = personals.find(g => g.id == e.group);
+        const groups = this.getPaymentGroups(GroupType.Personal);
+        const group = groups.find(g => g.id == e.group);
+        if (!group.members.includes(this.payer)) return;
         const instructor = this.instructors.find(i => i.id == e.instructor);
         const prices = instructor.prices;
         const countPrice = prices.find(x => x.count == e.visitors.length) || prices[prices.length - 1];
         const sum = countPrice.price;
-        if (!group.members.includes(this.payer)) return;
         this.tryAddTemplate({
-          type: GroupType.Personal,
+          type: group.type,
           month: null,
-          groups: personals,
+          groups: groups,
           group: group.id,
           sum: sum,
           instructor: instructor.name,
           visitorsCount: e.visitors.length,
           event: e.id
-        })
+        });
       })
     },
     getNextMonth() {

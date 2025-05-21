@@ -40,12 +40,14 @@ module.exports = {
   },
   afterDestroy: async function(value, next){
     try {
-      await GroupMemberActions.destroy({person: value.id, provider: value.provider});
-      await Payments.destroy({person: value.id, provider: value.provider});
-      await Incomes.destroy({person: value.id, provider: value.provider});
-      await PersonCustomValues.destroy({person: value.id, provider: value.provider});
-      await SalaryRules.destroy({instructor: value.id, provider: value.provider});
-      await Payments.destroy({person: value.id, provider: value.provider});
+      if (value.id && value.provider) {
+        await GroupMemberActions.destroy({person: value.id, provider: value.provider});
+        await Payments.destroy({person: value.id, provider: value.provider});
+        await Incomes.destroy({person: value.id, provider: value.provider});
+        await PersonCustomValues.destroy({person: value.id, provider: value.provider});
+        await SalaryRules.destroy({instructor: value.id, provider: value.provider});
+        await Payments.destroy({person: value.id, provider: value.provider});
+      }
       next();
     } catch (error) {
       return next(JSON.stringify([ error ]));

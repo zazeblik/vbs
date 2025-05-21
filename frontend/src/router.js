@@ -68,6 +68,10 @@ export default new Router({
           component: () => import('./views/payments/Incomes.vue')
         },
         {
+          path: 'debtors',
+          component: () => import('./views/payments/Debtors.vue')
+        },
+        {
           path: 'customization',
           component: () => import('./views/Сustomization.vue')
         },

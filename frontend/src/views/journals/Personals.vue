@@ -7,7 +7,7 @@
       </b-button>
     </b-breadcrumb>
     <b-input-group prepend="Тренер" size="sm">
-      <model-select v-model="selectedInstructor" :options="instructors" @input="selectedInstructorChanged" />
+      <model-select v-model="selectedInstructor" :options="$modelsToOptions(instructors)" @input="selectedInstructorChanged" />
       <b-input-group-append>
         <b-button variant="outline-success" @click="showAddModal">
           <b-icon icon="plus-circle-fill"></b-icon>&nbsp;Добавить
@@ -84,7 +84,7 @@ export default {
     },
     async fetchSettings() {
       const personal = await this.$getAsync(`${this.baseUrl}/personal`);
-      this.instructors = personal.instructors.map(i => { return { value: i.id, text: i.name } });
+      this.instructors = personal.instructors;
       this.persons = personal.persons;
       this.itemForm.find(f => f.property == "defaultInstructor").models = this.instructors;
       this.itemForm.find(f => f.property == "hidden").hidden = true;
@@ -92,7 +92,7 @@ export default {
       if (this.selectedInstructor)
         return;
 
-      this.selectedInstructor = this.instructors[0] ? this.instructors[0].value : null;
+      this.selectedInstructor = this.instructors[0] ? this.instructors[0].id : null;
     },
     async fetchGroups() {
       this.groups = await this.$getAsync(`${this.baseUrl}/instructor-groups/${this.selectedInstructor}`, {

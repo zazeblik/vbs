@@ -20,6 +20,36 @@ module.exports.getActivity = async function(year, month, activity, providerId){
   return wbbuf;
 }
 
+module.exports.getDebtors = async function(year, month, providerId){
+  const workbook = new Excel.Workbook();
+  await workbook.xlsx.readFile('api/templates/activity.xlsx');
+  const monthDateRange = GetMonthDateRange(year, month);
+  let sheet = workbook.worksheets[0];
+  const groups = await Groups.find({ hidden: false, provider: providerId }).populate("members");
+  const groupIds = groups.map(g => g.id);
+  const events = await Events.find({
+    group: groupIds, 
+    startsAt: { ">=": monthDateRange.start.valueOf(), "<=": monthDateRange.end.valueOf() }, 
+    provider: providerId
+  })
+  .populate("visitors")
+  .populate("payments");
+  const results = [];
+  events.forEach(event => {
+    const payers = event.payments.map(x => x.person);
+    event.visitors.forEach(visitor => {
+      if (!payers.includes(visitor.id) && !results.find(x => x.id == visitor.id)){
+        results.push({id: visitor.id, name: visitor.name })
+      }
+    });
+  });
+  results.forEach((r, i) => {
+    sheet.getRow(i+2).values = [i+1, r.name];
+  });
+  const wbbuf = await workbook.xlsx.writeBuffer();
+  return wbbuf;
+}
+
 module.exports.getTotals = async function(year, month, providerId){
   const workbook = new Excel.Workbook();
   await workbook.xlsx.readFile('api/templates/totals.xlsx');
