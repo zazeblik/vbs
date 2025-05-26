@@ -22,7 +22,7 @@
     </b-row>
     <div 
       v-for="(visit, index) in visits"
-      :key="'visit'+index" class="row mb-1">
+      :key="'visit'+index" class="row mb-1 scrollable">
       <div class="col-sm-2"><small>{{ visit.name }}:</small></div>
       <div class="col-sm-10 pt-1">
         <b-progress :max="maxVisitsCount">
@@ -78,3 +78,10 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.scrollable {
+  overflow-y: auto;
+  height: calc(100vh - 135px);
+}
+</style>

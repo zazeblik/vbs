@@ -34,7 +34,7 @@ module.exports = {
   beforeCreate: async function (value, next) {
     try {
       if (await sails.helpers.isAlreadyExistsEvent(value.group, value.startsAt, value.duration, value.provider)) {
-        return next(`Занятие в это время уже есть. ${JSON.stringify(value)}`);
+        return next(`Занятие в это время уже есть.`);
       }
       const startsDate = new Date(value.startsAt);
       const month = startsDate.getMonth();

@@ -22,7 +22,7 @@
     </b-row>
     <div 
       v-for="(instructor, index) in instructors"
-      :key="'instructor'+index" class="row mb-1">
+      :key="'instructor'+index" class="row mb-1 scrollable">
       <div class="col-sm-2"><small>{{ instructor.name }}:</small></div>
       <div class="col-sm-10 pt-1">
         <b-progress :max="maxInstructorsCount">
@@ -78,3 +78,10 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.scrollable {
+  overflow-y: auto;
+  height: calc(100vh - 135px);
+}
+</style>

@@ -46,7 +46,7 @@
       <div class="limit-arrow px-2" is-text>&darr;</div>
       <b-form-select class="col-2" v-model="limit" :options="limits" />
     </b-input-group>
-    <b-list-group>
+    <b-list-group class="scrollable">
       <b-list-group-item
         class="p-2"
         v-for="transaction in transactions"
@@ -280,5 +280,9 @@ form {
 
 .dropdown-actions {
   margin-top: -1.5rem;
+}
+.scrollable {
+  overflow-y: auto;
+  height: calc(100vh - 165px);
 }
 </style>

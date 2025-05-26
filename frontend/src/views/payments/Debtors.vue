@@ -86,5 +86,7 @@ export default {
 <style scoped>
 .small-table{
   font-size: small !important;
+  overflow-y: auto;
+  height: calc(100vh - 105px);
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" class="no-scroll">
     <Header 
       :isAuthShown="isAuthShown"
       :isControlPanelShown="isControlPanelShown" />
@@ -41,3 +41,10 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.no-scroll {
+  overflow-y: hidden;
+  height: 100vh;
+}
+</style>

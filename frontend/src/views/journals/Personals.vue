@@ -17,7 +17,7 @@
         </b-button>
       </b-input-group-append>
     </b-input-group>
-    <b-row class="mt-3">
+    <b-row class="mt-3 scrollable">
       <b-col 
         v-for="group in groups" 
         :key="group.id"
@@ -182,5 +182,9 @@ export default {
 }
 .with-btn {
   justify-content: space-between;
+}
+.scrollable {
+  overflow-y: auto;
+  height: calc(100vh - 190px);
 }
 </style>

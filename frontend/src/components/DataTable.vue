@@ -283,6 +283,8 @@ export default {
 <style scoped>
 .data-table {
   font-size: small !important;
+  overflow-y: auto;
+  height: calc(100vh - 180px);;
 }
 
 .select-all-checkbox{

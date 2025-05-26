@@ -87,5 +87,7 @@ export default {
 <style scoped>
 .incomes-table {
   font-size: small !important;
+  overflow-y: auto;
+  height: calc(100vh - 135px);
 }
 </style>

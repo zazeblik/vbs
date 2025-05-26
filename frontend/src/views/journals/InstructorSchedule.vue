@@ -29,73 +29,76 @@
         </b-button>
       </b-input-group-append>
     </b-input-group>
-    <b-table
-      :items="scheduleRows"
-      :fields="scheduleFields"
-      ref="schedule"
-      class="my-2"
-      small
-      thead-tr-class="text-center"
-      bordered
-      stacked="lg"
-      :busy="isBusy"
-      empty-text="Записей не найдено"
-      empty-filtered-text="Записей не найдено">
-      <template v-slot:cell()="row">
-        <div class="w-100">{{row.value.isShown ? row.value.date.getDate() : ""}}</div>
-        <b-card
-          v-for="event in row.value.events"
-          :key="event.id"
-          border-variant="dark"
-          header-class="p-1"
-          body-class="p-0"
-          class="mb-1" 
-          align="center"
-        >
-          <template v-slot:header>
-            <button type="button" class="check-all card-header-icon" title="Отметить всех" aria-label="checkAll" @click="checkAll(event)">
-              <span aria-hidden="true"><b-icon icon="list-check"></b-icon></span>
-            </button>
-            {{getEventStart(event)}}‒{{getEventEnd(event)}}
-            <b-dropdown
-              size="sm" 
-              dropleft 
-              class="dropdown-actions" 
-              variant="link" 
-              toggle-class="text-decoration-none" 
-              no-caret>
-              <template v-slot:button-content>
-                <b-icon icon="three-dots-vertical"/><span class="sr-only">Actions</span>
-              </template>
-              <b-dropdown-item @click="showEditEventModal(event)">Редактировать</b-dropdown-item>
-              <b-dropdown-item @click="showRemoveEventConfirm(event)">Удалить</b-dropdown-item>
-            </b-dropdown>
-          </template>
-          <b-list-group>
-            <b-list-group-item 
-              class="p-0 pl-1 text-left"
-              v-for="member in event.members"
-              :variant="getMemberPaymentColor(member, event)"
-              :key="member.id">
-              <b-checkbox 
-                v-model="member.isVisitor"
-                @change="changeVisitorState(member, event)"
-                inline>
-                {{getMemberFirstName(member)}}&nbsp;&nbsp;
-                <span class="d-none d-sm-inline-block">{{getMemberSecondName(member)}}</span>
-              </b-checkbox>
-            </b-list-group-item>
-          </b-list-group>
-        </b-card>
-      </template>
-    </b-table>
-    <ModelModal
-      modalId="eventModal"
-      :baseUrl="eventUrl"
-      :itemForm="eventForm"
-      ref="eventModal"
-      @formSaved="fetchData"
-    />
+    <div class="scrollable">
+
+      <b-table
+        :items="scheduleRows"
+        :fields="scheduleFields"
+        ref="schedule"
+        class="my-2"
+        small
+        thead-tr-class="text-center"
+        bordered
+        stacked="lg"
+        :busy="isBusy"
+        empty-text="Записей не найдено"
+        empty-filtered-text="Записей не найдено">
+        <template v-slot:cell()="row">
+          <div class="w-100">{{row.value.isShown ? row.value.date.getDate() : ""}}</div>
+          <b-card
+            v-for="event in row.value.events"
+            :key="event.id"
+            border-variant="dark"
+            header-class="p-1"
+            body-class="p-0"
+            class="mb-1" 
+            align="center"
+          >
+            <template v-slot:header>
+              <button type="button" class="check-all card-header-icon" title="Отметить всех" aria-label="checkAll" @click="checkAll(event)">
+                <span aria-hidden="true"><b-icon icon="list-check"></b-icon></span>
+              </button>
+              {{getEventStart(event)}}‒{{getEventEnd(event)}}
+              <b-dropdown
+                size="sm" 
+                dropleft 
+                class="dropdown-actions" 
+                variant="link" 
+                toggle-class="text-decoration-none" 
+                no-caret>
+                <template v-slot:button-content>
+                  <b-icon icon="three-dots-vertical"/><span class="sr-only">Actions</span>
+                </template>
+                <b-dropdown-item @click="showEditEventModal(event)">Редактировать</b-dropdown-item>
+                <b-dropdown-item @click="showRemoveEventConfirm(event)">Удалить</b-dropdown-item>
+              </b-dropdown>
+            </template>
+            <b-list-group>
+              <b-list-group-item 
+                class="p-0 pl-1 text-left"
+                v-for="member in event.members"
+                :variant="getMemberPaymentColor(member, event)"
+                :key="member.id">
+                <b-checkbox 
+                  v-model="member.isVisitor"
+                  @change="changeVisitorState(member, event)"
+                  inline>
+                  {{getMemberFirstName(member)}}&nbsp;&nbsp;
+                  <span class="d-none d-sm-inline-block">{{getMemberSecondName(member)}}</span>
+                </b-checkbox>
+              </b-list-group-item>
+            </b-list-group>
+          </b-card>
+        </template>
+      </b-table>
+      <ModelModal
+        modalId="eventModal"
+        :baseUrl="eventUrl"
+        :itemForm="eventForm"
+        ref="eventModal"
+        @formSaved="fetchData"
+      />
+    </div>
   </div>
 </template>
 <script>
@@ -345,5 +348,9 @@ table thead th{
 }
 .with-btn {
   justify-content: space-between;
+}
+.scrollable {
+  overflow-y: auto;
+  height: calc(100vh - 205px);
 }
 </style>

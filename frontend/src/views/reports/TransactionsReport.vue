@@ -16,7 +16,7 @@
     </b-row>
     <div 
       v-for="(transactionSum, index) in transactionSums"
-      :key="'transactionSum'+index" class="row mb-1">
+      :key="'transactionSum'+index" class="row mb-1 scrollable">
       <div class="col-sm-2"><small>{{ transactionSum.name }}:</small></div>
       <div class="col-sm-10 pt-1">
         <b-progress :max="maxIncomesSum">
@@ -78,3 +78,10 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.scrollable {
+  overflow-y: auto;
+  height: calc(100vh - 135px);
+}
+</style>

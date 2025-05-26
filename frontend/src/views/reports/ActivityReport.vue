@@ -12,7 +12,7 @@
         </b-button>
       </b-input-group-append>
     </b-input-group>
-    <b-list-group>
+    <b-list-group class="scrollable">
       <b-list-group-item
         class="person-row"
         v-for="(person, index) in persons"
@@ -66,5 +66,9 @@ export default {
 .person-row{
   padding: 0 0.5rem;
   font-size: small;
+}
+.scrollable {
+  overflow-y: auto;
+  height: calc(100vh - 135px);
 }
 </style>

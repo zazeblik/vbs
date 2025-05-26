@@ -9,7 +9,7 @@
         </b-button>
       </b-input-group-append>
     </b-input-group>
-    <b-table-simple class="py-2" small bordered responsive >
+    <b-table-simple class="py-2 scrollable" small bordered responsive >
       <colgroup><col></colgroup>
       <colgroup><col><col><col><col></colgroup>
       <colgroup><col></colgroup>
@@ -170,5 +170,7 @@ export default {
 <style scoped>
 .calculation-table {
   font-size: small !important;
+  overflow-y: auto;
+  height: calc(100vh - 135px);
 }
 </style>

@@ -88,6 +88,7 @@
       :items="rows"
       :fields="fields"
       hover
+      sticky-header
       responsive="sm"
       class="my-2 sheet"
       :busy="isBusy"
@@ -479,6 +480,7 @@ export default {
 <style scoped>
 .sheet {
   font-size: small;
+  max-height: calc(100vh - 180px);
 }
 
 .multiselect-option {

@@ -26,5 +26,6 @@ export default {
 <style scoped>
 .cp-page {
   min-height: calc(100vh - 1rem - 40px);
+  display: -webkit-box;
 }
 </style>
