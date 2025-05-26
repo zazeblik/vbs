@@ -92,7 +92,11 @@ export default {
       if (this.selectedInstructor)
         return;
 
-      this.selectedInstructor = this.instructors[0] ? this.instructors[0].id : null;
+      this.selectedInstructor = this.$route.query.instructor
+        ? Number(this.$route.query.instructor)
+        : this.instructors[0] 
+          ? this.instructors[0].id 
+          : null;
     },
     async fetchGroups() {
       this.groups = await this.$getAsync(`${this.baseUrl}/instructor-groups/${this.selectedInstructor}`, {
@@ -101,6 +105,7 @@ export default {
     },
     async selectedInstructorChanged(){
       this.itemForm.find(f => f.property == "defaultInstructor").value = this.selectedInstructor;
+      this.$router.replace({ name: "personals", query: {instructor: this.selectedInstructor} }).catch(err => {});
       await this.fetchData();
     },
     showAddModal() {
