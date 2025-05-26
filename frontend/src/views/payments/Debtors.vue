@@ -1,34 +1,54 @@
 <template>
   <div class="py-2">
-    <h5>Должники</h5>
-    <b-input-group size="sm" prepend="Месяц">
-      <b-form-select v-model="selectedMonth" :options="months" @change="fetchInfo()" />
-      <b-form-select v-model="selectedYear" :options="years" @change="fetchInfo()" />
-      <b-input-group-append>
-        <b-button variant="outline-success" @click="exportData">
-          <b-icon icon="file-earmark-arrow-down"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Экспорт</span>
-        </b-button>
-      </b-input-group-append>
-    </b-input-group>
+    <h5>Должники</h5> 
     <b-list-group>
-      <b-list-group-item
-        class="person-row"
-        v-for="(person, index) in debtors"
-        :key="'person_'+index">{{index + 1}}. {{person.name}}</b-list-group-item>
+      <b-table class="py-2 small-table" small bordered sort-icon-left responsive :fields="fields" :items="persons">
+        <template v-slot:cell(events)="row">
+          <b-button size="sm" variant="link" @click="addPaymentsModalShow(row.item.id)">{{getUnpayedEventsCountText(row.item.id)}}</b-button>
+        </template>
+        <template v-slot:cell(months)="row">
+          <b-button size="sm" variant="link" @click="addPaymentsModalShow(row.item.id)">{{getUnpayedMonthsCountText(row.item.id)}}</b-button>
+        </template>
+      </b-table>
     </b-list-group>
+    <PaymentsModal 
+      modalId="paymentsModal"
+      ref="paymentsModal"
+      :payer = "payer"
+      :generals="generals"
+      :personals="personals"
+      :unpayedEvents="personalUnpayedEvents"
+      :unapyedGroupMonths="personalUnapyedGroupMonths"
+      :instructors="instructors"
+      @formSaved="fetchInfo" />
   </div>
 </template>
 
 <script>
+import PaymentsModal from "../../components/PaymentsModal";
 export default {
+  components: {
+    PaymentsModal
+  },
   data() {
     return {
       baseUrl: '/debtors',
-      debtors: [],
-      selectedYear: new Date().getFullYear(),
-      years: this.$getYears(),
-      selectedMonth: new Date().getMonth(),
-      months: this.$moment.months().map((m, i) => { return { value: i, text: m } }),
+      payer: null,
+      persons: [],
+      generals: [],
+      personals: [],
+      instructors: [],
+      unpayedEvents: {},
+      unapyedGroupMonths: {},
+      personalUnpayedEvents: [],
+      personalUnapyedGroupMonths: [],
+      fields: [
+        { key: 'name', label: 'Имя', sortable: true },
+        { key: 'balance', label: 'Баланс', sortable: true },
+        { key: 'events', label: 'Не оплачено занятий', sortable: true },
+        { key: 'months', label: 'Не оплачено месяцев', sortable: true }
+      ],
+      
     }
   },
   async mounted() {
@@ -36,29 +56,35 @@ export default {
   },
   methods: {
     async fetchInfo() {
-      const info = await this.$getAsync(`${this.baseUrl}/list`, {
-        month: this.selectedMonth,
-        year: this.selectedYear
-      });
-      this.debtors = info.debtors;
+      const settings = await this.$getAsync(`${this.baseUrl}/settings`);
+      this.persons = settings.persons;
+      this.generals = settings.generals;
+      this.personals = settings.personals;
+      this.unpayedEvents = settings.unpayedEvents;
+      this.instructors = settings.instructors;
+      this.unapyedGroupMonths = settings.unapyedGroupMonths;
     },
-    async exportData(){
-      await this.$getAsync(`${this.baseUrl}/export`, {
-        month: this.selectedMonth,
-        year: this.selectedYear
-      }, true);
+    addPaymentsModalShow(payerId){
+      this.payer = payerId;
+      this.personalUnpayedEvents = this.unpayedEvents[payerId];
+      this.personalUnapyedGroupMonths = this.unapyedGroupMonths[payerId];
+      this.$nextTick(function () {
+        this.$refs.paymentsModal.show();
+      });
+      
+    },
+    getUnpayedEventsCountText(payerId){
+      return `${this.unpayedEvents[payerId].length} занятий`;
+    },
+    getUnpayedMonthsCountText(payerId){
+      return `${this.unapyedGroupMonths[payerId].length} месяцев`;
     }
   }
 }
 </script>
 
 <style scoped>
-.type-label {
-  background: #e9ecef !important;
-  font-size: small;
-}
-.person-row{
-  padding: 0 0.5rem;
-  font-size: small;
+.small-table{
+  font-size: small !important;
 }
 </style>

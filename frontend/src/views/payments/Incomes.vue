@@ -26,7 +26,7 @@
         </b-button>
       </b-input-group-append>
     </b-input-group>
-    <b-table class="py-2 incomes-table" small bordered responsive :fields="fields" :items="incomes" foot-clone foot-variant="light" no-footer-sorting>
+    <b-table class="py-2 incomes-table" small bordered sort-icon-left responsive :fields="fields" :items="incomes" foot-clone foot-variant="light" no-footer-sorting>
       <template v-slot:foot()="data">
         <b v-if="data.column == 'description'">{{'Итого: ' + total}}</b>
         <b v-else-if="data.column == 'createdAt'">{{'Итого наличными: ' + totalManual}}</b>

@@ -150,7 +150,7 @@ export default {
   components: {
     ModelSelect
   },
-  props: [ "modalId", "payer", "generals", "personals", "instructors", "unpayedEvents", "unapyedGroupMonths", "isControlPanelShown" ],
+  props: [ "modalId", "payer", "generals", "personals", "instructors", "unpayedEvents", "unapyedGroupMonths" ],
   data() {
     return {
       baseUrl: "/payments",

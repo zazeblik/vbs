@@ -95,7 +95,6 @@
     <PaymentsModal 
       modalId="paymentsModal"
       ref="paymentsModal"
-      :isControlPanelShown="isControlPanelShown"
       :generals="generals"
       :personals="personals"
       :unpayedEvents="personalUnpayedEvents"

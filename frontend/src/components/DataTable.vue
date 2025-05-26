@@ -74,6 +74,7 @@
       @sort-changed="fetchTable"
       class="my-2 data-table"
       :busy="isBusy"
+      sort-icon-left
       empty-text="Записей не найдено"
       empty-filtered-text="Записей не найдено"
     >

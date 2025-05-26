@@ -4,7 +4,7 @@ const GetMonthDateRange =  require('../utils/DateRangeHelper').GetMonthDateRange
 const moment = require('moment');
 
 module.exports.getPaymentSettings = async function(providerId){
-  const persons = await Persons.find({provider: providerId}).sort('name ASC');
+  const persons = await Persons.find({ select: ["id", "name", "balance"], where: { provider : providerId } }).sort('name ASC');
   const groups = await Groups.find({provider: providerId}).populate("members", {select: ["id"]});
   const instructors = await Instructors.find({provider: providerId});
   const personals = groups.filter(g => g.type == GroupType.Personal);
