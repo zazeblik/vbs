@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="scrollable">
     <header class="masthead text-white text-center bg-secondary" style="background: url(img/bg-masthead.jpg) no-repeat center center;">
       <div class="overlay"></div>
       <b-container>
@@ -439,5 +439,10 @@ footer.footer {
 
 .img-fluid{
   width: 100%;
+}
+
+.scrollable {
+  overflow-y: auto;
+  height: calc(100vh - 80px);
 }
 </style>

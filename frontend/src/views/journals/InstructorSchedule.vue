@@ -6,7 +6,7 @@
         <b-breadcrumb-item active>{{title}}</b-breadcrumb-item>
       </div>
       <b-button size="sm" variant="outline-dark" @click="autoDebit">
-        <b-icon icon="lightning-fill"></b-icon>&nbsp;Оплатить занятия
+        <b-icon icon="lightning-fill"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Оплатить занятия</span>
       </b-button>
     </b-breadcrumb>
     <b-input-group size="sm">
@@ -230,8 +230,8 @@ export default {
       await this.fetchCalendar();
     },
     async changeVisitorState(member, event){
-      let isVisitor = member.isVisitor;
-      const result = await this.$postAsync(`${this.eventUrl}/${isVisitor ? 'remove' : 'add' }-visitor/${event.id}`, { 
+      const isVisitor = member.isVisitor;
+      const result = await this.$postAsync(`${this.eventUrl}/${!isVisitor ? 'remove' : 'add' }-visitor/${event.id}`, { 
         visitors: [member.id]
       }, true );
       if (result.success){
@@ -351,6 +351,6 @@ table thead th{
 }
 .scrollable {
   overflow-y: auto;
-  height: calc(100vh - 205px);
+  height: calc(100vh - 15rem);
 }
 </style>

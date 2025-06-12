@@ -113,7 +113,7 @@
         <button type="button" class="check-all" title="Отметить всех" aria-label="checkAll" @click="checkAll(data.field)">
           <span aria-hidden="true"><b-icon icon="list-check"></b-icon></span>
         </button>
-        {{ data.label }}
+        <span class="date-head-border" :style="{borderColor: data.field.color}">{{ data.label }}</span>
         <b-dropdown
           size="sm" 
           dropleft 
@@ -480,7 +480,7 @@ export default {
 <style scoped>
 .sheet {
   font-size: small;
-  max-height: calc(100vh - 180px);
+  max-height: calc(100vh - 13rem);
 }
 
 .multiselect-option {
@@ -496,6 +496,10 @@ table input[type="checkbox"] {
 }
 .with-btn {
   justify-content: space-between;
+}
+.date-head-border{
+  border: 2px solid;
+  border-radius: 3px;
 }
 </style>
 

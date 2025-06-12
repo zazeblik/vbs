@@ -284,7 +284,7 @@ export default {
 .data-table {
   font-size: small !important;
   overflow-y: auto;
-  height: calc(100vh - 180px);;
+  height: calc(100vh - 16rem);
 }
 
 .select-all-checkbox{

@@ -21,6 +21,7 @@ module.exports.getGroupedActions = async function (groupIds, toDate, providerId)
 
 module.exports.getSheet = async function(id, monthDateRange, providerId){
   const group = await Groups.findOne(id).populate("members", { sort: "name ASC" });
+  const instructors = await Instructors.find({where: {provider: providerId}, select: ["id", "name", "color"]});
   let groupMembers = group.members;
   const events = await Events
     .find({ 
@@ -54,13 +55,14 @@ module.exports.getSheet = async function(id, monthDateRange, providerId){
       const fieldKeys = fields.map(f => f.key);
       if (fieldKeys.includes(e.id.toString()))
         return;
-      
+      const instructor = instructors.find(x => x.id == e.instructor);
       fields.push({
         key: e.id.toString(),
         label: moment(e.startsAt).format("DD"),
         class: "text-center",
         eventId: e.id,
-        event: e
+        event: e,
+        color: instructor.color
       });
     });
     const rowUniquePaymentIds = [];

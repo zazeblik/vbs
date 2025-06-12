@@ -7,7 +7,7 @@
       <model-select v-model="selectedInstructor" :options="$modelsToOptions(instructors)" @input="selectedInstructorChanged" />
       <b-input-group-append>
         <b-button variant="outline-success" @click="showAddModal">
-          <b-icon icon="plus-circle-fill"></b-icon>&nbsp;Добавить
+          <b-icon icon="plus-circle-fill"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Добавить</span>
         </b-button>
       </b-input-group-append>
     </b-input-group>

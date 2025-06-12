@@ -3,17 +3,17 @@
     <b-breadcrumb class="mt-1 with-btn">
       <b-breadcrumb-item active>Индивидуальные группы</b-breadcrumb-item>
       <b-button size="sm" variant="outline-dark" @click="autoDebit">
-        <b-icon icon="lightning-fill"></b-icon>&nbsp;Оплатить занятия
+        <b-icon icon="lightning-fill"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Оплатить занятия</span>
       </b-button>
     </b-breadcrumb>
     <b-input-group prepend="Тренер" size="sm">
       <model-select v-model="selectedInstructor" :options="$modelsToOptions(instructors)" @input="selectedInstructorChanged" />
       <b-input-group-append>
         <b-button variant="outline-success" @click="showAddModal">
-          <b-icon icon="plus-circle-fill"></b-icon>&nbsp;Добавить
+          <b-icon icon="plus-circle-fill"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Добавить</span>
         </b-button>
         <b-button variant="outline-primary" @click="goToTrenerPersonals">
-          Расписание тренера&nbsp;<b-icon icon="arrow-right"></b-icon>
+          <span class="d-none d-md-inline-block">Расписание</span>&nbsp;<b-icon icon="arrow-right"></b-icon>
         </b-button>
       </b-input-group-append>
     </b-input-group>

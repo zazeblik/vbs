@@ -1,5 +1,5 @@
 <template>
-  <div class="py-2">
+  <div class="py-2 scrollable">
     <div class="alert alert-success py-2 px-3" v-if="birthdays.length">
       Сегодня день рождения отмечают:
       <ul class="mb-0">
@@ -158,4 +158,8 @@ export default {
 @import '~@fullcalendar/core/main.css';
 @import '~@fullcalendar/daygrid/main.css';
 
+.scrollable {
+  overflow-y: auto;
+  height: calc(100vh - 60px);
+}
 </style>
