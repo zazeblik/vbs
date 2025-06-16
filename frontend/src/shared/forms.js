@@ -1,5 +1,6 @@
 const Enums = require("../../../enums");
 const GroupType = Enums.GroupType;
+const IncomeType = Enums.IncomeType;
 const Role = Enums.Role;
 const SalaryRuleType = Enums.SalaryRuleType;
 
@@ -19,12 +20,17 @@ module.exports.IncomeForm = [
     }
   },
   {
-    label: "Безналичный расчёт",
-    property: "cashless",
-    type: "checkbox"
+    label: "Тип начисления",
+    property: "type",
+    type: "enum",
+    options: [
+      { text: "безналичный", value: IncomeType.Electronic },
+      { text: "наличный", value: IncomeType.Cash },
+      { text: "другой", value: IncomeType.Other },
+    ]
   },
   {
-    label: "Описание",
+    label: "Примечание",
     property: "description",
     type: "string",
   }

@@ -12,7 +12,7 @@
         <b-button variant="outline-success" @click="showAddModal">
           <b-icon icon="plus-circle-fill"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Добавить</span>
         </b-button>
-        <b-button variant="outline-primary" @click="goToTrenerPersonals">
+        <b-button v-show="selectedInstructor" variant="outline-primary" @click="goToTrenerPersonals">
           <span class="d-none d-md-inline-block">Расписание</span>&nbsp;<b-icon icon="arrow-right"></b-icon>
         </b-button>
       </b-input-group-append>
@@ -79,7 +79,6 @@ export default {
   methods: {
     async fetchData() {
       await this.fetchSettings();
-      if (!this.selectedInstructor) return;
       await this.fetchGroups();
     },
     async fetchSettings() {
@@ -94,13 +93,12 @@ export default {
 
       this.selectedInstructor = this.$route.query.instructor
         ? Number(this.$route.query.instructor)
-        : this.instructors[0] 
-          ? this.instructors[0].id 
-          : null;
+        : null;
     },
     async fetchGroups() {
-      this.groups = await this.$getAsync(`${this.baseUrl}/instructor-groups/${this.selectedInstructor}`, {
-        type: GroupType.Personal
+      this.groups = await this.$getAsync(`${this.baseUrl}/journal-groups`, {
+        type: GroupType.Personal,
+        id: this.selectedInstructor
       });
     },
     async selectedInstructorChanged(){

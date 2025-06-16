@@ -234,17 +234,20 @@ module.exports = {
       return res.badRequest(err.message);
     }
   },
-  instructorGroups: async function (req, res){
+  journalGroups: async function (req, res){
     try {
-      if (!req.param("id")) return res.status(400).send("id не указан");
       if (!req.param("type")) return res.status(400).send("type не указан");
-      const id = Number(req.param("id"));
       const type = Number(req.param("type"));
+      const query = { 
+        where: { type: type, hidden: false, provider: req.session.User.provider }, 
+        sort: "name ASC" 
+      };
+      const id = req.param("id");
+      if (id) {
+        query.where.defaultInstructor = Number(req.param("id"));
+      }
       let groups = await Groups
-        .find({ 
-          where: { type: type, defaultInstructor: id, hidden: false, provider: req.session.User.provider }, 
-          sort: "name ASC" 
-        })
+        .find(query)
         .populate("defaultInstructor")
         .populate("members", { sort: "name ASC" });
       return res.send(groups);

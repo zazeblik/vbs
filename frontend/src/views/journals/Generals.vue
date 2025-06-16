@@ -67,7 +67,6 @@ export default {
   methods: {
     async fetchData() {
       await this.fetchSettings();
-      if (!this.selectedInstructor) return;
       await this.fetchGroups();
     },
     async fetchSettings() {
@@ -81,13 +80,12 @@ export default {
         return;
       this.selectedInstructor = this.$route.query.instructor
         ? Number(this.$route.query.instructor)
-        : this.instructors[0] 
-          ? this.instructors[0].id 
-          : null;
+        : null;
     },
     async fetchGroups() {
-      this.groups = await this.$getAsync(`${this.baseUrl}/instructor-groups/${this.selectedInstructor}`, {
-        type: GroupType.General
+      this.groups = await this.$getAsync(`${this.baseUrl}/journal-groups`, {
+        type: GroupType.General,
+        id: this.selectedInstructor
       });
     },
     async selectedInstructorChanged(){

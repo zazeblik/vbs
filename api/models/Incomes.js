@@ -1,3 +1,5 @@
+const IncomeType = require('../../enums').IncomeType
+
 module.exports = {
   attributes: {
     updater: {
@@ -12,17 +14,14 @@ module.exports = {
       min: 0,
       required: true
     },
-    online: {
-      type: 'boolean',
-      defaultsTo: false
-    },
-    cashless: {
-      type: 'boolean',
-      defaultsTo: false
+    type: {
+      type: 'number',
+      isIn: [IncomeType.Electronic, IncomeType.Cash, IncomeType.Other],
+      defaultsTo: IncomeType.Cashless
     },
     description: {
       type: 'string',
-      defaultsTo: 'Пополнение баланса вручную'
+      allowNull: true
     },
     provider: {
       model: 'providers'

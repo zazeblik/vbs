@@ -57,8 +57,8 @@ module.exports.getPaymentSettings = async function(providerId){
 module.exports.getTransactions = async function(person, limit, providerId){
   let payments = await Payments.find({ where: { person: person, provider: providerId }, limit: limit, sort: "updatedAt DESC"});
   let incomes = await Incomes.find({ where: { person: person, provider: providerId }, limit: limit, sort: "updatedAt DESC"});
-  payments.forEach(payment => { payment.type =  TransactionType.Payment });
-  incomes.forEach(income => { income.type =  TransactionType.Income });
+  payments.forEach(payment => { payment.transactionType =  TransactionType.Payment });
+  incomes.forEach(income => { income.transactionType =  TransactionType.Income });
   const transactions = [...payments, ...incomes].sort((a, b) => {
     if (a.updatedAt > b.updatedAt) return -1;
     if (a.updatedAt < b.updatedAt) return 1;

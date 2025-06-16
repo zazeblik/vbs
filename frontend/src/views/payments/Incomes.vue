@@ -29,8 +29,9 @@
     <b-table class="py-2 incomes-table" small bordered sort-icon-left responsive :fields="fields" :items="incomes" foot-clone foot-variant="light" no-footer-sorting>
       <template v-slot:foot()="data">
         <b v-if="data.column == 'description'">{{'Итого: ' + total}}</b>
-        <b v-else-if="data.column == 'createdAt'">{{'Итого наличными: ' + totalManual}}</b>
-        <b v-else-if="data.column == 'person.name'">{{'Итого безнал.: ' + totalCashless}}</b>
+        <b v-else-if="data.column == 'createdAt'">{{'Итого наличными: ' + totalCash}}</b>
+        <b v-else-if="data.column == 'person.name'">{{'Итого безналично: ' + totalElectronic}}</b>
+        <b v-else-if="data.column == 'sum'">{{'Итого других: ' + totalOther}}</b>
         <b v-else></b>
       </template>
     </b-table>
@@ -38,6 +39,7 @@
 </template>
 
 <script>
+const IncomeType = require("../../../../enums").IncomeType;
 export default {
   data() {
     return {
@@ -45,21 +47,24 @@ export default {
       fromDate: new Date(),
       toDate: new Date(),
       fields: [
-        { key: 'createdAt', label: 'Дата создания', sortable: true, formatter: (value, key, item) => this.$moment(value).format("DD.MM.YYYY") },
+        { key: 'createdAt', label: 'Дата создания', sortable: true, formatter: (value, key, item) => this.$moment(value).format("DD.MM.YYYY HH:mm") },
         { key: 'person.name', label: 'Плательщик', sortable: true },
         { key: 'sum', label: 'Сумма', sortable: true },
-        { key: 'cashless', label: 'Безнал.', sortable: true, formatter: (value, key, item) => value ? "да" : "нет" },
+        { key: 'type', label: 'Тип начисления', sortable: true, formatter: (value, key, item) => {
+          switch(value) {
+            case IncomeType.Electronic: return "безналичный";
+            case IncomeType.Cash: return "наличный";
+            case IncomeType.Other: return "другой";
+          }
+        } },
         { key: 'description', label: 'Описание', sortable: true }
       ],
       incomes: [],
       total: 0,
-      totalOnline: 0,
-      totalCashless: 0,
-      totalManual: 0,
+      totalElectronic: 0,
+      totalCash: 0,
+      totalOther: 0,
     }
-  },
-  computed: {
-    
   },
   async mounted() {
     await this.fetchTable();
@@ -71,8 +76,9 @@ export default {
         toDate: this.$moment(this.toDate).endOf('day').valueOf(),
       });
       this.total = this.incomes.sum(x => x.sum);
-      this.totalCashless = this.incomes.filter(x => x.cashless).sum(x => x.sum);
-      this.totalManual = this.incomes.filter(x => !x.cashless).sum(x => x.sum);
+      this.totalElectronic = this.incomes.filter(x => x.type == IncomeType.Electronic).sum(x => x.sum);
+      this.totalCash = this.incomes.filter(x => x.type == IncomeType.Cash).sum(x => x.sum);
+      this.totalOther = this.incomes.filter(x => x.type == IncomeType.Other).sum(x => x.sum);
     },
     async exportData() {
       await this.$getAsync(`${this.baseUrl}/export`, {

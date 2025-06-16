@@ -294,7 +294,6 @@ export default {
       this.itemForm.forEach((c, index) => {
         switch (c.type) {
           case "string":
-          case "number":
           case "color":
           case "model":
           case "month":
@@ -302,6 +301,9 @@ export default {
           case "collection":
           case "enum":
             result[c.property] = c.value;
+            break;
+          case "number":
+            result[c.property] = Number(c.value);
             break;
           case "password":
             if (c.value) result[c.property] = c.value;

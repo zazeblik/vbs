@@ -50,10 +50,10 @@
       <b-list-group-item
         class="p-2"
         v-for="transaction in transactions"
-        :key="`transaction_${transaction.type}_${transaction.id}`"
-        :variant="isIncome(transaction.type) ? 'success' : ''" >
+        :key="`transaction_${transaction.transactionType}_${transaction.id}`"
+        :variant="isIncome(transaction.transactionType) ? 'success' : ''" >
         <div>
-          <b v-if="isIncome(transaction.type)">{{transaction.sum > 0 ? '+' : ''}}{{transaction.sum}}</b>
+          <b v-if="isIncome(transaction.transactionType)">{{transaction.sum > 0 ? '+' : ''}}{{transaction.sum}}</b>
           <b v-else>{{transaction.sum > 0 ? '-' : ''}}{{transaction.sum}}</b>
           &nbsp;
           <span>{{transaction.description}}</span>
@@ -209,7 +209,6 @@ export default {
     showAddIncomeForm() {
       if (this.isControlPanelShown){
         this.incomeForm.find(f => f.property == 'person').value = this.payer;
-        this.incomeForm.find(f => f.property == 'description').value = 'Пополнение баланса вручную';
         this.$refs.addIncomeModal.showAdd();
       } else {
         this.addIncomeShown = true;

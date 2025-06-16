@@ -3,6 +3,7 @@ const GetMonthDateRange =  require('../utils/DateRangeHelper').GetMonthDateRange
 const GroupsService = require('./GroupsService');
 const ReportsService = require('./ReportsService');
 const moment = require('moment');
+const { IncomeType } = require('../../enums');
 
 module.exports.getActivity = async function(year, month, activity, providerId){
   const workbook = new Excel.Workbook();
@@ -119,19 +120,31 @@ module.exports.getIncomes = async function(fromDate, toDate, providerId){
   let sheet = workbook.worksheets[0];
   const incomes = await Incomes.find({createdAt: {">=": fromDate, "<=": toDate}, provider: providerId}).populate('person');
   incomes.forEach((v, i) => {
-    sheet.getRow(i+2).values = [moment(v.createdAt).format("DD.MM.YYYY"), v.person.name, v.sum, v.cashless ? "да" : "нет", v.description];
+    sheet.getRow(i+2).values = [moment(v.createdAt).format("DD.MM.YYYY HH:mm"), v.person.name, v.sum, getIncomeTypeName(v.type), v.description];
   });
   const totalsRow = sheet.getRow(incomes.length+2);
   const totalManualSumCell = totalsRow.getCell(1);
-  totalManualSumCell.value = {'richText': [{'font': {'bold': true}, 'text': `Итого наличными: ${incomes.filter(x => !x.cashless).map(x => x.sum).reduce((a, b) => a + b, 0)}`}]};
+  totalManualSumCell.value = {'richText': [{'font': {'bold': true}, 'text': `Итого налично: ${incomes.filter(x => x.type == IncomeType.Cash).map(x => x.sum).reduce((a, b) => a + b, 0)}`}]};
 
   const totalCachlessSumCell = totalsRow.getCell(2);
-  totalCachlessSumCell.value = {'richText': [{'font': {'bold': true}, 'text': `Итого безнал.: ${incomes.filter(x => x.cashless).map(x => x.sum).reduce((a, b) => a + b, 0)}`}]};
+  totalCachlessSumCell.value = {'richText': [{'font': {'bold': true}, 'text': `Итого безналично: ${incomes.filter(x => x.type == IncomeType.Electronic).map(x => x.sum).reduce((a, b) => a + b, 0)}`}]};
   
-  const totalSumCell = totalsRow.getCell(3);
+  const totalOtherSumCell = totalsRow.getCell(3);
+  totalOtherSumCell.value = {'richText': [{'font': {'bold': true}, 'text': `Итого других: ${incomes.filter(x => x.type == IncomeType.Other).map(x => x.sum).reduce((a, b) => a + b, 0)}`}]};
+  
+
+  const totalSumCell = totalsRow.getCell(5);
   totalSumCell.value = {'richText': [{'font': {'bold': true}, 'text': `Итого: ${incomes.map(x => x.sum).reduce((a, b) => a + b, 0)}`}]};
   const wbbuf = await workbook.xlsx.writeBuffer();
   return wbbuf;
+}
+
+function getIncomeTypeName(type) {
+  switch (type) {
+    case IncomeType.Electronic: return "безналично";
+    case IncomeType.Cash: return "налично";
+    case IncomeType.Other: return "другой";
+  }
 }
 
 module.exports.getVisits = async function(year, month, providerId){

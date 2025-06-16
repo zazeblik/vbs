@@ -23,3 +23,9 @@ module.exports.SalaryRuleType = {
   FixPerEvent: 1,
   FixMonthly: 2
 }
+
+module.exports.IncomeType = {
+  Electronic: 0,
+  Cash: 1,
+  Other: 2
+}
