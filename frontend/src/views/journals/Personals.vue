@@ -2,9 +2,6 @@
   <div class="py-2">
     <b-breadcrumb class="mt-1 with-btn">
       <b-breadcrumb-item active>Индивидуальные группы</b-breadcrumb-item>
-      <b-button size="sm" variant="outline-dark" @click="autoDebit">
-        <b-icon icon="lightning-fill"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Оплатить занятия</span>
-      </b-button>
     </b-breadcrumb>
     <b-input-group prepend="Тренер" size="sm">
       <model-select v-model="selectedInstructor" :options="$modelsToOptions(instructors)" @input="selectedInstructorChanged" />
@@ -110,32 +107,6 @@ export default {
       this.itemForm.find(f => f.property == "defaultInstructor").value = this.selectedInstructor;
       this.itemForm.find(f => f.property == "type").value = GroupType.Personal;
       this.$refs.modelModal.showAdd();
-    },
-    async autoDebit() {
-      try {
-        const confirm = await this.$bvModal.msgBoxConfirm(
-          `При наличии необходимой суммы на балансе участника автоматичекси оплатятся посещённые, но не оплаченные индивидуальные занятия. 
-          Вы уверены, что хотите это сделать?`,
-          {
-            cancelTitle: "Отмена",
-            cancelVariant: "outline-secondary",
-            okTitle: "Списать",
-            okVariant: "success"
-          }
-        );
-        if (!confirm) return;
-        await this.$postAsync(this.baseUrl + "/auto-debit");
-        this.$bvToast.toast("Занятия успешно оплачены", {
-          title: "Автоматическая оплата занятий",
-          variant: "success",
-          autoHideDelay: 3000,
-          solid: true,
-        });
-      } catch (error) {
-        if (error.response) {
-          this.$error(error.response.data.message || error.response.data);
-        }
-      }
     },
     showEditModal(group) {
       this.$refs.modelModal.showEdit(group);

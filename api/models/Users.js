@@ -21,6 +21,10 @@ module.exports = {
       isIn: [Role.Coach, Role.LocalAdmin],
       defaultsTo: 0
     },
+    autoOpenPaymentModel: {
+      type: "boolean",
+      defaultsTo: true
+    },
     provider: {
       model: 'providers'
     }

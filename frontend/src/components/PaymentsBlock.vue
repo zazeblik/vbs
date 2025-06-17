@@ -188,9 +188,7 @@ export default {
       let transactionsQuery = {
         limit: this.limit
       };
-      if (this.isControlPanelShown) {
-        transactionsQuery.person = this.payer
-      };
+      transactionsQuery.person = this.payer
       this.transactions = await this.$getAsync(
         `${this.baseUrl}/transactions`, 
         transactionsQuery); 

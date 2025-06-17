@@ -5,9 +5,6 @@
         <b-breadcrumb-item :to="isGeneralGroup ? '/cp/generals' : '/cp/personals'">{{isGeneralGroup ? 'Общие' : 'Индивидуальные'}} группы</b-breadcrumb-item>
         <b-breadcrumb-item active>{{title}}</b-breadcrumb-item>
       </div>
-      <b-button v-if="!isGeneralGroup" size="sm" variant="outline-dark" @click="autoDebit">
-        <b-icon icon="lightning-fill"></b-icon>&nbsp;Оплатить занятия
-      </b-button>
     </b-breadcrumb>
     <b-input-group size="sm">
       <b-input-group-prepend>
@@ -149,11 +146,16 @@
       </template>
 
       <template v-slot:cell()="data">
-        <input 
-          class="form-control form-control-sm"
-          type="checkbox"
-          v-model="data.value.visited" 
-          @change="changeEventVisit(data.value)"/>
+        <div>
+          <input 
+            class="form-control form-control-sm"
+            type="checkbox"
+            v-model="data.value.visited" 
+            @change="changeEventVisit(data.value)"/>
+        </div>
+        <div>
+          <span v-if="!isGeneralGroup && data.value.payment">{{ data.value.payment.sum }}</span>
+        </div>
       </template>
 
       <template v-slot:table-busy>
@@ -236,38 +238,10 @@ export default {
         group: this.group.id
       }, true);
     },
-    async autoDebit() {
-      try {
-        const confirm = await this.$bvModal.msgBoxConfirm(
-          `При наличии необходимой суммы на балансе участника автоматичекси оплатятся посещённые, но не оплаченные индивидуальные занятия. 
-          Вы уверены, что хотите это сделать?`,
-          {
-            cancelTitle: "Отмена",
-            cancelVariant: "outline-secondary",
-            okTitle: "Списать",
-            okVariant: "success"
-          }
-        );
-        if (!confirm) return;
-        await this.$postAsync(this.groupUrl + "/auto-debit", {group: this.group.id});
-        this.$bvToast.toast("Занятия успешно оплачены", {
-          title: "Автоматическая оплата занятий",
-          variant: "success",
-          autoHideDelay: 3000,
-          solid: true,
-        });
-        await this.fetchData();
-      } catch (error) {
-        if (error.response) {
-          this.$error(error.response.data.message || error.response.data);
-        }
-      }
-    },
     resetAddPersonsForm(){
       this.addPersonShown = false; 
       this.selectedPersons = [];
       this.addPersonsPlaceholder = "Выберите участников";
-
     },
     createEvent(){
       this.eventForm.find(f => f.property == "group").value = this.$route.params.id;
@@ -386,8 +360,14 @@ export default {
     },
     async showRemoveEventConfirm(field) {
       try {
+        const nodes = [];
+        if (this.$settings.autoRefundOnDeletePersonalEvents && !this.isGeneralGroup && field.event.payments.length){
+          nodes.push(<div>Суммы оплат на баланс участников будут возвращены автоматически.</div>);  
+          nodes.push(<br />);  
+        }
+        nodes.push(<div>Вы уверены, что хотите удалить занятие?</div>);
         const confirm = await this.$bvModal.msgBoxConfirm(
-          `Вы уверены, что хотите удалить занятие?`,
+          nodes,
           {
             cancelTitle: "Отмена",
             cancelVariant: "outline-secondary",

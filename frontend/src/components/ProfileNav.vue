@@ -7,7 +7,7 @@
           {{$user.login}}
         </template>
         <b-dropdown-item v-if="isSiteShown && $user.role != 0" href="/cp">Панель управления</b-dropdown-item>
-        <b-dropdown-item v-if="!isSiteShown && $user.role == 2" href="/cp/customization">Общие настройки</b-dropdown-item>
+        <b-dropdown-item v-if="!isSiteShown && $user.role == 2" href="/cp/customization">Настройки</b-dropdown-item>
         <b-dropdown-item href="/auth/logout">Выйти</b-dropdown-item>
       </b-nav-item-dropdown>
       <b-nav-item v-else to="/auth">

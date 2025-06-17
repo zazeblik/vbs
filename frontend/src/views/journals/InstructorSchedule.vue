@@ -5,9 +5,6 @@
         <b-breadcrumb-item to="/cp/personals">Индивидуальные группы</b-breadcrumb-item>
         <b-breadcrumb-item active>{{title}}</b-breadcrumb-item>
       </div>
-      <b-button size="sm" variant="outline-dark" @click="autoDebit">
-        <b-icon icon="lightning-fill"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Оплатить занятия</span>
-      </b-button>
     </b-breadcrumb>
     <b-input-group size="sm">
       <b-input-group-prepend>
@@ -172,33 +169,6 @@ export default {
       this.eventForm.find(f => f.property == "instructor").models = detail.instructors;
       this.eventForm.find(f => f.property == "instructor").value = detail.instructor.id;
     },
-    async autoDebit() {
-      try {
-        const confirm = await this.$bvModal.msgBoxConfirm(
-          `При наличии необходимой суммы на балансе участника автоматичекси оплатятся посещённые, но не оплаченные индивидуальные занятия. 
-          Вы уверены, что хотите это сделать?`,
-          {
-            cancelTitle: "Отмена",
-            cancelVariant: "outline-secondary",
-            okTitle: "Списать",
-            okVariant: "success"
-          }
-        );
-        if (!confirm) return;
-        await this.$postAsync(this.groupUrl + "/auto-debit");
-        this.$bvToast.toast("Занятия успешно оплачены", {
-          title: "Автоматическая оплата занятий",
-          variant: "success",
-          autoHideDelay: 3000,
-          solid: true,
-        });
-        await this.fetchData();
-      } catch (error) {
-        if (error.response) {
-          this.$error(error.response.data.message || error.response.data);
-        }
-      }
-    },
     async exportData() {
       await this.$getAsync(`${this.groupUrl}/export-personals`, {
         month: this.selectedMonth,
@@ -207,9 +177,16 @@ export default {
       }, true);
     },
     async showRemoveEventConfirm(event) {
+      console.log(event);
       try {
+        const nodes = [];
+        if (this.$settings.autoRefundOnDeletePersonalEvents && event.payments.length){
+          nodes.push(<div>Суммы оплат на баланс участников будут возвращены автоматически.</div>);  
+          nodes.push(<br />);  
+        }
+        nodes.push(<div>Вы уверены, что хотите удалить занятие?</div>);
         const confirm = await this.$bvModal.msgBoxConfirm(
-          `Вы уверены, что хотите удалить занятие?`,
+          nodes,
           {
             cancelTitle: "Отмена",
             cancelVariant: "outline-secondary",

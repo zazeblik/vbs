@@ -4,7 +4,7 @@ module.exports = {
       type: "boolean",
       defaultsTo: false
     },
-    autoOpenPaymentModel: {
+    autoRefundOnDeletePersonalEvents: {
       type: "boolean",
       defaultsTo: true
     },

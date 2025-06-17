@@ -95,7 +95,6 @@ module.exports.getInstructorScheduleEvents = async function(id, monthDateRange, 
     .find({ type: GroupType.Personal, hidden: false, provider: providerId })
     .populate("members", {select: ["id", "name", "balance"]});
   const groupIds = groups.map(g => g.id);
-  const groupedActions = await this.getGroupedActions(groupIds, monthDateRange.end.valueOf());
   let events = await Events
     .find({ 
       instructor: id, 
@@ -108,9 +107,7 @@ module.exports.getInstructorScheduleEvents = async function(id, monthDateRange, 
   const membersByGroup = {};
   for (let i = 0; i < groups.length; i++) {
     const group = groups[i];
-    let actionsByPerson = groupedActions[group.id] || {};
-    let groupMembers = group.members;
-    membersByGroup[group.id] = this.resolveGroupMembersByActions(groupMembers, actionsByPerson);
+    membersByGroup[group.id] = group.members;
   }
   events.forEach(e => {
     const members = membersByGroup[e.group].map(x => { return {

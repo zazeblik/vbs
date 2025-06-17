@@ -393,10 +393,12 @@ export default {
       this.itemForm.forEach((c) => {
         switch (c.type) {
           case "string":
-          case "color":
           case "schedule":
           case "model":
             c.value = c.value || null;
+            break;
+          case "color":
+            c.value = c.value || "#cccccc";
             break;
           case "countPrices":
             c.value = c.value || [{count: 1, price: 1000}];
