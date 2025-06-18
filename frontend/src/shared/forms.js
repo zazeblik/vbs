@@ -332,4 +332,10 @@ module.exports.UserForm = [
 
     ]
   },
+  {
+    label: "Тренер",
+    property: "instructor",
+    type: "model",
+    models: []
+  },
 ]

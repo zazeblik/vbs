@@ -44,7 +44,7 @@ export default new Router({
           component: () => import('./views/journals/Personals.vue')
         },
         {
-          path: 'instructor-schedule/:id',
+          path: 'instructor-schedule',
           component: () => import('./views/journals/InstructorSchedule.vue')
         },
         {

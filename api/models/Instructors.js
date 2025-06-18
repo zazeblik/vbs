@@ -47,6 +47,10 @@ module.exports = {
           if (eventsOfInstructors.length){
             return next(`Сначала необходимо удалить занятия, где участник является тренером`);
           }
+          const usersOfInstructors = await Users.find({instructor: ids, provider: provider});
+          if (usersOfInstructors.length){
+            return next(`Сначала необходимо заменить тренера у пользователей`);
+          }
         }
       }
       return next();

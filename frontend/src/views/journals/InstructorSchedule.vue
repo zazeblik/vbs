@@ -1,11 +1,8 @@
 <template>
   <div class="py-2">
-    <b-breadcrumb class="mt-1 with-btn">
-      <div class="inline-block">
-        <b-breadcrumb-item to="/cp/personals">Индивидуальные группы</b-breadcrumb-item>
-        <b-breadcrumb-item active>{{title}}</b-breadcrumb-item>
-      </div>
-    </b-breadcrumb>
+    <b-input-group prepend="Тренер" size="sm">
+      <model-select v-model="instructorId" :options="$modelsToOptions(instructors)" @input="selectedInstructorChanged" />
+    </b-input-group>
     <b-input-group size="sm">
       <b-input-group-prepend>
         <b-button variant="outline-success" @click="createEvent()">
@@ -16,8 +13,8 @@
           <span class="d-none d-md-inline-block">Создать занятие</span>
         </b-button>
       </b-input-group-prepend>
-      <b-form-select v-model="selectedMonth" :options="months" @change="fetchData()" />
-      <b-form-select v-model="selectedYear" :options="years" @change="fetchData()" />
+      <b-form-select v-model="selectedMonth" :options="months" @change="fetchCalendar()" />
+      <b-form-select v-model="selectedYear" :options="years" @change="fetchCalendar()" />
       <b-input-group-append>
         <b-input-group-text >Всего часов: {{hoursSum}}</b-input-group-text>
         <b-input-group-text >Сумма оплат: {{Math.floor(paymentsSum)}}</b-input-group-text>
@@ -100,15 +97,18 @@
 </template>
 <script>
 import ModelModal from "../../components/ModelModal";
+import { ModelSelect } from "vue-search-select";
 import { EventForm } from "../../shared/forms";
 export default {
   components: {
-    ModelModal
+    ModelModal,
+    ModelSelect
   },
   data() {
     return {
       isBusy: false,
       title: "",
+      instructorsUrl: "/instructors",
       groupUrl: "/groups",
       eventUrl: "/events",
       paymentUrl: "/payments",
@@ -119,10 +119,11 @@ export default {
         return { value: i, text: m };
       }),
       eventForm: Object.assign([], EventForm),
-      instructor: null,
+      instructorId: null,
       groups: [],
       persons: [],
       events: [],
+      instructors: [],
       hoursSum: 0,
       paymentsSum: 0,
       scheduleFields: [],
@@ -141,7 +142,7 @@ export default {
     async fetchCalendar() {
       this.isBusy = true;
       const calendar = await this.$getAsync(
-        `${this.groupUrl}/instructor-schedule-calendar/${this.$route.params.id}`,
+        `${this.groupUrl}/instructor-schedule-calendar/${this.instructorId}`,
         { year: this.selectedYear, month: this.selectedMonth }
       );
       for (let i = 0; i < calendar.rows.length; i++) {
@@ -161,23 +162,31 @@ export default {
       this.isBusy = false;
     },
     async fetchDetail() {
-      const detail = await this.$getAsync(`${this.groupUrl}/instructor-detail/${this.$route.params.id}`);
-      this.instructor = detail.instructor;
-      this.title = this.instructor.name;
+      const detail = await this.$getAsync(`${this.groupUrl}/instructor-detail`);
+      if (!detail.instructors.length){
+        this.$error("Создайте хотябы одного тренера");
+        this.$router.path({path: 'cp/instructors'});
+        return;
+      }
+      this.instructorId = this.$user.instructor 
+        ? this.$user.instructor 
+        : detail.instructors[0].id; 
+      const instructor = detail.instructors.find(x => x.id == this.instructorId);
+      this.title = instructor.name;
       this.groups = detail.groups;
+      this.instructors = detail.instructors;
       this.eventForm.find(f => f.property == "group").models = detail.groups;
       this.eventForm.find(f => f.property == "instructor").models = detail.instructors;
-      this.eventForm.find(f => f.property == "instructor").value = detail.instructor.id;
+      this.eventForm.find(f => f.property == "instructor").value = this.instructorId;
     },
     async exportData() {
       await this.$getAsync(`${this.groupUrl}/export-personals`, {
         month: this.selectedMonth,
         year: this.selectedYear,
-        instructor: this.$route.params.id
+        instructor: this.instructorId
       }, true);
     },
     async showRemoveEventConfirm(event) {
-      console.log(event);
       try {
         const nodes = [];
         if (this.$settings.autoRefundOnDeletePersonalEvents && event.payments.length){
@@ -281,14 +290,12 @@ export default {
     },
     createEvent() {
       this.eventForm.find(f => f.property == "group").hidden = false;
-      this.eventForm.find(f => f.property == "instructor").value = this.$route.params.id;
-      this.eventForm.find(f => f.property == "instructor").hidden = true;
+      this.eventForm.find(f => f.property == "instructor").value = this.instructorId;
       this.eventForm.find(f => f.property == "duration").value = this.defaultDuration;
       this.$refs.eventModal.showAdd();
     },
     showEditEventModal(event) {
       this.eventForm.find(f => f.property == "group").hidden = true;
-      this.eventForm.find(f => f.property == "instructor").hidden = false;
       this.$refs.eventModal.showEdit(event);
     },
     getEventStart(event) {
@@ -296,7 +303,11 @@ export default {
     },
     getEventEnd(event) {
       return this.$moment(event.startsAt).add('minutes', event.duration).format("HH:mm");
-    }
+    },
+    async selectedInstructorChanged(){
+      this.eventForm.find(f => f.property == "instructor").value = this.instructorId;
+      await this.fetchCalendar();
+    },
   }
 };
 </script>

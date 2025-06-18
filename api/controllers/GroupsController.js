@@ -125,10 +125,7 @@ module.exports = {
     }
   },
   instructorDetail: async function (req, res){
-    if (!req.param("id")) return res.status(400).send("id не указан");
     try {
-      const id = Number(req.param("id"));
-      const instructor = await Instructors.findOne({id: id, provider: req.session.User.provider});
       const persons = await Persons
         .find({
           select: ["id", "name"], 
@@ -149,7 +146,7 @@ module.exports = {
           provider: req.session.User.provider 
         } 
       });
-      return res.send({ instructor, persons, groups, instructors });
+      return res.send({ persons, groups, instructors });
     } catch (error) {
       return res.badRequest(error.message);
     }

@@ -25,6 +25,9 @@ module.exports = {
       type: "boolean",
       defaultsTo: true
     },
+    instructor: {
+      model: 'instructors'
+    },
     provider: {
       model: 'providers'
     }

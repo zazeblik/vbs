@@ -5,6 +5,7 @@
     </b-breadcrumb>
     <b-input-group prepend="Тренер" size="sm">
       <model-select v-model="selectedInstructor" :options="$modelsToOptions(instructors)" @input="selectedInstructorChanged" />
+      <b-form-input v-model="nameFilter" type="text" placeholder="Введите название" @change="nameFilterChanged" />
       <b-input-group-append>
         <b-button variant="outline-success" @click="showAddModal">
           <b-icon icon="plus-circle-fill"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Добавить</span>
@@ -13,7 +14,7 @@
     </b-input-group>
     <b-row class="mt-3 scrollable">
       <b-col 
-        v-for="group in groups" 
+        v-for="group in shownGroups" 
         :key="group.id"
         lg="3"
         md="4"
@@ -55,7 +56,9 @@ export default {
     return {
       baseUrl: "/groups",
       selectedInstructor: null,
+      nameFilter: null,
       groups: [],
+      shownGroups: [],
       instructors: [],
       persons: [],
       itemForm: Object.assign([], GroupForm)
@@ -80,18 +83,22 @@ export default {
         return;
       this.selectedInstructor = this.$route.query.instructor
         ? Number(this.$route.query.instructor)
-        : null;
+        : this.$user.instructor 
+          ? this.$user.instructor 
+          : null;
     },
     async fetchGroups() {
       this.groups = await this.$getAsync(`${this.baseUrl}/journal-groups`, {
         type: GroupType.General,
         id: this.selectedInstructor
       });
+      this.shownGroups = this.groups;
+      this.nameFilter = null;
     },
     async selectedInstructorChanged(){
       this.itemForm.find(f => f.property == "defaultInstructor").value = this.selectedInstructor;
       this.$router.replace({ name: "generals", query: {instructor: this.selectedInstructor} }).catch(err => {});
-      await this.fetchData();
+      await this.fetchGroups();
     },
     showAddModal() {
       this.itemForm.find(f => f.property == "defaultInstructor").value = this.selectedInstructor;
@@ -105,6 +112,13 @@ export default {
       this.$router.push({ 
         path: `/cp/group-detail/${group.id}`
       });
+    },
+    nameFilterChanged(val) {
+      if (val) {
+        this.shownGroups = this.groups.filter(x => x.name.includes(val));
+      } else {
+        this.shownGroups = this.groups;
+      }
     },
     async showDeleteConfirm(group) {
       try {

@@ -15,6 +15,7 @@
         </template>
         <b-dropdown-item to="/cp/generals">Общие</b-dropdown-item>
         <b-dropdown-item to="/cp/personals">Индивидуальные</b-dropdown-item>
+        <b-dropdown-item to="/cp/instructor-schedule">Расписание тренера</b-dropdown-item>
       </b-nav-item-dropdown>
       <b-nav-item-dropdown class="border-top border-secondary px-2" v-if="$user.role == 2">
         <template slot="button-content">

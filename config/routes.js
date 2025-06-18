@@ -14,7 +14,7 @@ module.exports.routes = {
   '/groups/delete/:id': 'GroupsController.delete',
   '/groups/sheet/:id': 'GroupsController.sheet',
   '/groups/detail/:id': 'GroupsController.detail',
-  '/groups/instructor-detail/:id': 'GroupsController.instructorDetail',
+  '/groups/instructor-detail': 'GroupsController.instructorDetail',
   '/groups/journal-groups': 'GroupsController.journalGroups',
   '/groups/instructor-schedule-calendar/:id': 'GroupsController.instructorScheduleCalendar',
   '/groups/add-person/:id': 'GroupsController.addPerson',

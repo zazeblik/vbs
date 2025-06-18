@@ -3,20 +3,17 @@
     <b-breadcrumb class="mt-1 with-btn">
       <b-breadcrumb-item active>Индивидуальные группы</b-breadcrumb-item>
     </b-breadcrumb>
-    <b-input-group prepend="Тренер" size="sm">
-      <model-select v-model="selectedInstructor" :options="$modelsToOptions(instructors)" @input="selectedInstructorChanged" />
+    <b-input-group prepend="Название" size="sm">
+      <b-form-input v-model="nameFilter" type="text" placeholder="Введите название" @change="nameFilterChanged" />
       <b-input-group-append>
         <b-button variant="outline-success" @click="showAddModal">
           <b-icon icon="plus-circle-fill"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Добавить</span>
-        </b-button>
-        <b-button v-show="selectedInstructor" variant="outline-primary" @click="goToTrenerPersonals">
-          <span class="d-none d-md-inline-block">Расписание</span>&nbsp;<b-icon icon="arrow-right"></b-icon>
         </b-button>
       </b-input-group-append>
     </b-input-group>
     <b-row class="mt-3 scrollable">
       <b-col 
-        v-for="group in groups" 
+        v-for="group in shownGroups" 
         :key="group.id"
         lg="3"
         md="4"
@@ -52,19 +49,19 @@
 const GroupType = require("../../../../enums").GroupType;
 import ModelModal from "../../components/ModelModal";
 import GroupPersonsManager from "../../components/GroupPersonsManager";
-import { ModelSelect } from "vue-search-select";
 import { GroupForm } from "../../shared/forms";
 export default {
   components: {
     ModelModal,
-    ModelSelect,
     GroupPersonsManager
   },
   data() {
     return {
       baseUrl: "/groups",
       selectedInstructor: null,
+      nameFilter: null,
       groups: [],
+      shownGroups: [],
       instructors: [],
       persons: [],
       itemForm: Object.assign([], GroupForm)
@@ -85,23 +82,14 @@ export default {
       this.itemForm.find(f => f.property == "defaultInstructor").models = this.instructors;
       this.itemForm.find(f => f.property == "hidden").hidden = true;
       this.itemForm.find(f => f.property == "type").hidden = true;
-      if (this.selectedInstructor)
-        return;
-
-      this.selectedInstructor = this.$route.query.instructor
-        ? Number(this.$route.query.instructor)
-        : null;
+      this.selectedInstructor = this.$user.instructor;
     },
     async fetchGroups() {
       this.groups = await this.$getAsync(`${this.baseUrl}/journal-groups`, {
-        type: GroupType.Personal,
-        id: this.selectedInstructor
+        type: GroupType.Personal
       });
-    },
-    async selectedInstructorChanged(){
-      this.itemForm.find(f => f.property == "defaultInstructor").value = this.selectedInstructor;
-      this.$router.replace({ name: "personals", query: {instructor: this.selectedInstructor} }).catch(err => {});
-      await this.fetchData();
+      this.shownGroups = this.groups;
+      this.nameFilter = null;
     },
     showAddModal() {
       this.itemForm.find(f => f.property == "defaultInstructor").value = this.selectedInstructor;
@@ -111,15 +99,17 @@ export default {
     showEditModal(group) {
       this.$refs.modelModal.showEdit(group);
     },
-    goToTrenerPersonals() {
-      this.$router.push({ 
-        path: `/cp/instructor-schedule/${this.selectedInstructor}`
-      });
-    },
     goToDetailPage(group) {
       this.$router.push({ 
         path: `/cp/group-detail/${group.id}`
       });
+    },
+    nameFilterChanged(val) {
+      if (val) {
+        this.shownGroups = this.groups.filter(x => x.name.includes(val));
+      } else {
+        this.shownGroups = this.groups;
+      }
     },
     async showDeleteConfirm(group) {
       try {

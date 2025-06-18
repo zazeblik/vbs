@@ -4,8 +4,8 @@ const cyrillicToTranslit = require('cyrillic-to-translit-js');
 module.exports = {
   settings: async function (req, res){
     try {
-      const persons = await Persons.find({provider: req.session.User.provider}).sort('name ASC');
-      return res.send({ persons });
+      const instructors = await Instructors.find({provider: req.session.User.provider}).sort('name ASC');
+      return res.send({ instructors });
     } catch (err) {
       return res.badRequest(err.message);
     }
@@ -21,6 +21,9 @@ module.exports = {
     try {
       req.body.id = req.param("id");
       req.body.provider = req.session.User.provider;
+      if (!req.body.instructor) {
+        req.body.instructor = null;
+      }
       await Users.update({id: req.param("id"), provider: req.session.User.provider}).set(req.body).fetch();
       return res.ok();
     } catch (err) {
@@ -74,7 +77,7 @@ module.exports = {
       query.limit = perPage;
       query.sort = sort;
       
-      let data = await Users.find(query);
+      let data = await Users.find(query).populate("instructor");
       // Делаю так чтобы избавиться от ненужных полей и инициализировать пароль заглушкой
       const dataJson = JSON.stringify(data);
       data = JSON.parse(dataJson);

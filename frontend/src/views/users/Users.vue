@@ -45,6 +45,14 @@ export default {
             return value.name;
           }
         },
+        {
+          key: "instructor",
+          label: "Тренер",
+          formatter: (value, key, item) => {
+            if (!value) return "";
+            return value.name;
+          }
+        },
       ]
     };
   },
@@ -54,11 +62,16 @@ export default {
   async mounted(){
     this.additionalButtons = [];
     this.passwordShowButton = { getPassword: this.getPassword };
+    await this.fetchSettings();
   },
   methods: {
     async getPassword(userId) {
       const response = await this.$getAsync(`${this.baseUrl}/get-password`, { id: userId })
       return response.data;
+    },
+    async fetchSettings() {
+      const settings = await this.$getAsync(`${this.baseUrl}/settings`);
+      this.itemForm.find(f => f.property == "instructor").models = settings.instructors;
     }
   }
 };
