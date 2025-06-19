@@ -178,7 +178,7 @@ export default {
 .small-table{
   font-size: small !important;
   overflow-y: auto;
-  height: calc(100vh - 105px);
+  height: calc(100vh - 10rem);
 }
 .switch-mode-block {
   background: #e9ecef;

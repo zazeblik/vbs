@@ -225,7 +225,7 @@
             <b-form-group
               label-cols-sm="3"
               label-size="sm"
-              v-if="itemForm.some((c) => c.type == 'schedule')"
+              v-if="itemForm.some((c) => c.type == 'schedule') && !isHiddenControl(itemForm.find((c) => c.type == 'schedule'))"
               :label="itemForm.find((c) => c.type == 'schedule').label"
               class="mb-1"
             >
@@ -316,10 +316,10 @@ export default {
             result[c.property] = c.value ? c.value.getTime() : null;
             break;
           case "schedule":
-            result[c.property] = this.$refs["formSchedule"].getValue() || null;
+            result[c.property] = this.$refs["formSchedule"]?.getValue() || null;
             break;
           case "countPrices":
-            result[c.property] = this.$refs["formCountPrices"].getValue() || null;
+            result[c.property] = this.$refs["formCountPrices"]?.getValue() || null;
             break;
           default:
             break;

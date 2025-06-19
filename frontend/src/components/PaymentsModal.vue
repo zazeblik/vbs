@@ -143,6 +143,7 @@
 <script>
 import { ModelSelect } from 'vue-search-select'
 import { GroupType } from "../../../enums";
+import { duration } from 'moment';
 
 const OncePay = 10;
 
@@ -223,7 +224,7 @@ export default {
     getGroupName(template){
       return this.isGeneralGroupType(template)
         ? this.generals.find(g => g.id == template.group).name
-        : `${this.personals.find(g => g.id == template.group).name} (${template.instructor}[${template.visitorsCount} чел.])`;
+        : `${this.personals.find(g => g.id == template.group).name} (${template.instructor}[${template.visitorsCount} чел; ${template.duration} мин.])`;
     },
     isGeneralGroupType(payment){
       return payment.type == GroupType.General || payment.type == OncePay;
@@ -401,6 +402,7 @@ export default {
           sum: sum,
           instructor: instructor.name,
           visitorsCount: e.visitors.length,
+          duration: e.duration,
           event: e.id
         });
       })

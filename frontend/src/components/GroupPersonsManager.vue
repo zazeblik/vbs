@@ -38,7 +38,7 @@ export default {
   components: {
     ModelSelect
   },
-  props: ["members", "groupId", "persons", "defaultInstructor"],
+  props: ["members", "groupId", "persons"],
   data(){
     return {
       addPersonShown: false,
@@ -48,7 +48,7 @@ export default {
   computed: {
     availablePersons() {
       return this.persons
-        .filter(p => p.id != this.defaultInstructor && !this.members.map(m => m.id).includes(p.id))
+        .filter(p =>!this.members.map(m => m.id).includes(p.id))
     }
   },
   methods: {
@@ -72,13 +72,22 @@ export default {
       }
     },
     async removePerson(person) {
-      await this.$postAsync(`/groups/remove-person/${this.groupId}`, { person });
-      this.$emit("changed");
+      try {
+        await this.$postAsync(`/groups/remove-person/${this.groupId}`, { person });
+        this.members = this.members.filter(x => x.id == person.id);
+      } catch (error) {
+        this.$error(error.message);
+      }
     },
     async addPerson() {
-      await this.$postAsync(`/groups/add-person/${this.groupId}`, { person: this.selectedPerson });
-      this.addPersonShown = false;
-      this.$emit("changed");
+      try {
+        await this.$postAsync(`/groups/add-person/${this.groupId}`, { person: this.selectedPerson });
+        this.addPersonShown = false;
+        const person = this.persons.find(x => x.id == this.selectedPerson);
+        this.members.push(person);
+      } catch (error) {
+        this.$error(error.message);
+      }
     },
   }
 }

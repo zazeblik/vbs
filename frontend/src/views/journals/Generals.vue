@@ -3,8 +3,10 @@
     <b-breadcrumb class="mt-1">
       <b-breadcrumb-item active>Общие группы</b-breadcrumb-item>
     </b-breadcrumb>
-    <b-input-group prepend="Тренер" size="sm">
-      <model-select v-model="selectedInstructor" :options="$modelsToOptions(instructors)" @input="selectedInstructorChanged" />
+    <b-input-group size="sm">
+      <b-input-group-prepend is-text>
+        <b-icon icon="search"></b-icon>
+      </b-input-group-prepend>
       <b-form-input v-model="nameFilter" type="text" placeholder="Введите название" @change="nameFilterChanged" />
       <b-input-group-append>
         <b-button variant="outline-success" @click="showAddModal">
@@ -45,12 +47,10 @@
 <script>
 const GroupType = require("../../../../enums").GroupType;
 import ModelModal from "../../components/ModelModal";
-import { ModelSelect } from "vue-search-select";
 import { GroupForm } from "../../shared/forms";
 export default {
   components: {
-    ModelModal,
-    ModelSelect
+    ModelModal
   },
   data() {
     return {
@@ -79,26 +79,14 @@ export default {
       this.itemForm.find(f => f.property == "defaultInstructor").models = this.instructors;
       this.itemForm.find(f => f.property == "hidden").hidden = true;
       this.itemForm.find(f => f.property == "type").hidden = true;
-      if (this.selectedInstructor)
-        return;
-      this.selectedInstructor = this.$route.query.instructor
-        ? Number(this.$route.query.instructor)
-        : this.$user.instructor 
-          ? this.$user.instructor 
-          : null;
+      this.selectedInstructor = this.$user.instructor;
     },
     async fetchGroups() {
       this.groups = await this.$getAsync(`${this.baseUrl}/journal-groups`, {
-        type: GroupType.General,
-        id: this.selectedInstructor
+        type: GroupType.General
       });
       this.shownGroups = this.groups;
       this.nameFilter = null;
-    },
-    async selectedInstructorChanged(){
-      this.itemForm.find(f => f.property == "defaultInstructor").value = this.selectedInstructor;
-      this.$router.replace({ name: "generals", query: {instructor: this.selectedInstructor} }).catch(err => {});
-      await this.fetchGroups();
     },
     showAddModal() {
       this.itemForm.find(f => f.property == "defaultInstructor").value = this.selectedInstructor;

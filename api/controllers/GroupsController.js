@@ -239,10 +239,6 @@ module.exports = {
         where: { type: type, hidden: false, provider: req.session.User.provider }, 
         sort: "name ASC" 
       };
-      const id = req.param("id");
-      if (id) {
-        query.where.defaultInstructor = Number(req.param("id"));
-      }
       let groups = await Groups
         .find(query)
         .populate("defaultInstructor")
@@ -250,19 +246,6 @@ module.exports = {
       return res.send(groups);
     } catch (error) {
       return res.badRequest(error.message);
-    }
-  },
-  generalDefaultInstructors: async function (req, res) {
-    try {
-      const groups = await Groups.find({type: GroupType.General, hidden: false, provider: req.session.User.provider});
-      const defaultInstructorIds = [...new Set(groups.map(g => g.defaultInstructor))];
-      const instructors = await Instructors.find({ id: defaultInstructorIds, provider: req.session.User.provider });
-      instructors.forEach(i => {
-        i.groups = groups.filter(g => g.defaultInstructor == i.id);
-      })
-      return res.ok(instructors);
-    } catch (err) {
-      return res.badRequest(err.message);
     }
   },
   delete: async function (req, res) {

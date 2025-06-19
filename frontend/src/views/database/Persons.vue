@@ -2,14 +2,17 @@
   <div class="py-2">
     <div class="d-flex justify-content-between">
       <h5>Участники</h5>
-      <b-button
-        size="sm"
-        variant="link"
-        class="add-fields-btn"
-        @click="showCustomFieldsModal"
-      >
-        <b-icon icon="clipboard-plus"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Добавочные поля</span>
-      </b-button>
+      <b-button-group size="sm">
+        <b-button variant="link" class="additional-btn" @click="importExcel">
+          <b-icon icon="file-earmark-arrow-up"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Импорт</span>
+        </b-button>
+        <b-button variant="link" class="additional-btn" @click="exportExcel">
+          <b-icon icon="file-earmark-arrow-down"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Экспорт</span>
+        </b-button>
+        <b-button variant="link" class="additional-btn" @click="showCustomFieldsModal">
+          <b-icon icon="clipboard-plus"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Добавочные поля</span>
+        </b-button>
+      </b-button-group>
     </div>
     <DataTable 
       ref="dataTable" 
@@ -70,12 +73,6 @@ export default {
     DataTable,
     CustomFieldsModal
   },
-  async mounted() {
-    this.additionalButtons = [
-      { name: 'Импорт', action: this.import, icon: 'file-earmark-arrow-up' }, 
-      { name: 'Экспорт', action: this.export, icon: 'file-earmark-arrow-down' }
-    ];
-  },
   methods: {
     async fetchPage(){
       this.$refs.dataTable.fetchTable();
@@ -83,10 +80,10 @@ export default {
     showCustomFieldsModal(){
       this.$refs.customFieldsModal.show();
     },
-    import(){
+    importExcel(){
       this.$refs.dataTable.$refs.fileInput.$el.childNodes[0].click();
     },
-    async export(){
+    async exportExcel(){
       await this.$getAsync(`${this.baseUrl}/export`, {}, true);
     }
   }
@@ -94,7 +91,7 @@ export default {
 </script>
 
 <style scoped>
-.add-fields-btn {
+.additional-btn {
   text-decoration: none;
 }
 </style>

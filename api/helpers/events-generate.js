@@ -31,6 +31,7 @@ async function generateForProvider(params) {
   try {
     let date = new Date(params.time);
     let groups = await Groups.find({ schedule: { '!=': '' }, provider: params.provider });
+    groups = groups.filter(x => x.defaultInstructor != null);
     let currentDate = date.getDate();
     let monthsDays = daysInMonth(date.getMonth(), date.getFullYear());
     let timeZoneOffset = sails.config.tz ? -1 * sails.config.tz : 0; 
@@ -56,7 +57,7 @@ async function generateForProvider(params) {
               description: "Создано автоматически", 
               provider: params.provider
             };
-            if (group.defaultInstructor) event.instructor = group.defaultInstructor;
+            event.instructor = group.defaultInstructor;
             let hours = time.split(":")[0];
             let minutes = time.split(":")[1];
             let startsAt = new Date(

@@ -3,7 +3,10 @@
     <b-breadcrumb class="mt-1 with-btn">
       <b-breadcrumb-item active>Индивидуальные группы</b-breadcrumb-item>
     </b-breadcrumb>
-    <b-input-group prepend="Название" size="sm">
+    <b-input-group size="sm">
+      <b-input-group-prepend is-text>
+        <b-icon icon="search"></b-icon>
+      </b-input-group-prepend>
       <b-form-input v-model="nameFilter" type="text" placeholder="Введите название" @change="nameFilterChanged" />
       <b-input-group-append>
         <b-button variant="outline-success" @click="showAddModal">
@@ -34,9 +37,7 @@
             <GroupPersonsManager 
               :groupId="group.id" 
               :members="group.members" 
-              :persons="persons"
-              :defaultInstructor="group.defaultInstructor.id"
-              @changed="fetchGroups" />
+              :persons="persons" />
           </b-card-text>
         </b-card>
       </b-col>

@@ -8,7 +8,6 @@ module.exports.routes = {
   '/salaryrules/export-data': 'SalaryRulesController.exportData',
   '/salaryrules/edit/:id': 'SalaryRulesController.edit',
   '/salaryrules/delete/:id': 'SalaryRulesController.delete',
-  '/groups/general-default-instructors': 'GroupsController.generalDefaultInstructors',
   '/instructors/edit/:id': 'InstructorsController.edit',
   '/groups/edit/:id': 'GroupsController.edit',
   '/groups/delete/:id': 'GroupsController.delete',

@@ -171,6 +171,6 @@ export default {
 .calculation-table {
   font-size: small !important;
   overflow-y: auto;
-  height: calc(100vh - 135px);
+  height: calc(100vh - 5rem);
 }
 </style>

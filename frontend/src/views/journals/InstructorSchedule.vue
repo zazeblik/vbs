@@ -339,6 +339,6 @@ table thead th{
 }
 .scrollable {
   overflow-y: auto;
-  height: calc(100vh - 15rem);
+  height: calc(100vh - 11rem);
 }
 </style>

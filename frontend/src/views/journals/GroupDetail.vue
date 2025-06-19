@@ -428,9 +428,10 @@ export default {
       this.group = detail.group;
       this.isGeneralGroup = this.group.type == GroupType.General; 
       this.persons =  detail.persons;
-      this.defaultInstructor = detail.group.defaultInstructor;
+      this.defaultInstructor = detail.group.defaultInstructor 
+        ? detail.group.defaultInstructor
+        : this.$user.instructor;
       this.eventForm.find(f => f.property == "group").hidden = true;
-      this.eventForm.find(f => f.property == "instructor").hidden = !this.isGeneralGroup;
       this.eventForm.find(f => f.property == "instructor").models = detail.instructors;
       this.groupForm.find(f => f.property == "defaultInstructor").models = detail.instructors;
       this.groupForm.find(f => f.property == "hidden").hidden = true;

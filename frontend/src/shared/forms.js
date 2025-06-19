@@ -133,10 +133,7 @@ module.exports.GroupForm = [
     label: "Тренер",
     property: "defaultInstructor",
     type: "model",
-    models: [],
-    validations: {
-      required: true
-    }
+    models: []
   },
   {
     label: "Длительность (мин)",
@@ -152,6 +149,13 @@ module.exports.GroupForm = [
     label: "Расписание",
     property: "schedule",
     models: [],
+    visibility: (form) => {
+      const typeField = form.find(f => f.property == "defaultInstructor");
+      if ( typeField && !typeField.value ) {
+        return false;
+      }
+      return true;
+    },
     type: "schedule",
   },
   {
