@@ -32,7 +32,7 @@ module.exports.getSheet = async function(id, monthDateRange, providerId){
     .sort("startsAt ASC")
     .populate("visitors", {select: ["id"]})
     .populate("payments", {select: ["id", "person", "sum"]});
-  let fields = [{ key: "person", label: "Фамилия Имя" }];
+  let fields = [{ key: "person", label: "Фамилия Имя", stickyColumn: true }];
   const totals = {};
   let rows = groupMembers.map(gm => {
     let row = {
