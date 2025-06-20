@@ -33,7 +33,7 @@ module.exports = {
   },
   beforeCreate: async function (value, next) {
     try {
-      if (await sails.helpers.isAlreadyExistsEvent(value.group, value.startsAt, value.duration, value.provider)) {
+      if (await sails.helpers.isAlreadyExistsEvent(value.group, value.startsAt, value.duration, value.provider, value.instructor)) {
         return next(`Занятие в это время уже есть.`);
       }
       const startsDate = new Date(value.startsAt);
@@ -54,14 +54,15 @@ module.exports = {
       if (valueToSet.group != null && actualEvent.group != valueToSet.group) {
         return next("В событии не должна меняться группа");
       }
-      const eventTimeChanged = valueToSet.startsAt || valueToSet.duration;
+      const eventChanged = valueToSet.startsAt || valueToSet.duration || valueToSet.instructor;
       const isExistsEvent = await sails.helpers.isAlreadyExistsEvent(
         actualEvent.group, 
         valueToSet.startsAt || actualEvent.startsAt,
         valueToSet.duration || actualEvent.duration,
         valueToSet.provider,
+        valueToSet.instructor || actualEvent.instructor,
         id )
-      if (eventTimeChanged && isExistsEvent) {
+      if (eventChanged && isExistsEvent) {
         return next(`Занятие в это время уже есть. ${JSON.stringify(value)}`);
       }
       const group = await Groups.findOne({id: actualEvent.group, provider: valueToSet.provider});

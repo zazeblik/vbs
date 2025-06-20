@@ -19,7 +19,7 @@
         <b-overlay :show="showSpinner" rounded="sm">
           <b-form>
             <validation-provider
-              v-for="(control, index) in itemForm.filter((c) => !lastFormTypes.includes(c.type))"
+              v-for="(control, index) in itemForm.filter(c => !lastFormTypes.includes(c.type) && c.property != 'hidden')"
               :key="index"
               :name="getName(control.property)"
               :rules="getControlRules(control)"
@@ -225,12 +225,12 @@
             <b-form-group
               label-cols-sm="3"
               label-size="sm"
-              v-if="itemForm.some((c) => c.type == 'schedule') && !isHiddenControl(itemForm.find((c) => c.type == 'schedule'))"
-              :label="itemForm.find((c) => c.type == 'schedule').label"
+              v-if="itemForm.some(c => c.type == 'schedule') && !isHiddenControl(itemForm.find((c) => c.type == 'schedule'))"
+              :label="itemForm.find(c => c.type == 'schedule').label"
               class="mb-1"
             >
               <FormSchedule
-                :value="itemForm.find((c) => c.type == 'schedule').value"
+                :value="itemForm.find(c => c.type == 'schedule').value"
                 ref="formSchedule"
               />
             </b-form-group>
@@ -245,6 +245,15 @@
                 :value="itemForm.find((c) => c.type == 'countPrices').value"
                 ref="formCountPrices"
               />
+            </b-form-group>
+            <b-form-group
+              label-cols-sm="3"
+              label-size="sm"
+              v-if="itemForm.some(c => c.property == 'hidden') && !isHiddenControl(itemForm.find(c => c.property == 'hidden'))"
+              :label="itemForm.find(c => c.property == 'hidden').label"
+              class="mb-1"
+            >
+              <b-form-checkbox size="lg" v-model="itemForm.find((c) => c.property == 'hidden').value" />
             </b-form-group>
           </b-form>
         </b-overlay>

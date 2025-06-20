@@ -5,6 +5,14 @@
         <b-breadcrumb-item :to="isGeneralGroup ? '/cp/generals' : '/cp/personals'">{{isGeneralGroup ? 'Общие' : 'Индивидуальные'}} группы</b-breadcrumb-item>
         <b-breadcrumb-item active>{{title}}</b-breadcrumb-item>
       </div>
+      <b-button
+        v-if="toAdd.length || toRemove.length" 
+        size="sm"
+        variant="success"
+        class="save-btn"
+        @click="saveSelected()">
+        <b-icon icon="check-square"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Сохранить</span>
+      </b-button>
     </b-breadcrumb>
     <b-input-group size="sm">
       <b-input-group-prepend>
@@ -178,6 +186,7 @@ const GroupType = require("../../../../enums").GroupType;
 import Multiselect from 'vue-multiselect';
 import ModelModal from "../../components/ModelModal";
 import { GroupForm, EventForm, PaymentForm } from "../../shared/forms";
+
 export default {
   components: {
     Multiselect,
@@ -191,6 +200,8 @@ export default {
       isBusy: false,
       addPersonShown: false,
       isGeneralGroup: true,
+      toAdd: [],
+      toRemove: [],
       selectedPersons: [],
       persons: [],
       eventUrl: '/events',
@@ -325,19 +336,59 @@ export default {
     async checkAll(field){
       const allChecked = this.rows.every(row => row[field.key].visited);
       const lostIds = this.rows.filter(r => allChecked ? r[field.key].visited : !r[field.key].visited ).map(row => row[field.key].visitorId)
-
-      const result = await this.$postAsync(
-        `/events/${!allChecked ? 'add' : 'remove' }-visitor/${field.eventId}`, 
-        { visitors: lostIds },
-        true );
-      if (result.success){
-        this.rows.filter(r => lostIds.includes(r[field.key].visitorId)).forEach(row => {
-          row[field.key].visited = !allChecked;
-        });
-        
-        this.updateTotals();
-        return;
+      for (let i = 0; i < lostIds.length; i++) {
+        const visitorId = lostIds[i];
+        if (allChecked) {
+          const inRemove = this.toRemove.some(x => x.eventId == field.eventId && x.visitorId == visitorId);
+          if (inRemove) {
+            this.toRemove = this.toRemove.filter(x => !(x.eventId == field.eventId && x.visitorId == visitorId));
+          } else {
+            this.toAdd.push({eventId: field.eventId, visitorId: visitorId});
+          }
+        } else {
+          const inAdd = this.toAdd.some(x => x.eventId == field.eventId && x.visitorId == visitorId);
+          if (inAdd) {
+            this.toAdd = this.toAdd.filter(x => !(x.eventId == field.eventId && x.visitorId == visitorId));
+          } else {
+            this.toRemove.push({eventId: field.eventId, visitorId: visitorId});
+          }
+        }
       }
+      this.rows.filter(r => lostIds.includes(r[field.key].visitorId)).forEach(row => {
+        row[field.key].visited = !allChecked;
+      });
+    },
+    async saveSelected() {
+      console.log(1, this.toAdd, this.toRemove)
+      if (this.toRemove.length){
+        const groupedToRemove = Object.groupBy(this.toRemove, x => x.eventId);
+        const eventIds = [...new Set(this.toRemove.map(x => x.eventId))];
+        for (let i = 0; i < eventIds.length; i++) {
+          const eventId = eventIds[i];
+          const result = await this.$postAsync(
+            `/events/remove-visitor/${eventId}`, 
+            { visitors: groupedToRemove[eventId].map(x => x.visitorId) },
+            true );
+          if (result.success){
+            this.toRemove = this.toRemove.filter(x => x.eventId != eventId);
+          }
+        }
+      }
+      if (this.toAdd.length){
+        const groupedToAdd = Object.groupBy(this.toAdd, x => x.eventId);
+        const eventIds = [...new Set(this.toAdd.map(x => x.eventId))];
+        for (let i = 0; i < eventIds.length; i++) {
+          const eventId = eventIds[i];
+          const result = await this.$postAsync(
+            `/events/add-visitor/${eventId}`, 
+            { visitors: groupedToAdd[eventId].map(x => x.visitorId) },
+            true );
+          if (result.success){
+            this.toAdd = this.toAdd.filter(x => x.eventId != eventId);
+          }
+        }
+      }
+      console.log(2, this.toAdd, this.toRemove)
     },
     async showRemovePersonConfirm(person) {
       try {
@@ -400,16 +451,21 @@ export default {
       await this.fetchData();
     },
     async changeEventVisit(cell){
-      const result = await this.$postAsync(
-        `/events/${cell.visited ? 'add' : 'remove' }-visitor/${cell.eventId}`, 
-        { visitors: [cell.visitorId] },
-        true );
-      if (result.success) {
-        this.updateTotals();
-        return;
+      if (cell.visited) {
+        const inRemove = this.toRemove.some(x => x.eventId == cell.eventId && x.visitorId == cell.visitorId);
+        if (inRemove) {
+          this.toRemove = this.toRemove.filter(x => !(x.eventId == cell.eventId && x.visitorId == cell.visitorId));
+        } else {
+          this.toAdd.push({eventId: cell.eventId, visitorId: cell.visitorId});
+        }
+      } else {
+        const inAdd = this.toAdd.some(x => x.eventId == cell.eventId && x.visitorId == cell.visitorId);
+        if (inAdd) {
+          this.toAdd = this.toAdd.filter(x => !(x.eventId == cell.eventId && x.visitorId == cell.visitorId));
+        } else {
+          this.toRemove.push({eventId: cell.eventId, visitorId: cell.visitorId});
+        }
       }
-      
-      cell.visited = !cell.visited;
     },
     async fetchData(){
       await this.fetchDetail();
@@ -438,21 +494,6 @@ export default {
       this.defaultDuration = detail.group.defaultDuration;
       this.selectedPersons = [];
       this.title = this.group.name;
-    },
-    updateTotals() {
-      for (const key in this.totals) {
-        if (!isNaN(key) || key == 'visits') this.totals[key] = 0;
-      }
-      this.rows.forEach(r => {
-        r.visits = 0;
-        for (const key in r) {
-          if (r[key].visited) {
-            r.visits++;
-            this.totals[key]++;
-            this.totals.visits++;
-          }
-        }
-      })
     }
   }
 };
@@ -481,6 +522,11 @@ table input[type="checkbox"] {
 .date-head-border{
   border: 2px solid;
   border-radius: 3px;
+}
+.save-btn {
+  position: absolute;
+  right: 1.5rem;
+  top: 1.2rem;
 }
 </style>
 

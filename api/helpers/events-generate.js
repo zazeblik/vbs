@@ -74,7 +74,8 @@ async function generateForProvider(params) {
               event.group, 
               event.startsAt,
               event.duration,
-              params.provider);
+              params.provider,
+              event.instructor);
             if (!isAlreadyExists) eventsToAdd.push(event); 
           }
         }

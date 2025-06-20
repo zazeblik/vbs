@@ -16,6 +16,10 @@ module.exports = {
       type: 'number',
       required: true
     },
+    instructorId: {
+      type: 'number',
+      required: true
+    },
     excludeId: {
       type: 'number',
       allowNull: true
@@ -29,6 +33,7 @@ module.exports = {
   fn: async function (inputs, exits) {
     let query = {
       group: inputs.group,
+      instructor: inputs.instructorId,
       provider: inputs.providerId,
       startsAt: { ">=": inputs.startsAt, "<": inputs.startsAt + inputs.duration * 60 * 1000 }
     };
