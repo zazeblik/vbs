@@ -186,6 +186,7 @@ const GroupType = require("../../../../enums").GroupType;
 import Multiselect from 'vue-multiselect';
 import ModelModal from "../../components/ModelModal";
 import { GroupForm, EventForm, PaymentForm } from "../../shared/forms";
+import { watch } from 'vue';
 
 export default {
   components: {
@@ -223,6 +224,30 @@ export default {
   },
   async mounted() {
     await this.fetchData();
+  },
+  async beforeRouteLeave(to, from, next) {
+    if (this.toAdd.length || this.toRemove.length){
+      const confirm = await this.$bvModal.msgBoxConfirm(
+        `У вас остались несохранённые отметки о песещении. Хотите их сохранить и перейти уйти с этой страницы?`,
+        {
+          cancelTitle: "Уйти без сохранения",
+          cancelVariant: "outline-secondary",
+          okTitle: "Сохранить и уйти",
+          okVariant: "success"
+        }
+      );
+      if (confirm == null) {
+        return;
+      }
+      if (!confirm) {
+        return next();
+      }
+      if (confirm) {
+        await this.saveSelected();
+        return next();
+      }
+    }
+    return next();
   },
   computed: {
     availablePersons() {
@@ -359,7 +384,6 @@ export default {
       });
     },
     async saveSelected() {
-      console.log(1, this.toAdd, this.toRemove)
       if (this.toRemove.length){
         const groupedToRemove = Object.groupBy(this.toRemove, x => x.eventId);
         const eventIds = [...new Set(this.toRemove.map(x => x.eventId))];
@@ -388,7 +412,6 @@ export default {
           }
         }
       }
-      console.log(2, this.toAdd, this.toRemove)
     },
     async showRemovePersonConfirm(person) {
       try {
