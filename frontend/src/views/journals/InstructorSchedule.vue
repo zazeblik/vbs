@@ -2,6 +2,14 @@
   <div class="py-2">
     <b-input-group prepend="Тренер" size="sm">
       <model-select v-model="instructorId" :options="$modelsToOptions(instructors)" @input="selectedInstructorChanged" />
+      <b-button
+        v-if="toAdd.length || toRemove.length" 
+        size="sm"
+        variant="success"
+        class="save-btn"
+        @click="saveSelected()">
+        <b-icon icon="check-square"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Сохранить</span>
+      </b-button>
     </b-input-group>
     <b-input-group size="sm">
       <b-input-group-prepend>
@@ -16,7 +24,6 @@
       <b-form-select v-model="selectedMonth" :options="months" @change="fetchCalendar()" />
       <b-form-select v-model="selectedYear" :options="years" @change="fetchCalendar()" />
       <b-input-group-append>
-        <b-input-group-text >Всего часов: {{hoursSum}}</b-input-group-text>
         <b-input-group-text >Сумма оплат: {{Math.floor(paymentsSum)}}</b-input-group-text>
         <b-button variant="outline-success" @click="exportData">
           <b-icon icon="file-earmark-arrow-down"></b-icon>&nbsp;<span class="d-none d-md-inline-block">Экспорт</span>
@@ -24,7 +31,6 @@
       </b-input-group-append>
     </b-input-group>
     <div class="scrollable">
-
       <b-table
         :items="scheduleRows"
         :fields="scheduleFields"
@@ -108,6 +114,8 @@ export default {
     return {
       isBusy: false,
       title: "",
+      toAdd: [],
+      toRemove: [],
       instructorsUrl: "/instructors",
       groupUrl: "/groups",
       eventUrl: "/events",
@@ -124,7 +132,6 @@ export default {
       persons: [],
       events: [],
       instructors: [],
-      hoursSum: 0,
       paymentsSum: 0,
       scheduleFields: [],
       scheduleRows: [],
@@ -133,6 +140,30 @@ export default {
   },
   async mounted() {
     await this.fetchData();
+  },
+  async beforeRouteLeave(to, from, next) {
+    if (this.toAdd.length || this.toRemove.length){
+      const confirm = await this.$bvModal.msgBoxConfirm(
+        `У вас остались несохранённые отметки о песещении. Хотите их сохранить и перейти уйти с этой страницы?`,
+        {
+          cancelTitle: "Уйти без сохранения",
+          cancelVariant: "outline-secondary",
+          okTitle: "Сохранить и уйти",
+          okVariant: "success"
+        }
+      );
+      if (confirm == null) {
+        return;
+      }
+      if (!confirm) {
+        return next();
+      }
+      if (confirm) {
+        await this.saveSelected();
+        return next();
+      }
+    }
+    return next();
   },
   methods: {
     async fetchData() {
@@ -158,7 +189,6 @@ export default {
       this.scheduleFields = calendar.fields;
       this.scheduleRows = calendar.rows;
       this.paymentsSum = calendar.totals.paymentsSum;
-      this.hoursSum = calendar.totals.hoursSum;
       this.isBusy = false;
     },
     async fetchDetail() {
@@ -178,6 +208,36 @@ export default {
       this.eventForm.find(f => f.property == "group").models = detail.groups;
       this.eventForm.find(f => f.property == "instructor").models = detail.instructors;
       this.eventForm.find(f => f.property == "instructor").value = this.instructorId;
+    },
+    async saveSelected() {
+      if (this.toRemove.length){
+        const groupedToRemove = Object.groupBy(this.toRemove, x => x.eventId);
+        const eventIds = [...new Set(this.toRemove.map(x => x.eventId))];
+        for (let i = 0; i < eventIds.length; i++) {
+          const eventId = eventIds[i];
+          const result = await this.$postAsync(
+            `/events/remove-visitor/${eventId}`, 
+            { visitors: groupedToRemove[eventId].map(x => x.visitorId) },
+            true );
+          if (result.success){
+            this.toRemove = this.toRemove.filter(x => x.eventId != eventId);
+          }
+        }
+      }
+      if (this.toAdd.length){
+        const groupedToAdd = Object.groupBy(this.toAdd, x => x.eventId);
+        const eventIds = [...new Set(this.toAdd.map(x => x.eventId))];
+        for (let i = 0; i < eventIds.length; i++) {
+          const eventId = eventIds[i];
+          const result = await this.$postAsync(
+            `/events/add-visitor/${eventId}`, 
+            { visitors: groupedToAdd[eventId].map(x => x.visitorId) },
+            true );
+          if (result.success){
+            this.toAdd = this.toAdd.filter(x => x.eventId != eventId);
+          }
+        }
+      }
     },
     async exportData() {
       await this.$getAsync(`${this.groupUrl}/export-personals`, {
@@ -217,60 +277,46 @@ export default {
     },
     async changeVisitorState(member, event){
       const isVisitor = member.isVisitor;
-      const result = await this.$postAsync(`${this.eventUrl}/${!isVisitor ? 'remove' : 'add' }-visitor/${event.id}`, { 
-        visitors: [member.id]
-      }, true );
-      if (result.success){
-        this.updateTotals();
-        return;
+      if (isVisitor) {
+        const inRemove = this.toRemove.some(x => x.eventId == event.id && x.visitorId == member.id);
+        if (inRemove) {
+          this.toRemove = this.toRemove.filter(x => !(x.eventId == event.id && x.visitorId == member.id));
+        } else {
+          this.toAdd.push({eventId: event.id, visitorId: member.id});
+        }
+      } else {
+        const inAdd = this.toAdd.some(x => x.eventId == event.id && x.visitorId == member.id);
+        if (inAdd) {
+          this.toAdd = this.toAdd.filter(x => !(x.eventId == event.id && x.visitorId == member.id));
+        } else {
+          this.toRemove.push({eventId: event.id, visitorId: member.id});
+        }
       }
-      member.isVisitor = !isVisitor;
     },
     async checkAll(event){
       const allChecked = event.members.every(m => m.isVisitor);
       const lostIds = event.members.filter(m => allChecked ? m.isVisitor : !m.isVisitor).map(m => m.id);
-      const result = await this.$postAsync(
-        `${this.eventUrl}/${!allChecked ? 'add' : 'remove' }-visitor/${event.id}`, 
-        { 
-          visitors: lostIds
-        },
-        true );
-      if (result.success){
-        event.members.filter(m => lostIds.includes(m.id)).forEach(m => {
-          m.isVisitor = !allChecked;
-        });
-        this.updateTotals();
-      }
-    },
-    updateTotals() {
-      let events = [];
-      for (let i = 0; i < this.scheduleRows.length; i++) {
-        const r = this.scheduleRows[i];
-        for (const key in r) {
-          if (!r[key].events) continue;
-          events = events.concat(r[key].events)
-        } 
-      }
-      this.paymentsSum = 0;
-      this.hoursSum = 0;
-      let uniquePaymentIds = [];
-      let uniqueStartsAt = [];
-      for (let i = 0; i < events.length; i++) {
-        const event = events[i];
-        const visitors = event.members.filter(x => x.isVisitor);
-        for (let j = 0; j < event.payments.length; j++) {
-          const payment = event.payments[j];
-          if (!uniquePaymentIds.includes(payment.id)){
-            this.paymentsSum += payment.sum;
-            uniquePaymentIds.push(payment.id);
+      for (let i = 0; i < lostIds.length; i++) {
+        const visitorId = lostIds[i];
+        if (!allChecked) {
+          const inRemove = this.toRemove.some(x => x.eventId == event.id && x.visitorId == visitorId);
+          if (inRemove) {
+            this.toRemove = this.toRemove.filter(x => !(x.eventId == event.id && x.visitorId == visitorId));
+          } else {
+            this.toAdd.push({eventId: event.id, visitorId: visitorId});
+          }
+        } else {
+          const inAdd = this.toAdd.some(x => x.eventId == event.id && x.visitorId == visitorId);
+          if (inAdd) {
+            this.toAdd = this.toAdd.filter(x => !(x.eventId == event.id && x.visitorId == visitorId));
+          } else {
+            this.toRemove.push({eventId: event.id, visitorId: visitorId});
           }
         }
-        if (!visitors.length) continue;
-        if (!uniqueStartsAt.includes(event.startsAt)){
-          this.hoursSum += event.duration / 60;
-          uniqueStartsAt.push(event.startsAt);
-        }
       }
+      event.members.filter(m => lostIds.includes(m.id)).forEach(m => {
+        m.isVisitor = !allChecked;
+      });
     },
     getMemberPaymentAvailability(member, event) {
       const group = this.groups.find(g => g.id == event.group);

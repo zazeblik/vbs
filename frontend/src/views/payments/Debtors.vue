@@ -14,14 +14,16 @@
       </b-input-group-append>
     </b-input-group>
     <b-list-group>
-      <b-table class="py-2 small-table" small bordered sort-icon-left responsive :fields="fields" :items="shownPersons">
-        <template v-slot:cell(events)="row">
-          <b-button size="sm" variant="link" @click="addPaymentsModalShow(row.item.id)">
-            <div>{{getUnpayedEventsCountText(row.item.id)}}</div>
-            <div>{{getUnpayedMonthsCountText(row.item.id)}}</div>
-          </b-button>
-        </template>
-      </b-table>
+      <b-overlay :show="showOverlay" rounded="sm">
+        <b-table class="py-2 small-table" small bordered sort-icon-left responsive :fields="fields" :items="shownPersons">
+          <template v-slot:cell(events)="row">
+            <b-button size="sm" variant="link" @click="addPaymentsModalShow(row.item.id)">
+              <div>{{getUnpayedEventsCountText(row.item.id)}}</div>
+              <div>{{getUnpayedMonthsCountText(row.item.id)}}</div>
+            </b-button>
+          </template>
+        </b-table>
+      </b-overlay>
     </b-list-group>
     <PaymentsModal 
       modalId="paymentsModal"
@@ -49,6 +51,7 @@ export default {
       payer: null,
       nameFilter: null,
       onlyDebtors: false,
+      showOverlay: false,
       persons: [],
       shownPersons: [],
       generals: [],
@@ -71,6 +74,7 @@ export default {
   methods: {
     async fetchInfo() {
       this.nameFilter = null;
+      this.showOverlay = true;
       const settings = await this.$getAsync(`${this.baseUrl}/settings`);
       this.persons = settings.persons;
       this.shownPersons = settings.persons;
@@ -79,6 +83,7 @@ export default {
       this.unpayedEvents = settings.unpayedEvents;
       this.instructors = settings.instructors;
       this.unapyedGroupMonths = settings.unapyedGroupMonths;
+      this.showOverlay = false;
     },
     addPaymentsModalShow(payerId){
       this.payer = payerId;

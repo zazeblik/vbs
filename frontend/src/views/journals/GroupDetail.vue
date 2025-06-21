@@ -363,7 +363,7 @@ export default {
       const lostIds = this.rows.filter(r => allChecked ? r[field.key].visited : !r[field.key].visited ).map(row => row[field.key].visitorId)
       for (let i = 0; i < lostIds.length; i++) {
         const visitorId = lostIds[i];
-        if (allChecked) {
+        if (!allChecked) {
           const inRemove = this.toRemove.some(x => x.eventId == field.eventId && x.visitorId == visitorId);
           if (inRemove) {
             this.toRemove = this.toRemove.filter(x => !(x.eventId == field.eventId && x.visitorId == visitorId));

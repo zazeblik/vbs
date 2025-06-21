@@ -75,7 +75,6 @@ module.exports.getSheet = async function(id, monthDateRange, providerId){
         rowUniquePaymentIds.push(e.payment.id);
       }
     }
-    row.visits = Object.values(row).filter(x => x.visited).length;
     return row;
   });
   events.forEach(e => {
@@ -83,10 +82,8 @@ module.exports.getSheet = async function(id, monthDateRange, providerId){
   });
   totals.person = 'Итого:';
   totals.payments = rows.map(x => x.payments).reduce((a, b) => a + b, 0);
-  totals.visits = rows.map(x => x.visits).reduce((a, b) => a + b, 0);
   
   fields.push({ key: "payments", label: "Оплата", class: "text-center" });
-  fields.push({ key: "visits", label: "Посещения", class: "text-center" });
   return { fields, rows, totals };
 }
 

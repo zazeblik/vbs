@@ -21,18 +21,20 @@
         </b-button>
       </b-input-group-append>
     </b-input-group>
-    <FullCalendar 
-      defaultView="dayGridMonth"
-      class="pt-2"
-      :plugins="calendarPlugins" 
-      ref="fullCalendar"
-      :header="{left:'',center: '',right: ''}"
-      locale="ru"
-      :firstDay="1"
-      height="auto"
-      :events="calendarEvents"
-      @eventRender="eventRender"
-    />
+    <b-overlay :show="showOverlay" rounded="sm">
+      <FullCalendar 
+        defaultView="dayGridMonth"
+        class="pt-2"
+        :plugins="calendarPlugins" 
+        ref="fullCalendar"
+        :header="{left:'',center: '',right: ''}"
+        locale="ru"
+        :firstDay="1"
+        height="auto"
+        :events="calendarEvents"
+        @eventRender="eventRender"
+      />
+    </b-overlay>
     <b-popover 
       v-for="(event, key) in events"
       :key="`event_popover_${key}_${event.id}`" 
@@ -63,6 +65,7 @@ export default {
       baseUrl: '/dashboard',
       events: [],
       birthdays: [],
+      showOverlay: false,
       selectedYear: new Date().getFullYear(),
       years: this.$getYears(),
       selectedMonth: new Date().getMonth(),
@@ -120,11 +123,13 @@ export default {
       this.birthdays = await this.$getAsync(`${this.baseUrl}/birthdays`);
     },
     async fetchInfo() {
+      this.showOverlay = true;
       const info = await this.$getAsync(`${this.baseUrl}/month-info`, {
         month: this.selectedMonth,
         year: this.selectedYear,
       });
       this.events = info.events;
+      this.showOverlay = false;
       if (!this.$refs.fullCalendar) return;
       let calendarApi = this.$refs.fullCalendar.getApi();
       calendarApi.gotoDate(new Date(this.selectedYear, this.selectedMonth));
@@ -138,11 +143,13 @@ export default {
       return age;
     },
     async createMonthEvents(){
+      this.showOverlay = true;
       await this.$postAsync(`${this.baseUrl}/create-month-events`, {
         month: this.selectedMonth,
         year: this.selectedYear,
       });
       await this.fetchInfo();
+      this.showOverlay = false;
     },
     eventRender(info){
       info.el.id = "event_"+info.event.id;
